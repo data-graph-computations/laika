@@ -1,26 +1,27 @@
-CC = gcc
-CCFLAGS = -std=c++11 -ansi-alias -O3 -Wall
+CC  = gcc
+CXX = g++
+CFLAGS = -O3 -Wall
+CXXFLAGS = -std=c++11 -O3 -Wall
 LDFLAGS =
 
 .PHONY: all clean lint
 
-HEADERS = common.h
-SOURCES = reorder.cpp
+HEADERS = common.h hilbert/hilbert.h
+CXXSOURCES = reorder.cpp
 
-TEST = 0
-DEBUG = 0
+TEST ?= 0
+DEBUG ?= 0
 
 all: lint reorder
 
-set-debug: DEBUG=1
-
-set-test: TEST=1
-
 lint:
-	cpplint.py *.cpp *.h
+	./cpplint.py *.cpp *.h
 
-reorder: $(SOURCES)
-	$(CC) $(CCFLAGS) $(LDFLAGS) -DTEST=$(TEST) -DDEBUG=$(DEBUG) -o reorder.out $(SOURCES)
+hilbert:
+	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
+
+reorder: $(CXXSOURCES) hilbert
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -DTEST=$(TEST) -DDEBUG=$(DEBUG) -o reorder.out hilbert.o $(CXXSOURCES)
 
 clean:
 	rm -f *~ *.o *.out
