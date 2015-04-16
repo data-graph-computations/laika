@@ -32,3 +32,8 @@
 *.log
 *.dbg
 *.dmp
+
+# Graph Output files
+*.node
+*.adjlist
+*.edge
