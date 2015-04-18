@@ -3,6 +3,7 @@ CXX = g++
 CFLAGS = -O3 -Wall
 CXXFLAGS = -std=c++11 -O3 -Wall
 LDFLAGS =
+ROOT = ../../
 
 .PHONY: all clean lint
 
@@ -15,7 +16,7 @@ DEBUG ?= 0
 all: lint reorder
 
 lint:
-	./cpplint.py *.cpp *.h
+	$(ROOT)/cpplint.py --root=src/hilbert_reorder *.cpp *.h
 
 hilbert:
 	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
