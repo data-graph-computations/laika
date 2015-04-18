@@ -3,8 +3,12 @@
 #include <cmath>
 #include <climits>
 #include <cfloat>
+#include <string>
 #include "./common.h"
+#include "./io.h"
 #include "./libhilbert/hilbert.h"
+
+using namespace std;
 
 // This function populates the hilbertId field of each vertex_t in nodes, by
 // remapping every vertex onto an n^3 lattice using appropriate scaling factors,
@@ -77,16 +81,25 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
 }
 
 int main() {
-  const int kCntNodes = 5;
   const int hilbertBits = 2;
+  /*
+  const int kCntNodes = 5;
   vertex_t nodes[kCntNodes];
   nodes[0] = {0, 0, 0.0, 0.0, 0.0, NULL};
   nodes[1] = {1, 0, 2.0, 0.0, 0.0, NULL};
   nodes[2] = {2, 0, 0.0, 2.0, 0.0, NULL};
   nodes[3] = {3, 0, 0.0, 0.0, 2.0, NULL};
   nodes[4] = {4, 0, 0.0, 1.0, 1.0, NULL};
-
   assignHilbertIds(nodes, kCntNodes, hilbertBits);
+  */
+
+  vertex_t * nodes;
+  int cntNodes;
+
+  int result = readNodesFromFile("../graphgen/nodes.node", &nodes, &cntNodes);
+  assert(result == 0);
+
+  assignHilbertIds(nodes, cntNodes, hilbertBits);
 
   return 0;
 }

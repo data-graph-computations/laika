@@ -7,8 +7,8 @@ ROOT = ../../
 
 .PHONY: all clean lint
 
-HEADERS = common.h hilbert/hilbert.h
-CXXSOURCES = reorder.cpp
+HEADERS = common.h hilbert/hilbert.h io.h
+CXXSOURCES = reorder.cpp io.cpp
 
 TEST ?= 0
 DEBUG ?= 0
@@ -22,7 +22,7 @@ hilbert:
 	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
 
 reorder: $(CXXSOURCES) hilbert
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -DTEST=$(TEST) -DDEBUG=$(DEBUG) -o reorder.out hilbert.o $(CXXSOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -DTEST=$(TEST) -DDEBUG=$(DEBUG) -o reorder hilbert.o $(CXXSOURCES)
 
 clean:
 	rm -f *~ *.o *.out
