@@ -5,11 +5,16 @@
 #include <cfloat>
 #include <string>
 #include <algorithm>
+#include <iostream>
 #include "./common.h"
 #include "./io.h"
 #include "./libhilbert/hilbert.h"
 
 using namespace std;
+
+#ifndef HILBERTBITS
+#define HILBERTBITS 4
+#endif
 
 // This function populates the hilbertId field of each vertex_t in nodes, by
 // remapping every vertex onto an n^3 lattice using appropriate scaling factors,
@@ -91,31 +96,52 @@ bool vertexComparator(const vertex_t& a, const vertex_t& b) {
   }
 }
 
-int main() {
-  const int hilbertBits = 2;
-  /*
-  const int kCntNodes = 5;
-  vertex_t nodes[kCntNodes];
-  nodes[0] = {0, 0, 0.0, 0.0, 0.0, NULL};
-  nodes[1] = {1, 0, 2.0, 0.0, 0.0, NULL};
-  nodes[2] = {2, 0, 0.0, 2.0, 0.0, NULL};
-  nodes[3] = {3, 0, 0.0, 0.0, 2.0, NULL};
-  nodes[4] = {4, 0, 0.0, 1.0, 1.0, NULL};
-  assignHilbertIds(nodes, kCntNodes, hilbertBits);
-  */
+vid_t * createIdTranslationMapping(vertex_t reorderedNodes, int cntNodes) {
+  vid_t * mapping = new (std::nothrow) vid_t[cntNodes];
+  assert(mapping != 0);
 
+  for (int i = 0; i < cntNodes; ++i) {
+    mapping[reorderedNodes[i].id] = i;
+  }
+
+  return mapping;
+}
+
+int main(int argc, char *argv[]) {
   vertex_t * nodes;
   int cntNodes;
+  char * inputNodeFile, * inputEdgeFile;
+  char * outputNodeFile, * outputEdgeFile;
 
-  int result = readNodesFromFile("../graphgen/nodes.node", &nodes, &cntNodes);
+  if (argc != 5) {
+    cerr << "\nERROR: Expected 4 arguments, received " << argc << '\n';
+    cerr << "Usage: ./reorder <input_nodes> <input_edges> "
+            "<output_nodes> <output_edges>" << endl;
+    return 1;
+  }
+
+  inputNodeFile = argv[1];
+  inputEdgeFile = argv[2];
+  outputNodeFile = argv[3];
+  outputEdgeFile = argv[4];
+
+  cout << "Input node file: " << inputNodeFile << '\n';
+  cout << "Input edge file: " << inputEdgeFile << '\n';
+  cout << "Output node file: " << outputNodeFile << '\n';
+  cout << "Output edge file: " << outputEdgeFile << '\n';
+  cout << "Hilbert bits per dimension: " << HILBERTBITS << '\n';
+
+  int result = readNodesFromFile(inputNodeFile, &nodes, &cntNodes);
   assert(result == 0);
 
-  result = readEdgesFromFile("../graphgen/edges.adjlist", nodes, cntNodes);
+  result = readEdgesFromFile(inputEdgeFile, nodes, cntNodes);
   assert(result == 0);
 
-  assignHilbertIds(nodes, cntNodes, hilbertBits);
+  assignHilbertIds(nodes, cntNodes, HILBERTBITS);
 
   stable_sort(nodes, nodes + cntNodes, vertexComparator);
+
+
 
   WHEN_DEBUG({
     printf("\nOrder after sorting:\n");

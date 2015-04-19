@@ -26,6 +26,7 @@
 *.exe
 *.out
 *.app
+reorder
 
 # Log and Temporary files
 *.tmp
