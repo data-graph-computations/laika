@@ -6,6 +6,8 @@
 
 using namespace std;
 
-int readNodesFromFile(string filepath, vertex_t ** out_nodes, int * out_count);
+int readNodesFromFile(const string filepath, vertex_t ** outNodes, int * outCount);
+
+int readEdgesFromFile(const string filepath, vertex_t * nodes, int cntNodes);
 
 #endif  // IO_H_

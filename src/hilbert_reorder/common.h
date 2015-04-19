@@ -32,6 +32,12 @@
 
 typedef uint64_t vid_t;  // vertex id type
 
+struct edges_t {
+  size_t cntEdges;
+  vid_t * edges;
+};
+typedef struct edges_t edges_t;
+
 struct vertex_t {
   vid_t id;
   vid_t hilbertId;
@@ -39,6 +45,7 @@ struct vertex_t {
   double y;
   double z;
   void * data;
+  edges_t edgeData;
 };
 typedef struct vertex_t vertex_t;
 

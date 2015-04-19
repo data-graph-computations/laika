@@ -4,6 +4,7 @@
 #include <climits>
 #include <cfloat>
 #include <string>
+#include <algorithm>
 #include "./common.h"
 #include "./io.h"
 #include "./libhilbert/hilbert.h"
@@ -54,6 +55,8 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
     bitmask_t latticeCoords[3];
     bitmask_t hilbertIndex;
 
+    nodes[i].id = (vid_t)i;
+
     latticeCoords[0] = (uint64_t) round((nodes[i].x - xMin) * (hilbertGridN - 1) / xMax);
     latticeCoords[1] = (uint64_t) round((nodes[i].y - yMin) * (hilbertGridN - 1) / yMax);
     latticeCoords[2] = (uint64_t) round((nodes[i].z - zMin) * (hilbertGridN - 1) / zMax);
@@ -67,7 +70,7 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
       coords[1] = (nodes[i].y - yMin) * (hilbertGridN - 1) / yMax;
       coords[2] = (nodes[i].z - zMin) * (hilbertGridN - 1) / zMax;
 
-      printf("hilbert data for node %d:\n", i);
+      printf("hilbert data for node id %lu:\n", nodes[i].id);
       printf("  rescale X: %.3f\n", coords[0]);
       printf("  rescale Y: %.3f\n", coords[1]);
       printf("  rescale Z: %.3f\n", coords[2]);
@@ -77,6 +80,14 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
       printf("  hilbertId: %lld\n", hilbertIndex);
       printf("\n");
     })
+  }
+}
+
+bool vertexComparator(const vertex_t& a, const vertex_t& b) {
+  if (a.hilbertId != b.hilbertId) {
+    return a.hilbertId < b.hilbertId;
+  } else {
+    return a.id < b.id;
   }
 }
 
@@ -99,7 +110,19 @@ int main() {
   int result = readNodesFromFile("../graphgen/nodes.node", &nodes, &cntNodes);
   assert(result == 0);
 
+  result = readEdgesFromFile("../graphgen/edges.adjlist", nodes, cntNodes);
+  assert(result == 0);
+
   assignHilbertIds(nodes, cntNodes, hilbertBits);
+
+  stable_sort(nodes, nodes + cntNodes, vertexComparator);
+
+  WHEN_DEBUG({
+    printf("\nOrder after sorting:\n");
+    for (int i = 0; i < cntNodes; ++i) {
+      printf("Position %8d: id %8lu\n", i, nodes[i].id);
+    }
+  })
 
   return 0;
 }
