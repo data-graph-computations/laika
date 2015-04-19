@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
   char * outputNodeFile, * outputEdgeFile;
 
   if (argc != 5) {
-    cerr << "\nERROR: Expected 4 arguments, received " << argc << '\n';
+    cerr << "\nERROR: Expected 4 arguments, received " << argc-1 << '\n';
     cerr << "Usage: ./reorder <input_nodes> <input_edges> "
             "<output_nodes> <output_edges>" << endl;
     return 1;
