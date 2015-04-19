@@ -14,7 +14,7 @@ def main():
 
     args = parser.parse_args()
 
-    NUM_POINTS = 1000
+    NUM_POINTS = 10000000
     MIN_COORDINATE = 0.0
     MAX_COORDINATE = 1023.0
     MIN_EDGES = 5

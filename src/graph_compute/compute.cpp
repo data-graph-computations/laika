@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
   vertex_t * nodes;
   int cntNodes;
   char * inputEdgeFile;
-  int numRounds = 100000;
+  int numRounds = 100;
 
   if (argc != 2) {
     cerr << "\nERROR: Expected 1 argument, received " << argc-1 << '\n';
