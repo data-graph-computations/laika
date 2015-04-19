@@ -39,7 +39,7 @@ struct vertex_t {
   size_t satisfied;
   size_t cntEdges;
   vid_t * edges;
-  uint64_t data;
+  double data;
 };
 typedef struct vertex_t vertex_t;
 

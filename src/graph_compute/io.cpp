@@ -46,6 +46,7 @@ int readEdgesFromFile(const string filepath, vertex_t ** outNodes, int * outCntN
       cleanupOnFormatError(input, "edge", i + 3);
       return -1;
     }
+    nodes[i].id = i;
     nodes[i].edges = edgeList + offset;
 
     if (i > 0) {

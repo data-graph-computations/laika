@@ -43,13 +43,26 @@ static void assignNodePriorities(vertex_t * nodes, const int cntNodes,
                                  const int bitsInId) {
   for (int i = 0; i < cntNodes; ++i) {
     nodes[i].priority = createPriority(nodes[i].id, bitsInId);
+
+    WHEN_DEBUG({
+      cout << "Node ID " << nodes[i].id
+           << " got priority " << nodes[i].priority << '\n';
+    })
   }
+
+  WHEN_TEST({
+    for (int i = 0; i < cntNodes; ++i) {
+      for (int j = i + 1; j < cntNodes; ++j) {
+        assert(nodes[i].priority != nodes[j].priority);
+      }
+    }
+  })
 }
 
 // fill in each node with random-looking data
 static void fillInNodeData(vertex_t * nodes, const int cntNodes) {
   for (int i = 0; i < cntNodes; ++i) {
-    nodes[i].data = (-nodes[i].id) ^ nodes[i].priority ^ (nodes[i].dependencies * 31);
+    nodes[i].data = nodes[i].priority + ((-nodes[i].id) ^ (nodes[i].dependencies * 31));
   }
 }
 
@@ -71,7 +84,7 @@ static void processNode(vertex_t * nodes, const int index, const int cntNodes) {
   vertex_t * current = &nodes[index];
   if (current->satisfied == current->dependencies) {
     // recalculate this node's data
-    uint64_t data = current->data;
+    double data = current->data;
     for (size_t i = 0; i < current->cntEdges; ++i) {
       data += nodes[current->edges[i]].data;
     }
@@ -110,7 +123,7 @@ int main(int argc, char *argv[]) {
   vertex_t * nodes;
   int cntNodes;
   char * inputEdgeFile;
-  int numRounds = 1000000;
+  int numRounds = 100000;
 
   if (argc != 2) {
     cerr << "\nERROR: Expected 1 argument, received " << argc-1 << '\n';
@@ -126,6 +139,7 @@ int main(int argc, char *argv[]) {
   assert(result == 0);
 
   int bitsInId = calculateIdBitSize(cntNodes);
+  WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
   assignNodePriorities(nodes, cntNodes, bitsInId);
   calculateNodeDependencies(nodes, cntNodes);
 
@@ -146,7 +160,7 @@ int main(int argc, char *argv[]) {
   cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
 
   // so GCC doesn't eliminate the rounds loop as unnecessary work
-  uint64_t data = 0;
+  double data = 0.0;
   for (int i = 0; i < cntNodes; ++i) {
     data += nodes[i].data;
   }
