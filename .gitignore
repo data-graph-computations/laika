@@ -38,3 +38,8 @@ reorder
 *.node
 *.adjlist
 *.edge
+
+# Directories
+tmp/*
+results/*
+inputs/*
