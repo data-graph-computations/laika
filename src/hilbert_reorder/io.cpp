@@ -83,15 +83,21 @@ int readEdgesFromFile(const string filepath, vertex_t * nodes, int cntNodes) {
 
   vid_t * edgeList = new (std::nothrow) vid_t[m];
   assert(edgeList != 0);
+  uint64_t offset, previousOffset = 0;
   for (int i = 0; i < n; ++i) {
-    uint64_t offset;
     result = fscanf(input, "%lu\n", &offset);
     if (result != 1) {
       cleanupOnFormatError(input, "edge", i + 3);
       return -1;
     }
     nodes[i].edgeData.edges = edgeList + offset;
+
+    if (i > 0) {
+      nodes[i-1].edgeData.cntEdges = offset - previousOffset;
+    }
+    previousOffset = offset;
   }
+  nodes[n-1].edgeData.cntEdges = m - previousOffset;
 
   for (int i = 0; i < m; ++i) {
     result = fscanf(input, "%lu\n", &edgeList[i]);
@@ -102,4 +108,71 @@ int readEdgesFromFile(const string filepath, vertex_t * nodes, int cntNodes) {
   }
 
   return 0;
+}
+
+static int outputNodes(const vertex_t * const reorderedNodes, const int cntNodes,
+                          const string& filepath) {
+  FILE * output = fopen(filepath.c_str(), "w");
+  if (output == NULL) {
+    cerr << "ERROR: Couldn't open file " << filepath << endl;
+    return -1;
+  }
+
+  fprintf(output, "%d 3 0 0\n", cntNodes);
+  for (int i = 0; i < cntNodes; ++i) {
+    fprintf(output, "%d %f %f %f\n",
+            i, reorderedNodes[i].x, reorderedNodes[i].y, reorderedNodes[i].z);
+  }
+
+  return 0;
+}
+
+static int outputEdges(const vertex_t * const reorderedNodes, const int cntNodes,
+                          const vid_t * const translationMapping,
+                          const string& filepath) {
+  FILE * output = fopen(filepath.c_str(), "w");
+  if (output == NULL) {
+    cerr << "ERROR: Couldn't open file " << filepath << endl;
+    return -1;
+  }
+
+  fprintf(output, ADJGRAPH "\n");
+  fprintf(output, "%d\n", cntNodes);
+
+  // calculating the total number of edges
+  size_t totalEdges = 0;
+  for (int i = 0; i < cntNodes; ++i) {
+    totalEdges += reorderedNodes[i].edgeData.cntEdges;
+  }
+  fprintf(output, "%lu\n", totalEdges);
+
+  // calculating offsets
+  totalEdges = 0;
+  for (int i = 0; i < cntNodes; ++i) {
+    fprintf(output, "%lu\n", totalEdges);
+    totalEdges += reorderedNodes[i].edgeData.cntEdges;
+  }
+
+  // outputing edges
+  for (int i = 0; i < cntNodes; ++i) {
+    const edges_t * const edgeData = &reorderedNodes[i].edgeData;
+    for (size_t j = 0; j < edgeData->cntEdges; ++j) {
+      const vid_t translatedEdge = translationMapping[edgeData->edges[j]];
+      fprintf(output, "%lu\n", translatedEdge);
+    }
+  }
+
+  return 0;
+}
+
+int outputReorderedGraph(const vertex_t * const reorderedNodes, const int cntNodes,
+                         const vid_t * const translationMapping,
+                         const string& outputNodeFile, const string& outputEdgeFile) {
+  int result;
+  result = outputNodes(reorderedNodes, cntNodes, outputNodeFile);
+  if (result != 0) {
+    return result;
+  }
+
+  return outputEdges(reorderedNodes, cntNodes, translationMapping, outputEdgeFile);
 }

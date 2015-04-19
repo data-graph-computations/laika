@@ -96,7 +96,7 @@ bool vertexComparator(const vertex_t& a, const vertex_t& b) {
   }
 }
 
-vid_t * createIdTranslationMapping(vertex_t reorderedNodes, int cntNodes) {
+static vid_t * createIdTranslationMapping(vertex_t * reorderedNodes, int cntNodes) {
   vid_t * mapping = new (std::nothrow) vid_t[cntNodes];
   assert(mapping != 0);
 
@@ -141,14 +141,18 @@ int main(int argc, char *argv[]) {
 
   stable_sort(nodes, nodes + cntNodes, vertexComparator);
 
-
-
   WHEN_DEBUG({
     printf("\nOrder after sorting:\n");
     for (int i = 0; i < cntNodes; ++i) {
       printf("Position %8d: id %8lu\n", i, nodes[i].id);
     }
   })
+
+  const vid_t * const translationMapping = createIdTranslationMapping(nodes, cntNodes);
+
+  result = outputReorderedGraph(nodes, cntNodes, translationMapping,
+                                outputNodeFile, outputEdgeFile);
+  assert(result == 0);
 
   return 0;
 }
