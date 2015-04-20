@@ -43,3 +43,6 @@ reorder
 tmp/*
 results/*
 inputs/*
+
+# Local Configuration
+*.json
