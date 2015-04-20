@@ -12,6 +12,11 @@ CXXSOURCES = reorder.cpp io.cpp
 
 TEST ?= 0
 DEBUG ?= 0
+DEFS = -DTEST=$(TEST) -DDEBUG=$(DEBUG)
+
+ifneq ($(HILBERTBITS),)
+	DEFS += -DHILBERTBITS=$(HILBERTBITS)
+endif
 
 all: lint reorder
 
@@ -22,7 +27,7 @@ hilbert:
 	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
 
 reorder: $(CXXSOURCES) hilbert
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -DTEST=$(TEST) -DDEBUG=$(DEBUG) -o reorder hilbert.o $(CXXSOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder hilbert.o $(CXXSOURCES)
 
 clean:
 	rm -f *~ *.o *.out

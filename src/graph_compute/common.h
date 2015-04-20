@@ -4,6 +4,14 @@
 #include <cinttypes>
 #include <cassert>
 
+#ifndef TEST
+#define TEST 0
+#endif
+
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
 // Use WHEN_TEST to conditionally include expensive sanity-checks,
 // when doing more work than simply checking an assertion. For example:
 //

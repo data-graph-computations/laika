@@ -27,6 +27,7 @@
 *.out
 *.app
 reorder
+compute
 
 # Log and Temporary files
 *.tmp

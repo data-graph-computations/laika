@@ -1,9 +1,14 @@
 TMP ?= tmp
-GRAPH_SIZE ?= 10000000
 ORIGINAL_NODES_FILE ?= $(TMP)/nodes_original.node
 ORIGINAL_EDGES_FILE ?= $(TMP)/edges_original.adjlist
 REORDERED_NODES_FILE ?= $(TMP)/nodes_reordered.node
 REORDERED_EDGES_FILE ?= $(TMP)/edges_reordered.adjlist
+
+GRAPH_SIZE ?= 10000000
+ROUNDS ?= 100
+PARALLEL ?= 0
+PRIORITY_GROUP_BITS ?= 8
+HILBERTBITS ?= 4
 
 build-full: build-hilbert-reorder build-graph-compute
 
@@ -33,10 +38,10 @@ reorder-graph: build-hilbert-reorder
 	src/hilbert_reorder/reorder $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(REORDERED_NODES_FILE) $(REORDERED_EDGES_FILE)
 
 run-original: build-graph-compute
-	src/graph_compute/compute $(ORIGINAL_EDGES_FILE) 2>&1 >$(TMP)/original.out
+	src/graph_compute/compute $(ROUNDS) $(ORIGINAL_EDGES_FILE) 2>&1 >$(TMP)/original.out
 
 run-reordered: build-graph-compute
-	src/graph_compute/compute $(REORDERED_EDGES_FILE) 2>&1 >$(TMP)/reordered.out
+	src/graph_compute/compute $(ROUNDS) $(REORDERED_EDGES_FILE) 2>&1 >$(TMP)/reordered.out
 
 .PHONY: clean run-full
 
