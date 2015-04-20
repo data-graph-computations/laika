@@ -1,4 +1,5 @@
 TMP ?= tmp
+GRAPH_SIZE ?= 10000000
 ORIGINAL_NODES_FILE ?= $(TMP)/nodes_original.node
 ORIGINAL_EDGES_FILE ?= $(TMP)/edges_original.adjlist
 REORDERED_NODES_FILE ?= $(TMP)/nodes_reordered.node
@@ -26,7 +27,7 @@ build-graph-compute:
 run-full: clean gen-graph reorder-graph run-original run-reordered
 
 gen-graph:
-	python src/graphgen/graphgen.py $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
+	python src/graphgen/graphgen.py $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
 
 reorder-graph: build-hilbert-reorder
 	src/hilbert_reorder/reorder $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(REORDERED_NODES_FILE) $(REORDERED_EDGES_FILE)

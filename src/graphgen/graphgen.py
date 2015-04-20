@@ -9,16 +9,25 @@ import random
 # Uses tetgen node data format (with less whitespace).
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('size', help='number of points in the graph', type=int)
     parser.add_argument('node_file', help='file to save node data to')
     parser.add_argument('edge_file', help='file to save edge data to')
+    parser.add_argument('--mincoord', help='minimum allowed coordinate value', \
+                        type=float, default=0.0)
+    parser.add_argument('--maxcoord', help='maximum allowed coordinate value', \
+                        type=float, default=1023.0)
+    parser.add_argument('--minedges', help='minimum allowed number of edges', \
+                        type=int, default=5)
+    parser.add_argument('--maxedges', help='maximum allowed number of edges', \
+                        type=int, default=15)
 
     args = parser.parse_args()
 
-    NUM_POINTS = 10000000
-    MIN_COORDINATE = 0.0
-    MAX_COORDINATE = 1023.0
-    MIN_EDGES = 5
-    MAX_EDGES = 15
+    NUM_POINTS = args.size
+    MIN_COORDINATE = args.mincoord
+    MAX_COORDINATE = args.maxcoord
+    MIN_EDGES = args.minedges
+    MAX_EDGES = args.maxedges
     def gen_point():
         x = random.uniform(MIN_COORDINATE, MAX_COORDINATE)
         y = random.uniform(MIN_COORDINATE, MAX_COORDINATE)
