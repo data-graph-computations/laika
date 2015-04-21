@@ -30,4 +30,4 @@ reorder: $(CXXSOURCES) hilbert
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder hilbert.o $(CXXSOURCES)
 
 clean:
-	rm -f *~ *.o *.out
+	rm -f *~ *.o *.out reorder

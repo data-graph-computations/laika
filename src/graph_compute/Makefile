@@ -29,6 +29,6 @@ compute: $(CXXSOURCES)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o compute $(CXXSOURCES)
 
 clean:
-	rm -f *~ *.o *.out
+	rm -f *~ *.o *.out compute
 
 .PHONY: all clean lint
