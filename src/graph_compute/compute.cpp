@@ -43,6 +43,10 @@ static int calculateIdBitSize(const uint64_t cntNodes) {
 static inline id_t createPriority(const vid_t id, const int bitsInId) {
   vid_t priority;
 
+  if (bitsInId <= PRIORITY_GROUP_BITS) {
+    return id;
+  }
+
   // mask off the low ID bits that are not the priority group bits
   // and move them to the top of the priority
   vid_t orderMask = (1 << (bitsInId - PRIORITY_GROUP_BITS)) - 1;
