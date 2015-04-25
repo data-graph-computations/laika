@@ -11,6 +11,7 @@ ROUNDS ?= 100
 PARALLEL ?= 0
 PRIORITY_GROUP_BITS ?= 8
 HILBERTBITS ?= 4
+BASELINE ?= 0
 
 all: build-full
 
@@ -30,16 +31,7 @@ clean-graph-compute:
 build-hilbert-reorder:
 	cd src/hilbert_reorder && $(MAKE)
 
-build-graph-compute-baseline: clean-graph-compute
-build-graph-compute-baseline: PRIORITY_GROUP_BITS = 0
-build-graph-compute-baseline: BASELINE = 1
-build-graph-compute-baseline: build-graph-compute
-
-build-graph-compute-optimized: clean-graph-compute
-build-graph-compute-optimized: BASELINE = 0
-build-graph-compute-optimized: build-graph-compute
-
-build-graph-compute:
+build-graph-compute: clean-graph-compute
 	cd src/graph_compute && $(MAKE)
 
 gen-graph:

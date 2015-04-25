@@ -2,7 +2,7 @@ CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall
 CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
-LDFLAGS = -lcilkrts
+LDFLAGS = -lcilkrts -lrt
 ROOT = ../../
 
 HEADERS = common.h io.h

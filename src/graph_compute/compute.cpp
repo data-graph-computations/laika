@@ -187,7 +187,9 @@ int main(int argc, char *argv[]) {
   // generate some fake data instead
   fillInNodeData(nodes, cntNodes);
 
-  clock_t start = clock();
+  struct timespec starttime, endtime;
+  result = clock_gettime(CLOCK_MONOTONIC, &starttime);
+  assert(result == 0);
 
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -195,7 +197,12 @@ int main(int argc, char *argv[]) {
     runRound(i, nodes, cntNodes);
   }
 
-  double seconds = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
+  result = clock_gettime(CLOCK_MONOTONIC, &endtime);
+  assert(result == 0);
+  int64_t ns = endtime.tv_nsec;
+  ns -= starttime.tv_nsec;
+  double seconds = static_cast<double>(ns) * 1e-9;
+  seconds += endtime.tv_sec - starttime.tv_sec;
 
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";

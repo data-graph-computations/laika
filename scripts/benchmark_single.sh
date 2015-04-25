@@ -22,8 +22,8 @@ echo "  $originaledges" >>$output
 echo "" >>$output
 
 parallel=0 ; while [[ $parallel -le 1 ]] ; do
-  (make TMP=$benchroot PARALLEL=$parallel build-graph-compute-baseline) #2>&1 >/dev/null
-  rounds=1000 ; while [[ $rounds -le 1000 ]] ; do
+  (make TMP=$benchroot BASELINE=1 PARALLEL=$parallel build-graph-compute) #2>&1 >/dev/null
+  rounds=100 ; while [[ $rounds -le 100 ]] ; do
     echo ""
     echo "Running original data, baseline, parallel=$parallel"
     echo ""
@@ -49,8 +49,8 @@ hilbert=5 ; while [[ $hilbert -le 9 ]] ; do
     parallel=0 ; while [[ $parallel -le 1 ]] ; do
       (make TMP=$benchroot clean-graph-compute) 2>&1 >/dev/null ;
 
-      rounds=1000 ; while [[ $rounds -le 1000 ]] ; do
-        (make TMP=$benchroot PARALLEL=$parallel PRIORITY_GROUP_BITS=$priority build-graph-compute-optimized) # 2>&1 >/dev/null
+      rounds=100 ; while [[ $rounds -le 100 ]] ; do
+        (make TMP=$benchroot BASELINE=0 PARALLEL=$parallel PRIORITY_GROUP_BITS=$priority build-graph-compute) # 2>&1 >/dev/null
 
         # echo ""
         # echo "Running original data, priority=$priority, parallel=$parallel, rounds=$rounds"

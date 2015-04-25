@@ -1,8 +1,8 @@
 CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall
-CXXFLAGS = -std=c++11 -O3 -Wall
-LDFLAGS =
+CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
+LDFLAGS = -lcilkrts
 ROOT = ../../
 
 .PHONY: all clean lint
