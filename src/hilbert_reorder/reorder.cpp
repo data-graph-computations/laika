@@ -13,7 +13,19 @@
 using namespace std;
 
 #ifndef HILBERTBITS
-#define HILBERTBITS 4
+  #define HILBERTBITS 4
+#endif
+
+#ifndef PARALLEL
+  #define PARALLEL 0
+#endif
+
+#if PARALLEL
+  #include <cilk/cilk.h>
+#else
+  #define cilk_for for
+  #define cilk_spawn
+  #define cilk_sync
 #endif
 
 // This function populates the hilbertId field of each vertex_t in nodes, by
@@ -56,7 +68,7 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
   // This mapping is the following: for the T axis,
   // tLattice = round((t - tMin) * (hilbertGridN - 1) / tMax);
 
-  for (int i = 0; i < cntNodes; ++i) {
+  cilk_for (int i = 0; i < cntNodes; ++i) {
     bitmask_t latticeCoords[3];
     bitmask_t hilbertIndex;
 
@@ -100,7 +112,7 @@ static vid_t * createIdTranslationMapping(vertex_t * reorderedNodes, int cntNode
   vid_t * mapping = new (std::nothrow) vid_t[cntNodes];
   assert(mapping != 0);
 
-  for (int i = 0; i < cntNodes; ++i) {
+  cilk_for (int i = 0; i < cntNodes; ++i) {
     mapping[reorderedNodes[i].id] = i;
   }
 

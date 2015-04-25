@@ -21,32 +21,47 @@ echo "  $originalnodes" >>$output
 echo "  $originaledges" >>$output
 echo "" >>$output
 
+parallel=0 ; while [[ $parallel -le 1 ]] ; do
+  (make TMP=$benchroot PARALLEL=$parallel build-graph-compute-baseline) #2>&1 >/dev/null
+  rounds=1000 ; while [[ $rounds -le 1000 ]] ; do
+    echo ""
+    echo "Running original data, baseline, parallel=$parallel"
+    echo ""
+    make TMP=$benchroot ROUNDS=$rounds OUTPUT=$output ORIGINAL_NODES_FILE=$originalnodes ORIGINAL_EDGES_FILE=$originaledges run-original-concat ;
+    echo "" >>$output
+    ((rounds = $rounds * 10)) ;
+  done ;
+  ((parallel = $parallel + 1)) ;
+done ;
+
 # reordering options:
 # number of hilbert bits per dimension: [1,10]
-hilbert=1 ; while [[ $hilbert -le 10 ]] ; do
+hilbert=5 ; while [[ $hilbert -le 9 ]] ; do
   echo "Reordering with $hilbert Hilbert bits per dimension"
 
   (make TMP=$benchroot clean-hilbert-reorder) 2>&1 >/dev/null;
-  make TMP=$benchroot HILBERTBITS=$hilbert OUTPUT=$output ORIGINAL_NODES_FILE=$originalnodes ORIGINAL_EDGES_FILE=$originaledges reorder-graph ;
+  make TMP=$benchroot PARALLEL=1 HILBERTBITS=$hilbert ORIGINAL_NODES_FILE=$originalnodes ORIGINAL_EDGES_FILE=$originaledges reorder-graph ;
 
   # runtime options:
   # priority bits: [1,24]
   # parallelism: on / off
-  priority=1 ; while [[ $priority -le 24 ]] ; do
+  priority=4 ; while [[ $priority -le 16 ]] ; do
     parallel=0 ; while [[ $parallel -le 1 ]] ; do
       (make TMP=$benchroot clean-graph-compute) 2>&1 >/dev/null ;
 
-      rounds=10 ; while [[ $rounds -le 1000 ]] ; do
-        echo ""
-        echo "Running original data, priority=$priority, parallel=$parallel, rounds=$rounds"
-        echo ""
-        make TMP=$benchroot PRIORITY_GROUP_BITS=$priority PARALLEL=$parallel ROUNDS=$rounds OUTPUT=$output ORIGINAL_NODES_FILE=$originalnodes ORIGINAL_EDGES_FILE=$originaledges run-original-concat ;
-        echo "" >>$output;
+      rounds=1000 ; while [[ $rounds -le 1000 ]] ; do
+        (make TMP=$benchroot PARALLEL=$parallel PRIORITY_GROUP_BITS=$priority build-graph-compute-optimized) # 2>&1 >/dev/null
+
+        # echo ""
+        # echo "Running original data, priority=$priority, parallel=$parallel, rounds=$rounds"
+        # echo ""
+        # make TMP=$benchroot PRIORITY_GROUP_BITS=$priority PARALLEL=$parallel ROUNDS=$rounds OUTPUT=$output ORIGINAL_NODES_FILE=$originalnodes ORIGINAL_EDGES_FILE=$originaledges run-original-concat ;
+        # echo "" >>$output;
 
         echo ""
         echo "Running reordered data, priority=$priority, parallel=$parallel, rounds=$rounds"
         echo ""
-        make TMP=$benchroot PRIORITY_GROUP_BITS=$priority PARALLEL=$parallel ROUNDS=$rounds OUTPUT=$output run-reordered-concat ;
+        make TMP=$benchroot ROUNDS=$rounds OUTPUT=$output run-reordered-concat ;
         echo "" >>$output;
         ((rounds = $rounds * 10)) ;
       done ;

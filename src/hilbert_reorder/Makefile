@@ -1,5 +1,5 @@
-CC  = gcc
-CXX = g++
+CC  ?= gcc
+CXX ?= g++
 CFLAGS = -O3 -Wall
 CXXFLAGS = -std=c++11 -O3 -Wall
 LDFLAGS =
@@ -16,6 +16,10 @@ DEFS = -DTEST=$(TEST) -DDEBUG=$(DEBUG)
 
 ifneq ($(HILBERTBITS),)
 	DEFS += -DHILBERTBITS=$(HILBERTBITS)
+endif
+
+ifneq ($(PARALLEL),)
+	DEFS += -DPARALLEL=$(PARALLEL)
 endif
 
 all: lint reorder

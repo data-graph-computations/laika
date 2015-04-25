@@ -13,20 +13,30 @@
 
 using namespace std;
 
+#ifndef BASELINE
+  #define BASELINE 0
+#endif
+
+#if BASELINE
+  #ifndef PRIORITY_GROUP_BITS
+    #define PRIORITY_GROUP_BITS 0
+  #endif
+#endif
+
 #ifndef PRIORITY_GROUP_BITS
-#define PRIORITY_GROUP_BITS 8
+  #define PRIORITY_GROUP_BITS 8
 #endif
 
 #ifndef PARALLEL
-#define PARALLEL 0
+  #define PARALLEL 0
 #endif
 
 #if PARALLEL
-#include <cilk/cilk.h>
+  #include <cilk/cilk.h>
 #else
-#define cilk_for for
-#define cilk_spawn
-#define cilk_sync
+  #define cilk_for for
+  #define cilk_spawn
+  #define cilk_sync
 #endif
 
 static int calculateIdBitSize(const uint64_t cntNodes) {
@@ -87,8 +97,7 @@ static void fillInNodeData(vertex_t * nodes, const int cntNodes) {
 }
 
 static void calculateNodeDependencies(vertex_t * nodes, const int cntNodes) {
-  int i;
-  cilk_for (i = 0; i < cntNodes; ++i) {
+  cilk_for (int i = 0; i < cntNodes; ++i) {
     vertex_t * node = &nodes[i];
     node->dependencies = 0;
     for (size_t j = 0; j < node->cntEdges; ++j) {
@@ -191,8 +200,9 @@ int main(int argc, char *argv[]) {
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
   cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
-  cout << "Priority group bits: " << PRIORITY_GROUP_BITS << '\n';
+  cout << "Baseline: " << BASELINE << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
+  cout << "Priority group bits: " << PRIORITY_GROUP_BITS << '\n';
   cout << "Debug flag: " << DEBUG << '\n';
   cout << "Test flag: " << TEST << '\n';
 

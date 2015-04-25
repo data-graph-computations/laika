@@ -30,10 +30,17 @@ clean-graph-compute:
 build-hilbert-reorder:
 	cd src/hilbert_reorder && $(MAKE)
 
+build-graph-compute-baseline: clean-graph-compute
+build-graph-compute-baseline: PRIORITY_GROUP_BITS = 0
+build-graph-compute-baseline: BASELINE = 1
+build-graph-compute-baseline: build-graph-compute
+
+build-graph-compute-optimized: clean-graph-compute
+build-graph-compute-optimized: BASELINE = 0
+build-graph-compute-optimized: build-graph-compute
+
 build-graph-compute:
 	cd src/graph_compute && $(MAKE)
-
-run-full: clean gen-graph reorder-graph run-original run-reordered
 
 gen-graph:
 	python src/graphgen/graphgen.py $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
@@ -41,17 +48,19 @@ gen-graph:
 reorder-graph: build-hilbert-reorder
 	src/hilbert_reorder/reorder $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(REORDERED_NODES_FILE) $(REORDERED_EDGES_FILE)
 
-run-original: build-graph-compute
+run-original:
 	src/graph_compute/compute $(ROUNDS) $(ORIGINAL_EDGES_FILE) 2>&1 >$(TMP)/original.out
 
-run-reordered: build-graph-compute
+run-reordered:
 	src/graph_compute/compute $(ROUNDS) $(REORDERED_EDGES_FILE) 2>&1 >$(TMP)/reordered.out
 
-run-original-concat: build-graph-compute
+run-original-concat:
 	src/graph_compute/compute $(ROUNDS) $(ORIGINAL_EDGES_FILE) 2>&1 >>$(OUTPUT)
 
-run-reordered-concat: build-graph-compute
+run-reordered-concat:
 	src/graph_compute/compute $(ROUNDS) $(REORDERED_EDGES_FILE) 2>&1 >>$(OUTPUT)
+
+run-full: clean gen-graph reorder-graph build-graph-compute-baseline run-original build-graph-compute-optimized run-reordered
 
 .PHONY: clean run-full
 

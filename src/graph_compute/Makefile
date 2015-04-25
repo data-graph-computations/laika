@@ -1,5 +1,5 @@
-CC  = gcc
-CXX = g++
+CC  ?= gcc
+CXX ?= g++
 CFLAGS = -O3 -Wall
 CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
 LDFLAGS = -lcilkrts
@@ -18,6 +18,10 @@ endif
 
 ifneq ($(PARALLEL),)
 	DEFS += -DPARALLEL=$(PARALLEL)
+endif
+
+ifneq ($(BASELINE),)
+	DEFS += -DBASELINE=$(BASELINE)
 endif
 
 all: lint compute
