@@ -62,6 +62,7 @@ hilbert=5 ; while [[ $hilbert -le 9 ]] ; do
         echo "Running reordered data, priority=$priority, parallel=$parallel, rounds=$rounds"
         echo ""
         make TMP=$benchroot ROUNDS=$rounds OUTPUT=$output run-reordered-concat ;
+        echo "Hilbert bits: $hilbert" >>$output;
         echo "" >>$output;
         ((rounds = $rounds * 10)) ;
       done ;
