@@ -1,0 +1,780 @@
+%% 
+%% This is file `supertech-sig.sty', for use with sig-alternate.sty
+%% 
+%% It includes most macros used for the CLR book
+%% and some of the macros used for course handouts
+
+\def\fileversion{1.0}
+\def\filedate{1998/10/16}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{supertech-sig}[\filedate{} macros for the Supertech group at MIT]
+
+\newif\ifsigalt
+\sigalttrue
+
+\newif\ifnotes
+\notestrue
+
+% Options
+\DeclareOption{nosigalt}{%
+  \sigaltfalse
+}
+
+\DeclareOption{nonotes}{%
+  \notesfalse
+}
+
+\def\graphicx@setup{\usepackage{graphicx}}
+
+\DeclareOption*{%
+  \PackageWarning{supertech-sig}{Unknown option `\CurrentOption'}%
+}
+
+\ExecuteOptions{}
+\ProcessOptions\relax
+
+
+\usepackage{url}
+\usepackage{latexsym}
+%\usepackage{bbm}
+%\usepackage[small,bf]{caption} % caption seems to be incompatible
+%\usepackage{graphics}
+\graphicx@setup
+\usepackage{listings}
+\usepackage{cite}
+
+%\usepackage[T1]{fontenc} --- According to sig-alternate.cls, this causes Type 3 problems.
+\usepackage{zi4}
+%\usepackage{times}
+%\usepackage{pslatex} % better than \usepackage{times} (Courier is better, and the math fonts are postscript)
+\usepackage{mathptmx}
+\DeclareSymbolFont{largesymbols}{OMX}{cmex}{m}{n} % However for large sigmas we want the Computer Modern symbol
+%\renewcommand{\ttdefault}{cmtt}
+\usepackage{epsfig}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{hhline}
+\usepackage{dcolumn}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\newcolumntype{x}[1]{%
+>{\centering\hspace{0pt}}p{#1}}%
+%\usepackage[psamsfonts]{amsfonts}
+\usepackage[x11names]{xcolor}
+% \usepackage{pstricks}
+\usepackage{booktabs}
+\usepackage{clrscode4e}
+\usepackage{alltt}
+\usepackage{flushend}
+\usepackage{xspace} % xspace takes care of the \@ after a capitalized word before a period.
+
+\usepackage{enumerate}
+
+\def\pgets{\mathrel{\hspace{1pt}\mbox{$+$$=$}\hspace{1pt}}}
+\def\otimesgets{\mathrel{\hspace{1pt}\mbox{$\otimes$$=$}\hspace{1pt}}}
+\def\plusplus{\mbox{$+$$+$}}
+\def\minusminus{\mbox{$-$$-$}}
+
+\long\def\@makecaption#1#2{
+   \vskip \baselineskip
+   \setbox\@tempboxa\hbox{\small\textbf{#1:} #2}
+   \ifdim \wd\@tempboxa >\hsize % IF longer than one line:
+       \small\textbf{#1:} #2\par               %   THEN set as ordinary paragraph.
+     \else                      %   ELSE  center.
+       \hbox to\hsize{\hfil\box\@tempboxa\hfil}\par
+   \fi}
+
+% Ignore hboxes overfull by 1 point or less.
+\hfuzz 1pt
+
+\floatsep 11pt plus 2pt minus 2pt       % Space between adjacent floats moved
+                                        % to top or bottom of text page.
+\textfloatsep 8pt plus 2pt minus 4pt   % Space between main text and floats
+                                        % at top or bottom of page.
+\intextsep 5pt plus 2pt minus 2pt      % Space between in-text figures and
+                                        % text.
+\@ifundefined{@maxsep}{\newdimen\@maxsep}{}% this is for LaTeX2e
+\@maxsep 8pt                           % The maximum of \floatsep,
+                                        % \textfloatsep and \intextsep (minus
+                                        % the stretch and shrink).
+\dblfloatsep 5pt plus 2pt minus 2pt    % Same as \floatsep for double-column
+                                        % figures in two-column mode.
+\dbltextfloatsep 8pt plus 2pt minus 4pt% \textfloatsep for double-column
+                                        % floats.
+\@ifundefined{@dblmaxsep}{\newdimen\@dblmaxsep}{}% this is for LaTeX2e
+\@dblmaxsep 8pt                        % The maximum of \dblfloatsep and
+                                        % \dbltexfloatsep.
+
+\@fptop 0pt plus 1fil    % Stretch at top of float page/column. (Must be
+                         % 0pt plus ...)
+\@fpsep 5pt plus 2fil    % Space between floats on float page/column.
+\@fpbot 0pt plus 1fil    % Stretch at bottom of float page/column. (Must be
+                         % 0pt plus ... )
+\@dblfptop 0pt plus 1fil % Stretch at top of float page. (Must be 0pt plus ...)
+\@dblfpsep 5pt plus 2fil % Space between floats on float page.
+\@dblfpbot 0pt plus 1fil % Stretch at bottom of float page. (Must be
+                         % 0pt plus ... )
+
+% Formatting parameters for floats.
+\setcounter{topnumber}{3}
+\renewcommand\topfraction{.99}
+\setcounter{bottomnumber}{1}
+\renewcommand\bottomfraction{.3}
+\setcounter{totalnumber}{5}
+\renewcommand\textfraction{.1}
+\renewcommand\floatpagefraction{.99}
+\setcounter{dbltopnumber}{2}
+\renewcommand\dbltopfraction{.99}
+\renewcommand\dblfloatpagefraction{.99}
+
+% Spacing for floats.
+\addtolength{\floatsep}{-5\p@}
+\addtolength{\textfloatsep}{-5\p@}
+\addtolength{\intextsep}{0\p@}
+\addtolength{\dblfloatsep}{0\p@}
+\addtolength{\dbltextfloatsep}{0\p@}
+
+% Caption spacing.
+\setlength\abovecaptionskip{5\p@}
+\setlength\belowcaptionskip{5\p@}
+
+\abovedisplayskip \abovedisplayshortskip
+\belowdisplayskip \abovedisplayskip
+
+\def\footnotesize{\@setsize\footnotesize{8pt}\viiipt\@viiipt
+\abovedisplayskip 6.4pt plus 2pt minus 4pt%
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ plus 1pt%
+\belowdisplayshortskip 2.7pt plus 1pt minus 2pt
+\def\@listI{\leftmargin\leftmargini %% Added 22 Dec 87
+\topsep 3pt plus 1pt minus 1pt\parsep 2pt plus 1pt minus 1pt
+\itemsep \parsep}}
+\let\@listi\@listI
+\@listi
+
+% default style assignments
+\def\UrlBreaks{\do\-\do\.\do\@\do\\\do\/\do\!\do\_\do\|\do\;\do\>\do\]%
+ \do\)\do\,\do\?\do\'\do\+\do\=\do\#}%
+\def\UrlBigBreaks{\do\:\do@url@hyp}%
+\def\UrlNoBreaks{\do\(\do\[\do\{\do\<}%
+% any ordinary characters that aren't usually:
+\def\UrlOrds{\do\*\do\~\do\'\do\"}%
+\def\UrlSpecials{\do\ {\Url@space}\do\%{\Url@percent}\do\^^M{\Url@space}%
+   \Url@force@Tilde}% package option may force faked text-ascii-tilde
+
+%% Page size
+
+%\setlength{\oddsidemargin}{0pt}
+%\setlength{\evensidemargin}{0pt}
+%\setlength{\textwidth}{6.5in}
+%\setlength{\topmargin}{0in}
+%\setlength{\textheight}{8.5in}
+
+%% Misc
+
+% Some hacks to make HTML happier.
+\newcommand{\vskipargs}[1]{\vskip #1}
+\newcommand{\newproc}{\hrule\vskipargs{1ex plus 0.1ex minus 0.1ex}}
+
+% Tilde for webstuff
+\newcommand{\webtilde}{\raisebox{-.8ex}\~}
+
+% Comment out chunks.
+\newcommand{\punt}[1]{}
+
+% Footnote commands.
+\newcommand{\footnotenonumber}[1]{{\def\thempfn{}\footnotetext{#1}}}
+\newcommand{\footnotetight}[1]{\footnote{\renewcommand\baselinestretch{1}\footnotesize #1}}
+
+%% Math Stuff, Symbols
+
+% Number sets.
+\newcommand{\reals}         {\mathbb{R}}%\mathbbm{R}}    %% bbm seems to produce type 3 fonts
+\newcommand{\integers}      {\mathbb{Z}}
+\newcommand{\naturals}      {\mathbb{N}}
+\newcommand{\rationals}     {\mathbb{Q}}
+\newcommand{\complex}       {\mathbb{C}}
+
+\newcommand{\union}             {\cup}
+\newcommand{\intersect}         {\cap}
+
+% Useful shorthands.
+
+\newcommand{\lgg}       {\lg\lg}
+\newcommand{\lggg}      {\lg\lg\lg}
+\newcommand{\lgggg}     {\lg\lg\lg\lg}
+
+\newcommand{\lnn}       {\ln\ln}
+\newcommand{\lnnn}      {\ln\ln\ln}
+\newcommand{\lnnnn}      {\ln\ln\ln\ln}
+
+\newcommand{\norm}[1]           {\mathopen{}\left\| #1\right\|\mathclose{}}
+\newcommand{\set}[1]            {\mathopen{}\{ #1 \}\mathclose{}}
+\newcommand{\abs}[1]            {\mathopen{}\left| #1\right|\mathclose{}}
+\newcommand{\card}[1]           {\mathopen{}\left| #1\right|\mathclose{}}
+\newcommand{\floor}[1]          {\mathopen{}\left\lfloor #1 \right\rfloor\mathclose{}}
+\newcommand{\ceil}[1]           {\mathopen{}\left\lceil #1 \right\rceil\mathclose{}}
+\newcommand{\ang}[1]            {\ifmmode{\mathopen{}\langle #1 \rangle\mathclose{}}
+                                 \else{$\mathopen{}\left\langle${#1}$\right\rangle\mathclose{}$}\fi}
+                                        % the \if allows use outside mathmode,
+                                        % but will swallow following space there!
+\renewcommand{\brack}[1]		{\mathopen{}\left[#1\right]\mathclose{}}
+\newcommand{\curly}[1]		{\mathopen{}\left\{#1\right\}\mathclose{}}
+\newcommand{\paren}[1]          {\mathopen{}\left(#1\right)\mathclose{}}
+
+\newcommand{\prob}[1]           {\Pr\mathopen{}\left\{ #1 \right\}\mathclose{}}
+\newcommand{\Var}               {\mathop{\rm Var}\nolimits}
+\newcommand{\expect}[1]         {{\rm E}\mathopen{}\left[ #1 \right]\mathclose{}}
+\newcommand{\expectsq}[1]       {{\rm E}^2\mathopen{}\left[ #1 \right]\mathclose{}}
+\newcommand{\variance}[1]       {{\rm Var}\mathopen{}\left[ #1 \right]\mathclose{}}
+\renewcommand{\choose}[2]       {{{#1}\atopwithdelims(){#2}}}
+
+\def\pmod#1{\allowbreak\mkern12mu({\rm mod}\,\,#1)}
+
+\newcommand{\matx}[2]           {\left(\!\!\!\begin{array}{*{#1}{c}}#2\end{array}\!\!\!\right)}
+\newcommand{\Adj}               {\mathop{\rm Adj}\nolimits}
+\newcommand{\percent}[1]        {#1\%}
+
+\newtheorem{principle}          {Principle}
+\newtheorem{theorem}            {Theorem}
+\newtheorem{lemma}[theorem]     {Lemma}
+\newtheorem{corollary}[theorem] {Corollary}
+\newtheorem{xample}             {Example}
+\newtheorem{definition}         {Definition}
+\newtheorem{property}           {Property}
+
+\newenvironment{example}        {\begin{xample}\rm}{\end{xample}}
+
+\ifsigalt
+\else
+\newcommand{\proof}     {\noindent{\em Proof.}\hspace{1em}}
+\fi
+
+\def\squarebox#1{\hbox to #1{\hfill\vbox to #1{\vfill}}}
+\newcommand{\qedbox}            {\vbox{\hrule\hbox{\vrule\squarebox{.667em}\vrule}\hrule}}
+%%\newcommand{\qed}               {\nopagebreak\mbox{}\hfill\qedbox\smallskip}
+%%\newcommand{\eqnref}[1]         {(\protect\ref{eq:#1})}
+
+\newenvironment{proofsketch}	{\noindent\textsc{Proof Sketch.}\hspace{0.5em}}{\qed}
+
+% \newcommand{\goesto}     {\rightarrow}
+
+
+% \def\pmod#1{\allowbreak\mkern12mu({\rm mod}\,\,#1)}
+
+% \newcommand{\matx}[2]       {\left(\!\!\!\begin{array}{*{#1}{c}}#2\end{array}\!\!\!\right)}
+% \newcommand{\Adj}       {\mathop{\rm Adj}\nolimits}
+% \newcommand{\percent}[1]    {#1\%}
+
+% \newtheorem{principle}{Principle}
+% \newtheorem{theorem}        {Theorem}
+% \newtheorem{lemma}[theorem] {Lemma}
+% \newtheorem{definition}[theorem] {Definition}
+% \newtheorem{corollary}[theorem] {Corollary}
+% \newtheorem{xample}     {Example}
+
+% \newenvironment{example}    {\begin{xample}\rm}{\end{xample}}
+
+% \def\squarebox#1{\hbox to #1{\hfill\vbox to #1{\vfill}}}
+
+% \newcommand{\qedbox}        {\vbox{\hrule\hbox{\vrule\squarebox{.667em}\vrule}\hrule}}
+% \ifsigalt
+% %% ANGE: need this for the proofsketch env --- somehow it didn't like the 
+% %% \qed defined in sig-alternate.cls --- complained about \unskip
+% \renewcommand{\qed}       {\nopagebreak\mbox{}\hfill\qedbox\smallskip}
+% \else
+% \newcommand{\qed}       {\nopagebreak\mbox{}\hfill\qedbox\smallskip}
+% \fi
+
+% \newenvironment{proofsketch} 
+%   {\noindent{\em Proof Sketch.}\hspace{0.5em}}{\qed}
+
+\newcommand{\eqnref}[1]     {(\protect\ref{#1})}
+
+\newcommand{\transpose}     {^{\mbox{\scriptsize \sf T}}}
+\newcommand{\amortized}[1]  {\widehat{#1}}
+
+\renewcommand{\cases}[1]        {\mathopen{}\left\{ \begin{array}{ll}#1\end{array}\right.}
+\newcommand{\cif}[1]        {\mbox{if $#1$}}
+\newcommand{\cwhen}[1]      {\mbox{when $#1$}}
+\newcommand{\cotherw}       {\mbox{otherwise}}
+
+%Narrow arrays
+\newlength{\savearraycolsep}
+\newcommand{\narrowarray}[1]{\setlength{\savearraycolsep}{\arraycolsep}\setlength{\arraycolsep}{#1\arraycolsep}}
+\newcommand{\normalarray}{\setlength{\arraycolsep}{\savearraycolsep}}
+
+% definitions and special styles
+
+%\newcommand{\defn}[1]       {{\textit{\textbf{\boldmath #1}}}}
+\newcommand{\defn}[1]       {{\textit{\textbf{#1}}}}
+
+%\newcommand{\const}[1]      {\ifmmode\mbox{\textsc{#1}}\else\textsc{#1}\fi}
+%\newcommand{\reduc}     {\leq_{\rm P}}
+%\newcommand{\lang}[1]       {\ifmmode\mathord{\mathcode`-="702D\rm#1\mathcode`\-="2200}\else{\rm#1}\fi}
+%\newcommand{\ckt}[1]        {\ifmmode \sc #1\else$\sc #1$\fi}
+%\newcommand{\id}[1]     {\ifmmode\mathit{#1}\else\textit{#1}\fi}
+%\newcommand{\proc}[1]       {\ifmmode\mbox{\textsc{#1}}\else\textsc{#1}\fi}
+%\newcommand{\procdecl}[1]   {\proc{#1}\vrule width0pt height0pt depth 7pt \relax}
+%\newcommand{\func}[1]       {\ifmmode\mathop{\mathcode`-="702D\rm #1\mathcode`\-="2200}\nolimits
+%                 \else$\mathop{\mathcode`-="702D\rm #1\mathcode`\-="2200}\nolimits$\fi}
+%% Code environment
+
+%\newif\ifcodeinbox
+
+\newcommand{\ie}{\textit{i.e.}\xspace}
+\newcommand{\eg}{\textit{e.g.}\xspace}
+\newcommand{\apriori}{\textit{a priori}\xspace}
+
+\newcommand{\Let}{\textbf{let} }
+\newcommand{\Cilk}{\texttt{cilk}\xspace     }
+\newcommand{\CilkSpawn}{\texttt{cilk\_spawn}\xspace     }
+\newcommand{\CilkSync}{\texttt{cilk\_sync}\xspace     }
+\newcommand{\CilkFor}{\texttt{cilk\_for}\xspace     }
+\newcommand{\CilkBreak}{\texttt{cilk\_break}\xspace     }
+\newcommand{\Inlet}{\texttt{inlet}\xspace     }
+\newcommand{\Abort}{\texttt{abort}\xspace     }
+\newcommand{\Try}{\texttt{try}\xspace     }
+\newcommand{\Catch}{\texttt{catch}\xspace     }
+%\newcommand{\Break}{\texttt{break}\xspace     }
+
+\newcommand{\Parallel}{\textbf{parallel}\xspace    }
+\newcommand{\wrk}[1]{\mathrm{Work}(#1)}
+\newcommand{\spn}[1]{\mathrm{Span}(#1)}
+
+\lstdefinelanguage{Cilk}{
+morekeywords={cilk_for,cilk_spawn,cilk_sync}
+}{}
+
+\lstset{language=Cilk}
+\lstset{numbers=left}
+\lstset{escapeinside={[@}{@]}}
+\lstset{basicstyle=\ttfamily}
+\usepackage{ifthen}
+\usepackage{afterpage}
+
+\lstnewenvironment{cilk-listing}{%
+\lstset{basicstyle=\ttfamily\scriptsize}%
+\lstset{breaklines=true}%
+}{%
+}
+
+\lstnewenvironment{cilk-code}{%
+\lstset{basicstyle=\ttfamily\scriptsize}%
+\lstset{numbers=none}%
+\lstset{breaklines=true}%
+}{%
+}
+
+\lstdefinelanguage{Pochoir}{ morekeywords={} }{}
+
+\lstdefinelanguage{Pochoir_bf}{ morekeywords={
+    Pochoir_1D, Pochoir_Array_1D, Pochoir_Shape_1D, 
+    Pochoir_2D, Pochoir_Array_2D, Pochoir_Shape_2D, 
+    Pochoir_3D, Pochoir_Array_3D, Pochoir_Shape_3D, 
+    Pochoir_Domain, D,
+    Pochoir_, Pochoir_Shape_, Pochoir_Array_, 
+    Pochoir_Kernel_, Pochoir_Boundary_,
+    Pochoir_Kernel_1D, Pochoir_Boundary_1D,
+    Pochoir_Kernel_2D, Pochoir_Boundary_2D,
+    Pochoir_Kernel_3D, Pochoir_Boundary_3D,
+    Pochoir_Kernel_End, Pochoir_Boundary_End,
+    Register_Array, Register_Boundary, Run
+} }{}
+
+\lstset{language=Pochoir}
+\lstset{numbers=left}
+\lstset{escapeinside={[@}{@]}}
+\lstset{numberblanklines=false}
+\lstset{basicstyle=\ttfamily}
+
+\lstnewenvironment{pochoir-listing}{%
+\lstset{basicstyle=\ttfamily\scriptsize}%
+\lstset{breaklines=true}%
+\lstset{xleftmargin=18pt}
+}{%
+}
+
+\lstnewenvironment{pochoir-code}{%
+\lstset{basicstyle=\ttfamily\scriptsize}%
+\lstset{numbers=none}%
+\lstset{breaklines=true}%
+}{%
+}
+
+
+\newenvironment{center-code}{%
+\begin{center}%
+\begin{minipage}{0.82\columnwidth}%
+\renewcommand{\baselinestretch}{0.9}%
+}{%
+\end{minipage}%
+\end{center}%
+\vspace{-4ex} % Hack to avoid extra spacing caused by "center" environment.
+}
+
+\def\inlinecode{\code}
+\def\code{\lstinline[basicstyle=\ttfamily]}
+
+\ifsigalt
+\input{supertech-sig-sections.sty}
+\fi
+
+\newcommand{\partput}[2]{\part{\protect\raggedright #2}\label{part:#1}}
+\newcommand{\secput}[2]{\section{\protect\raggedright #2}\label{sec:#1}}
+\newcommand{\subsecput}[2]{\subsection{#2}\label{sec:#1}}
+\newcommand{\subsubsecput}[2]{\subsubsection{#2}\label{sec:#1}}
+\newcommand{\appput}[2]{\section{\protect\raggedright #2}\label{app:#1}}
+
+\newcommand{\figput}[2]{%
+\begin{figure}%
+  \IfFileExists{figures/#1.pstex_t}{
+     \begin{center}%
+       \input{figures/#1.pstex_t}%
+     \end{center}%
+  }{%
+  \centerline{\mbox{\includegraphics[clip]{figures/#1.eps}}}%
+  }%
+ \caption{#2}%
+ \label{fig:#1}%
+\end{figure}%
+}
+
+\newcommand{\figputdata}[2]{
+\begin{figure}%
+ \centerline{\mbox{\includegraphics[clip]{data/#1.eps}}}%
+ \caption{#2}%
+ \label{fig:#1}%
+\end{figure}%
+}
+
+%% References
+
+\newcommand{\chapref}[1]        {Chapter~\ref{chap:#1}}
+\newcommand{\secref}[1]         {Section~\ref{sec:#1}}
+\newcommand{\secreftwo}[2]      {Sections \ref{sec:#1} and~\ref{sec:#2}}
+\newcommand{\secrefthree}[3]    {Sections \ref{sec:#1}, \ref{sec:#2}, and \ref{sec:#3}}
+\newcommand{\secreffour}[4]     {Sections \ref{sec:#1}, \ref{sec:#2}, \ref{sec:#3}, and~\ref{sec:#4}}
+\newcommand{\appref}[1]         {Appendix~\ref{app:#1}}
+\newcommand{\figlabel}[1]   {\label{fig:#1}}
+\newcommand{\figref}[1]         {Figure~\ref{fig:#1}}
+\newcommand{\figreftwo}[2]      {Figures \ref{fig:#1} and~\ref{fig:#2}}
+\newcommand{\figrefthree}[3]      {Figures \ref{fig:#1}, \ref{fig:#2} and~\ref{fig:#3}}
+
+\newcommand{\tabref}[1]         {Table~\ref{tab:#1}}
+\newcommand{\stref}[1]          {Step~\ref{st:#1}}
+\newcommand{\thmlabel}[1]   {\label{thm:#1}}
+\newcommand{\thmref}[1]         {Theorem~\ref{thm:#1}}
+\newcommand{\thmreftwo}[2]         {Theorems \ref{thm:#1} and \ref{thm:#2}}
+\newcommand{\lemlabel}[1]   {\label{lem:#1}}
+\newcommand{\lemref}[1]         {Lemma~\ref{lem:#1}}
+\newcommand{\lemreftwo}[2]      {Lemmas \ref{lem:#1} and~\ref{lem:#2}}
+\newcommand{\lemrefthree}[3]    {Lemmas \ref{lem:#1}, \ref{lem:#2} and~\ref{lem:#3}}
+\newcommand{\corlabel}[1]   {\label{cor:#1}}
+\newcommand{\corref}[1]         {Corollary~\ref{cor:#1}}
+\newcommand{\correftwo}[2]         {Corollaries~\ref{cor:#1} and~\ref{cor:#2}}
+\newcommand{\equref}[1]          {Equation~(\ref{eq:#1})}
+\newcommand{\STechEqref}[1] {Equation~(\ref{eq:#1})}
+\newcommand{\eqreftwo}[2]       {Equations (\ref{eq:#1}) and~(\ref{eq:#2})}
+\newcommand{\ineqref}[1]        {Inequality~(\ref{ineq:#1})}
+\newcommand{\ineqreftwo}[2]     {Inequalities (\ref{ineq:#1}) and~(\ref{ineq:#2})}
+\newcommand{\invref}[1]         {Invariant~\ref{inv:#1}}
+\newcommand{\invreftwo}[2]      {Invariants~\ref{inv:#1} and~\ref{inv:#2}}
+\newcommand{\invrefthree}[3]    {Invariants~\ref{inv:#1}, \ref{inv:#2}, and~\ref{inv:#3}}
+
+\newcommand{\defref}[1]         {Definition~\ref{def:#1}}
+\newcommand{\defreftwo}[2]      {Definitions \ref{def:#1} and~\ref{def:#2}}
+\newcommand{\defrefthree}[3]    {Definitions \ref{def:#1}, \ref{def:#2}, and~\ref{def:#3}}
+\newcommand{\propref}[1]        {Property~\ref{prop:#1}}
+\newcommand{\propreftwo}[2]     {Properties~\ref{prop:#1} and~\ref{prop:#2}}
+\newcommand{\caseref}[1]        {Case~\ref{case:#1}}
+\newcommand{\casereftwo}[2]     {Cases \ref{case:#1} and~\ref{case:#2}}
+\newcommand{\caserefrange}[2]   {Cases~\ref{case:#1} through~\ref{case:#2}}
+\newcommand{\lilabel}[1]        {\label{li:#1}}
+\newcommand{\liref}[1]          {line~\ref{li:#1}}
+\newcommand{\Liref}[1]          {Line~\ref{li:#1}}
+\newcommand{\lirefs}[2]         {lines \ref{li:#1}--\ref{li:#2}}
+\newcommand{\Lirefs}[2]         {Lines \ref{li:#1}--\ref{li:#2}}
+\newcommand{\lireftwo}[2]       {lines \ref{li:#1} and~\ref{li:#2}}
+\newcommand{\Lireftwo}[2]       {Lines \ref{li:#1} and~\ref{li:#2}}
+\newcommand{\lirefthree}[3]     {lines \ref{li:#1}, \ref{li:#2}, and~\ref{li:#3}}
+\newcommand{\Lirefthree}[3]     {Lines \ref{li:#1}, \ref{li:#2}, and~\ref{li:#3}}
+\newcommand{\lireffour}[4]      {lines \ref{li:#1}, \ref{li:#2}, \ref{li:#3}, and~\ref{li:#4}}
+\newcommand{\Lireffour}[4]      {Lines \ref{li:#1}, \ref{li:#2}, \ref{li:#3}, and~\ref{li:#4}}
+\newcommand{\lirefrange}[1]     {lines \ref{li:#1(}--\ref{li:#1)}}
+\newcommand{\Lirefrange}[1]     {Lines \ref{li:#1(}--\ref{li:#1)}}
+\newcommand{\exref}[1]          {Exercise~\ref{ex:#1}}
+\newcommand{\princref}[1]       {Principle~\ref{prop:#1}}
+
+
+
+%% Macros to typeset problems and exercises
+
+\newcommand{\points}[1]{\hspace{3pt}[#1 points]\hspace{8pt}}
+\newcommand{\parts}[1]{\hspace{3pt}(#1 parts)\hspace{8pt}}
+
+\newcommand{\bparts}{\begin{problemparts}}
+\newcommand{\eparts}{\end{problemparts}}
+\newcommand{\ppart}{\problempart}
+
+\newcommand{\hint}{{\em Hint:\ }}
+
+\newcounter{problemnum}
+\newcommand{\theproblem}{Problem \theproblemsetnum-\arabic{problemnum}}
+\newenvironment{problems}{
+    \begin{list}{{\bf \theproblem. \hspace*{0.5em}}}
+    {\setlength{\leftmargin}{0em}
+     \setlength{\rightmargin}{0em}
+     \setlength{\labelwidth}{0em}
+     \setlength{\labelsep}{0em}
+     \usecounter{problemnum}}}{\end{list}}
+
+\newcommand{\problem}{\item \let\@currentlabel=\theproblem}
+
+
+\newcounter{problempartnum}[problemnum]
+\newenvironment{problemparts}{
+    \begin{list}{{\bf (\alph{problempartnum})}}
+    {\setlength{\leftmargin}{2.5em}
+     \setlength{\rightmargin}{2.5em}
+     \setlength{\labelsep}{0.5em}}}{\end{list}}
+\newcommand{\problempart}{\addtocounter{problempartnum}{1}\item}
+
+\newcounter{exercisenum}
+\newcommand{\theexercise}{Exercise \theproblemsetnum-\arabic{exercisenum}}
+\newenvironment{exercises}{
+    \begin{list}{{\bf \theexercise. \hspace*{0.5em}}}
+    {\setlength{\leftmargin}{0em}
+     \setlength{\rightmargin}{0em}
+     \setlength{\labelwidth}{0em}
+     \setlength{\labelsep}{0em}
+    \usecounter{exercisenum}}}{\end{list}}
+
+\newcommand{\exercise}{\item \let\@currentlabel=\theexercise}
+
+
+\newcounter{exercisepartnum}[exercisenum]
+
+\newenvironment{exerciseparts}{
+    \begin{list}{{\bf (\alph{exercisepartnum})}}
+    {\setlength{\leftmargin}{2.5em}
+     \setlength{\rightmargin}{2.5em}
+     \setlength{\labelsep}{0.5em}}}{\end{list}}
+\newcommand{\exercisepart}{\addtocounter{exercisepartnum}{1}\item}
+
+
+%% New text environments
+
+\newenvironment{closeitemize}
+    {\begin{list}{$\bullet$}
+    {%\advance\leftmargin -1em
+         \setlength{\itemsep}{-0.3\baselineskip}
+     \setlength{\topsep}{0.15\baselineskip}
+     \setlength{\parskip}{0pt}}}
+    {\end{list}}
+
+
+\newcounter{saveenum} % for continuing numbering
+
+\newenvironment{closeenum}%
+{\vspace{-1ex} \begin{enumerate} %
+    \setlength{\itemsep}{-0.5ex}
+    \setlength{\parsep}{0pt}}
+    {\end{enumerate}\vspace{-1ex}}
+
+% \newcounter{ccount}
+%
+% \newenvironment{closeenum}
+%     {\begin{list}{\arabic{ccount}.}
+%     {\usecounter{ccount}\setlength{\itemsep}{-0.3\baselineskip}
+%      \setlength{\topsep}{0.15\baselineskip}
+%      \setlength{\parskip}{0pt}}}
+%     {\end{list}}
+
+\newenvironment{closedescription}
+               {\list{}{\labelwidth\z@ \itemindent-\leftmargin
+                        \let\makelabel\descriptionlabel
+                        \setlength{\itemsep}{-0.2\baselineskip}
+                        \setlength{\topsep}{0.2\baselineskip}
+                        \setlength{\parskip}{0pt}
+			\setlength{\leftmargin}{10pt}
+                        \setlength{\itemindent}{-10pt}
+                        }}
+               {\endlist}
+
+%% Paragraphs and subheadings
+
+\newfont{\subheadfnt}{ptmbi8t at 10pt}
+\newcommand{\subheading}[1]{\subsection*{\subheadfnt #1}}
+
+\renewcommand{\paragraph}[1]{%
+{\normalfont\normalsize\bfseries #1}%
+}%
+
+
+% Margin notes - use \notesfalse to turn off notes.
+\setlength{\marginparwidth}{0.6in}
+\reversemarginpar
+\newcommand{\longnote}[1]{%
+  \ifnotes
+    {\medskip\noindent Note: \marginpar[\hfill$\Longrightarrow$]
+      {$\Longleftarrow$}{#1}\medskip}
+  \fi}
+
+\newcommand{\cnote}[2]{%
+  \ifnotes%
+  {\scriptsize[[{\color{#1} \sf \raggedright{#2}}]]}%
+  %{\marginpar{\color{#1}\tiny \sf \raggedright\parbox[t]{\columnwidth}{#2}}}%
+  \fi}
+
+\newcommand{\fillintheblank}[1]{\ifnotes{\ifthenelse{\equal{#1}{}}%
+    {{\textcolor{magenta}{\strut~~~}}}%
+    {{\textcolor{magenta}{#1}}}%
+                                           % {\fcolorbox{black}{yellow}{\strut~~~}}%
+                                           % {\fcolorbox{black}{yellow}{#1}}%
+                              \cnote{magenta}{Fill in the blank.}%
+                              \xspace}%
+                              \else{#1}\fi}
+
+\newcommand{\verify}[1]{\ifnotes{\ifthenelse{\equal{#1}{}}%
+    {{\textcolor{red}{\strut~~~}}}%
+    {{\textcolor{red}{#1}}}%
+                                           % {\fcolorbox{black}{yellow}{\strut~~~}}%
+                                           % {\fcolorbox{black}{yellow}{#1}}%
+                              \cnote{red}{Verify this.}\xspace}%
+                              \else{#1}\fi}
+
+\newcommand{\TODO}[1]{\PackageWarning{supertech-sig}{TODO: `#1'}%
+  \ifnotes\textcolor{red}{#1}\else{#1}\fi}
+
+% \putfig{name}{caption}
+% "name" should be name of figure file minus ".eps" extension.
+% Reference as \figref{name}
+\newcommand{\putfig}[2]{
+\begin{figure}[t]
+%\centerline{\mbox{\psfig{figure=#1.eps}}}
+%% Need the clip when dealing with the gunk that powerpoint prints.  
+%%  and windows puts extra whitespace in that ps2epsi thinks is outside the bounding box
+%%  I think that this is a bug ps2epsi (it should kill the whitespace, or use the right boundingbox)
+%%  It is also clearly a bug in powerpoint.
+\centerline{\mbox{\includegraphics[clip]{#1.eps}}}%
+\caption{#2}
+\label{fig:#1}
+\end{figure}
+}
+
+\newcommand{\putfigscale}[3]{
+\begin{figure}[t]
+%\centerline{\mbox{\psfig{figure=#1.eps}}}
+%% Need the clip when dealing with the gunk that powerpoint prints.  
+%%  and windows puts extra whitespace in that ps2epsi thinks is outside the bounding box
+%%  I think that this is a bug ps2epsi (it should kill the whitespace, or use the right boundingbox)
+%%  It is also clearly a bug in powerpoint.
+\centerline{\mbox{\includegraphics[clip,scale=#2]{figs/#1.eps}}}
+\caption{#3}
+\label{fig:#1}
+\end{figure}
+}
+
+
+\newcommand{\putfigextra}[3]{
+\begin{figure}[t]
+%\centerline{\mbox{\psfig{figure=#1.eps}}}
+%% Need the clip when dealing with the gunk that powerpoint prints.  
+%%  and windows puts extra whitespace in that ps2epsi thinks is outside the bounding box
+%%  I think that this is a bug ps2epsi (it should kill the whitespace, or use the right boundingbox)
+%%  It is also clearly a bug in powerpoint.
+\centerline{\mbox{\includegraphics[#3]{#1.eps}}}%
+\caption{#2}
+\label{fig:#1}
+\end{figure}
+}
+
+\newcommand{\putfigextravspace}[4]{
+\begin{figure}[t]
+%\centerline{\mbox{\psfig{figure=#1.eps}}}
+%% Need the clip when dealing with the gunk that powerpoint prints.  
+%%  and windows puts extra whitespace in that ps2epsi thinks is outside the bounding box
+%%  I think that this is a bug ps2epsi (it should kill the whitespace, or use the right boundingbox)
+%%  It is also clearly a bug in powerpoint.
+\centerline{\mbox{\includegraphics[#3]{#1.eps}}}%
+\vspace{#4}
+\caption{#2}
+\label{fig:#1}
+\end{figure}
+}
+
+\newcommand{\putfigfig}[2]{
+\begin{figure}[t]
+%\centerline{\mbox{\psfig{figure=#1.eps}}}
+%% Need the clip when dealing with the gunk that powerpoint prints.  
+%%  and windows puts extra whitespace in that ps2epsi thinks is outside the bounding box
+%%  I think that this is a bug ps2epsi (it should kill the whitespace, or use the right boundingbox)
+%%  It is also clearly a bug in powerpoint.
+\begin{center}
+\input{#1.pstex_t}
+\end{center}%
+\caption{#2}%
+\label{fig:#1}
+\end{figure}
+}
+
+\newcommand{\putepsfig}[2]{
+\begin{figure}[t]
+%\centerline{\mbox{\psfig{figure=#1.eps}}}
+%% Need the clip when dealing with the gunk that powerpoint prints.  
+%%  and windows puts extra whitespace in that ps2epsi thinks is outside the bounding box
+%%  I think that this is a bug ps2epsi (it should kill the whitespace, or use the right boundingbox)
+%%  It is also clearly a bug in powerpoint.
+\centerline{\mbox{\includegraphics[clip]{#1.eps}}}
+\caption{#2}
+\label{fig:#1}
+\end{figure}
+}
+
+%Environment to restate a theorem with the same number.
+\newenvironment{reftheorem}[1]{\begin{trivlist}\item[\hskip
+\labelsep{\bf Theorem \ref{thm:#1}}]\it}
+{\end{trivlist}}
+
+\newenvironment{reflemma}[1]{\begin{trivlist}\item[\hskip
+\labelsep{\bf Lemma \ref{lem:#1}}]\it}
+{\end{trivlist}}
+
+\ifsigalt
+\def\thebibliography#1{% 
+\ifnum\addauflag=0\addauthorsection\global\addauflag=1\fi
+     \section[References]{%    <=== OPTIONAL ARGUMENT ADDED HERE
+        {References} % was uppercased but this affects pdf bookmarks (SP/GM October 2004)
+          {\vskip -9pt plus 1pt} % GM Nov. 2006 / GM July 2000 (for somewhat tighter spacing) 
+         \@mkboth{{\refname}}{{\refname}}%
+     }%
+     \small\vspace{1ex}
+     \list{[\arabic{enumi}]}{%
+         \settowidth\labelwidth{[#1]}%
+         \leftmargin\labelwidth
+         \advance\leftmargin\labelsep
+         \advance\leftmargin\bibindent
+         \parsep=0pt\itemsep=1pt % GM July 2000
+         \itemindent -\bibindent
+         \listparindent \itemindent
+         \usecounter{enumi}
+     }%
+     \let\newblock\@empty
+     \raggedright % GM July 2000
+     \sloppy
+     \sfcode`\.=1000\relax
+}
+\fi
+
+
+\newcommand{\biburl}[1]{{\url{#1}}}
+
+\chardef\us=`\_
+%\renewcommand{\_}{\protect\raisebox{1pt}{\texttt{\footnotesize\us}}\hspace{0.5pt}}
+\renewcommand{\_}{\texttt{\us}}
+
+%\renewcommand{\baselinestretch}{.99}
+
+\sloppy

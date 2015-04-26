@@ -1,0 +1,24 @@
+%% 
+%% This is file `essay.sty',
+%% 
+%% It includes macros for the 6.886 essay header and includes some
+%% useful packages.
+
+\def\fileversion{1.0}
+\def\filedate{1998/10/16}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{essay}[\filedate{} macros for 6886 essays]
+
+\usepackage{supertech}
+\usepackage{fccode}
+\usepackage{cilkbookstyle}
+
+\newlength{\toppush}
+\setlength{\toppush}{2\headheight}
+\addtolength{\toppush}{\headsep}
+
+\newcommand{\essayhead}[3]{\noindent\vspace*{-\toppush}\newline\parbox{6.5in}
+{#1 \hfill 6.886\newline
+#2 \hfill #3\vspace*{-.5ex}\newline
+\mbox{}\hrulefill\mbox{}}\vspace*{1ex}\mbox{}\\
+\thispagestyle{empty}}

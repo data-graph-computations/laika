@@ -1,0 +1,63 @@
+\documentclass[runningheads,a4paper]{llncs2e/llncs}
+\usepackage{makeidx}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{times}
+%\usepackage{titlesec}
+\usepackage{clrscode4e}
+\usepackage{supertech}
+\usepackage{pgfplots}
+
+\let\epsilon=\varepsilon
+
+\begin{document}
+
+
+\frontmatter
+\pagestyle{headings}
+
+%\tableofcontents
+%
+\mainmatter              % start of the contributions
+%
+\title{Bigger and Faster Data-graph Computations for Physical Simulations}
+%
+\titlerunning{Bigger and Faster}  % abbreviated title (for running head)
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{Predrag Gruevski, William Hasenplaugh, \and James J. Thomas}
+%
+\authorrunning{Gruevski et al.} % abbreviated author list (for running head)
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+\tocauthor{Predrag Gruevski, William Hasenplaugh, and James J. Thomas}
+%
+\institute{Massachusetts Institute of Technology\\
+Cambridge, MA 02139, USA\\
+\{predrag, whasenpl, lesani, jjthomas\}@mit.edu\\
+\url{http://toc.csail.mit.edu/}}
+
+\maketitle
+
+% \begin{itemize}
+% \item Describe BFS and why the data-access pattern is problematic
+% \item Describe software prefetching strategy and sw changes
+% \item Go over measurements and perf stat observations (e.g. inst / edge and TLB misses)
+% \item Describe phenomenon of page walkers dominating performance and explain why sw prefetching still helps (due to limited OoO window size)
+% \item Go over large page measurements and explain why performance improves so much
+% \end{itemize}
+
+\input{abstract.tex}
+\input{intro.tex}
+\input{hilbert.tex}
+\input{partitions.tex}
+%\input{conclusion.tex}
+
+%\bibliographystyle{acm}
+%\small\bibliography{allpapers}
+
+\end{document}

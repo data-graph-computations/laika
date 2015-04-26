@@ -1,0 +1,19 @@
+\section{Graph Partitioning for Distributed Memory}
+\label{sec:partitions}
+
+In this section, we will describe how the Hilbert curve is also
+a convenient mechanism for paritioning locally connected graphs
+that are embeddable in a low-dimensional space.  That is, it 
+generates a partition with small edge cuts.  We will discuss how
+the priority-dag scheduling approach enables us to decompose the 
+problem into two phases.  The first phase is to extend \proc{Prism}
+to support a reshuffling operator, given a priority value from each
+vertex, which re-organizes the graph data structure in linear order 
+according to the priority function.  The second phase is to partition
+the $n$ vertices by merely assigning $n/p$-sized compact subintervals
+of vertices to each of the $p$ multi-core nodes.  Finally, we 
+will describe the software architecture that integrates MPI commands
+communicating over edges spanning partitions with the priority-dag 
+scheduled computations on each multi-core node.  We will test the
+performance of our implementation by measuring strong-scaling
+performance on a small set of test graphs.
