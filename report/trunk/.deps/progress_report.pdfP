@@ -232,8 +232,10 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map\
     /usr/local/texlive/2013/texmf-var/web2c/pdftex/pdflatex.fmt\
     /usr/local/texlive/2013/texmf.cnf\
+    2d_hilbert.pdf\
     abstract.tex\
     clrscode4e.sty\
+    dragon.jpg\
     hilbert.tex\
     intro.tex\
     llncs2e/llncs.cls\

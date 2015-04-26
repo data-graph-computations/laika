@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1430062543 "progress_report.tex" "progress_report.pdf" "progress_report" 1430062545
+["pdflatex"] 1430064276 "progress_report.tex" "progress_report.pdf" "progress_report" 1430064278
   "/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-6.enc" 1372376023 7319 8fb7a2898e568575c6a8b31b6b65914a ""
   "/usr/local/texlive/2013/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
@@ -232,14 +232,16 @@
   "/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1378412892 1102619 27bc8dbfb3ff4374035ffb99508229c8 ""
   "/usr/local/texlive/2013/texmf-var/web2c/pdftex/pdflatex.fmt" 1378413258 3827490 4933091c62bb97b893bfe9357e78a786 ""
   "/usr/local/texlive/2013/texmf.cnf" 1369923207 577 cbc827f6294276973a1952e86e8ad73a ""
-  "abstract.tex" 1428078868 1370 b61143d06019f005c7aad9e8e2e8a01a ""
+  "2d_hilbert.pdf" 1430063846 20086 9fa52cf9657f79b8c2604d8eee9aab41 ""
+  "abstract.tex" 1430063523 2216 2926cc0e144a5a79f14944ac3005bb26 ""
   "clrscode4e.sty" 1428075032 17118 01403bbd26b0403ccf2f6529c11d6640 ""
-  "hilbert.tex" 1428081326 617 8470a97c6a86a941f9bf42d67fd37133 ""
-  "intro.tex" 1428083675 2031 7fe2828937ce7178734334b9894bb66a ""
+  "dragon.jpg" 1310362614 42237 dffe53749d61818cf4e12166e69bf00e ""
+  "hilbert.tex" 1430064271 738 0588cccd5e0a3a6e0712336488c417eb ""
+  "intro.tex" 1430064023 2238 be23c20d27e1f325aa6ac6f7fc4bb2e1 ""
   "llncs2e/llncs.cls" 1428075032 42849 e98f9316a296920ae82de0017d2b1604 ""
   "partitions.tex" 1428083866 1112 eb198700650e17f9fb636c27e4392c12 ""
-  "progress_report.aux" 1430062545 914 61644ff58347725a5ffb2454b5b21973 ""
-  "progress_report.tex" 1430062329 1835 ceb21c1421356317dbb332123c742d0c ""
+  "progress_report.aux" 1430064278 1289 5fc8e0a5605e4a64edf02f2f09fd88da ""
+  "progress_report.tex" 1430064262 1835 ceb21c1421356317dbb332123c742d0c ""
   "supertech.sty" 1428075032 29504 5484ea32e98cdcc84473f9b65e7090fc ""
   (generated)
   "progress_report.log"

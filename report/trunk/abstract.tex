@@ -1,20 +1,35 @@
 \begin{abstract}
 \label{abstract}
+% We investigate the problem of executing physical simulations 
+% efficiently on a cluster of computers. We cast the problem 
+% as a data-graph computation in the style of GraphLab, where 
+% vertices represent points in a physical mesh and edges connect 
+% nearby vertices. Taking advantage of the special properties 
+% of mesh graphs, including the locality of edges, we devise 
+% and evaluate schemes for partioning such graphs across a 
+% cluster of computers to minimize communication and for 
+% performing vertex updates on individual machines with high 
+% cache locality and parallelism.
+We investigate the problem of implementing the physical simulations
+specified in the domain-specific language Simit as a \defn{data-graph
+computation}.
 \emph{Data-graph computations} consist of a graph $G=(V,E)$, where
 each vertex has data associated with it, and an update function 
 which is applied to each vertex, taking as inputs the neighboring 
 vertices.  \proc{Prism} is a framework for executing data-graph
 computations in shared memory using a scheduling technique called 
 \emph{chromatic scheduling}, where a coloring of the input graph
-is used to parcel out batches of independent work, that is
-sets of vertices with a common color, while preserving
+is used to parcel out batches of independent work, sets of 
+vertices with a common color, while preserving
 determinism.  An alternative scheduling approach is \emph{priority-dag
-scheduling} where a priority function $\rho$, mapping each vertex $v \in V$
-to a real number, is used to orient the edges from low to high priority and
+scheduling} where a priority function $\rho$ mapping each vertex $v \in V$
+to a real number is used to orient the edges from low to high priority and
 and thus generate a dag.  We propose to extend \proc{Prism} in two primary
 ways.  First, we will extend it to use distributed memory to enable
 problem sizes many orders of magnitude larger than the current 
-implementation.  Second, we will replace the chromatic scheduler in
+implementation using a graph partitioning approach which minimizes
+the number of edges that cross distributed memory nodes.  
+Second, we will replace the chromatic scheduler in
 \proc{Prism} with a priority-dag scheduler and a priority function 
 which generates a cache-efficient traversal of the vertices when the
 input graph is locally connected and embeddable in a low-dimensional 
