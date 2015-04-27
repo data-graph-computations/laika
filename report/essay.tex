@@ -1,0 +1,378 @@
+\documentclass[10pt]{article}
+
+\usepackage{essay}
+
+% Custom macro and environment for inline and in-paragraph LaTeX code.
+\newcommand\latex[1]{\codevrb[latex]#1}
+
+\newcodehiliteOut[EssayLatex]{latex}{}
+\newenvironment{latexcode}
+{\VerbatimEnvironment%
+\begin{inparcode}%
+\begin{EssayLatex}}
+{\end{EssayLatex}%
+\end{inparcode}}
+
+
+\begin{document}
+
+\essayhead{Tao B. Schardl}{The \terminal{essay} \LaTeX{}
+  Package}{\today}
+
+In this essay, we shall explore some of the features introduced by the
+\terminal{essay} \LaTeX{} package.  We shall see some of the macros
+that this package provides to help format text and mathematics.  We
+shall look at the list and table environments that this package
+provides.  We shall explore the macros and environments that this
+package provides to include syntax-highlighted code in your essays.
+
+This essay only discusses features of the \terminal{essay} package
+that extend the basic functionality of \LaTeX{}.  This essay does not
+discuss standard features of \LaTeX{}, such as the \terminal{figure}
+environment, but assumes instead that you, the reader, are already
+familiar with such features.
+
+
+\subheading{Macros}
+
+Subheadings in an essay can be created using the \latex|\subheading|
+macro.  This essay, for example, is divided into parts on macros,
+lists, tables, and code.  Each of these parts is delineated using an
+appropriate subheading, produced using the \latex|\subheading| macro.
+The subheading for this part on macros, for instance, is produced by
+the following \LaTeX{} code:
+\begin{latexcode}
+\subheading{Macros}
+\end{latexcode}
+
+The \latex|\defn| macro is used to visually emphasize terms defined by
+an essay.  For example, you can emphasize the definition of
+``\defn{work-stealing scheduler},'' using the \latex|\defn| macro as
+follows:
+\begin{latexcode}
+\defn{work-stealing scheduler}
+\end{latexcode}
+
+The \terminal{essay} package also provides several macros for
+formatting mathematics.  The tables in
+\figreftwo{number_sets}{shorthands} summarize the macros for various
+number sets:
+\begin{figure}[h]
+  \begin{tab}{llr}
+    \toprule
+    \textit{Number set} & \textit{Macro} & \textit{Output} \\
+    \midrule
+    Real numbers & \latex|$\reals$| & $\reals$ \\
+    Integers & \latex|$\integers$| & $\integers$ \\
+    Natural numbers & \latex|$\naturals$| & $\naturals$ \\
+    Rational numbers & \latex|$\rationals$| & $\rationals$ \\
+    Complex numbers & \latex|$\complex$| & $\complex$ \\
+    \bottomrule
+  \end{tab}
+  \caption{Summary of macros provided by the \terminal{essay} package
+    for various number sets.}
+  \figlabel{number_sets}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{tab}{llr}
+    \toprule
+    \textit{Operation} & \textit{Example macro} & \textit{Example output} \\
+    \midrule
+    Absolute value & \latex|$\abs{x}$| & $\abs{x}$ \\
+    Ceiling & \latex|$\ceil{x}$| & $\ceil{x}$ \\
+    Floor & \latex|$\floor{x}$| & $\floor{x}$ \\
+    Norm & \latex|$\norm{x}$| & $\norm{x}$ \\
+    Ordered set & \latex|$\ang{1,2,3}$| & $\ang{1,2,3}$ \\
+    Set & \latex|$\set{1,2,3}$| & $\set{1,2,3}$ \\
+    Set cardinality & \latex|$\card{S}$| & $\card{S}$ \\
+    \bottomrule
+  \end{tab}
+  \caption{Summary of the \terminal{essay} package's macros for
+    various mathematical operations.}
+  \figlabel{shorthands}
+\end{figure}
+
+
+\subheading{Lists}
+
+The \terminal{essay} package provides the \terminal{closeitemize} and
+\terminal{closeenum} environments, which differ from the standard
+\terminal{itemize} and \terminal{enumerate} environments,
+respectively, to save whitespace.
+
+Let us first examine the \terminal{itemize} and
+\terminal{closeitemize} environments.  Consider the following 5-item
+list, formatted using the \terminal{itemize} environment:
+\begin{itemize}
+\item Item 1
+\item Item 2
+\item Item 3
+\item Item 4
+\item Item 5
+\end{itemize}
+Contrast this list with the same list formatted using the
+\terminal{closeitemize} environment:
+\begin{closeitemize}
+\item Item 1
+\item Item 2
+\item Item 3
+\item Item 4
+\item Item 5
+\end{closeitemize}
+Notice that the spacing between items in the first list is larger than
+that in the second, but the lists are otherwise the same.  Using the
+\terminal{closeitemize} environment can help you save space in essays
+that contain itemized lists.
+
+The \terminal{enumerate} and \terminal{closeenum} environments behave
+similarly.  Here we see a 3-item \terminal{enumerate} list:
+\begin{enumerate}
+\item The first item.
+\item The second item.
+\item The third item.
+\end{enumerate}
+Using the \terminal{closeenum} environment produces the same list with
+less whitespace:
+\begin{closeenum}
+\item The first item.
+\item The second item.
+\item The third item.
+\end{closeenum}
+
+The \terminal{essay} package implements the \terminal{closeitemize}
+and \terminal{closeenum} environments using the \terminal{enumitem}
+\LaTeX{} package.  You can implement your own variants of these list
+environments using this package's functionality.  See
+\url{https://www.ctan.org/pkg/enumitem} for details on the
+\terminal{enumitem} package.
+
+
+\subheading{Tables}
+
+The \terminal{essay} package provides a \terminal{tab} environment for
+producing full-width tables.  For example, the table in
+\figref{number_sets} is produced from the following code:
+\begin{latexcode}
+\begin{tab}{llr}
+  \toprule
+  \textit{Number set} & \textit{Macro} & \textit{Output} \\
+  \midrule
+  Real numbers & \latex|$\reals$| & $\reals$ \\
+  Integers & \latex|$\integers$| & $\integers$ \\
+  Natural numbers & \latex|$\naturals$| & $\naturals$ \\
+  Rational numbers & \latex|$\rationals$| & $\rationals$ \\
+  Complex numbers & \latex|$\complex$| & $\complex$ \\
+  \bottomrule
+\end{tab}
+\end{latexcode}
+As this code shows, the \terminal{tab} environment acts similarly to
+the traditional \terminal{tabular} environment.  The difference
+between the \terminal{tab} and \terminal{tabular} environments is that
+the \terminal{tab} environment automatically scales its width to match
+the width of the line and distributes its columns across that width.
+
+The \LaTeX{} code above also shows that the \terminal{essay} package
+supports the \latex|\toprule|, \latex|\midrule|, and
+\latex|\bottomrule| macros.  These macros, which are actually provided
+by the \terminal{booktabs} package, generate horizontal rules in
+tables that are surrounded with additional whitespace space, compared
+to \latex|\hline|.  Your choice to use these macros instead of the
+standard \latex|\hline| macro is a matter of style.  The
+\terminal{booktabs} produces these macros to give tables a more
+professional appearance.
+
+
+\subheading{Code}
+
+The \terminal{essay} package includes the \terminal{codehilite} and
+\terminal{fccord} packages that I am developing to support
+syntax-highlighted code in \LaTeX{} documents.  These packages support
+additional functionality over similar packages, such as the
+\terminal{minted} package, and fix some bugs observed in those other
+packages.  These packages are under active development.  Please let me
+know when you discover bugs with using this environment or if you are
+interested in contributing to its development.
+
+These packages require that \terminal{pygments} version 1.6 is
+installed on your system.  Furthermore, they make use of our own
+plugin to \terminal{pygments}, whose code you can find in the
+\sh|scripts/pygments-plugin/| subdirectory.  To install this plugin on
+Linux, first install \terminal{pygments}, and then enter this
+subdirectory and run \sh|make|.  Simply running \sh|make| will install
+the plugin for the current user.  You do not need superuser privileges
+to install this plugin.
+
+Let us examine some of the basic environments and macros that these
+packages provide.
+
+These packages provide the \terminal{codehiliteOut} environment
+functionality to include lines of code amid paragraphs of text.  For
+example, you can include the following line of C code in your
+document
+\begin{codehiliteOut}{console}
+$ make clean; make
+\end{codehiliteOut}
+using the following \LaTeX{}:
+\begin{latexcode}
+\begin{codehiliteOut}{console}
+$ make clean; make
+\end{codehiliteOut}
+\end{latexcode}
+The \terminal{codehiliteOut} environment works like a
+\terminal{Verbatim} environment, except that it takes additional
+arguments, such as the target programming language.
+
+You can also delineate place such a code segment within a \defn{code
+  box} to distinguish it from other text on the page by wrapping the
+\terminal{codehiliteOut} environment inside of an \terminal{inparcode}
+environment.  For instance, the \LaTeX{} code:
+\begin{latexcode}
+\begin{inparcode}
+\begin{codehiliteOut}{console}
+$ make clean; make
+\end{codehiliteOut}
+\end{inparcode}
+\end{latexcode}
+produces the following output:
+\begin{inparcode}
+\begin{codehiliteOut}{console}
+$ make clean; make
+\end{codehiliteOut}
+\end{inparcode}
+
+For your convenience, the \terminal{fccode} package provides the
+following custom \terminal{codehiliteOut} environments for popular
+programming languages:
+\begin{closeitemize}
+\item The \terminal{cilk} environment handles C, C++, and Cilk Plus
+  code.  This environment requires you to install the 
+
+\item The \terminal{console} environment handles output to a terminal.
+
+\item The \terminal{bash} environment handles Bash script.
+\end{closeitemize}
+You can use these environments much like you would the
+\terminal{codehiliteOut} environment, but without specifying the
+programming language as an argument to the environment.
+
+These packages also support including short pieces of code in the text
+of a paragraph.  The \terminal{codehilite} package provides the
+\latex+\codevrb[]+ macro, which acts like the \latex+\verb+ %
+macro for including verbatim text within a paragraph.  Unlike the
+\latex+\verb+ macro, however, the \latex+\codevrb[]+ macro accepts a
+programming language as an argument and will color the specified
+string as code in that language.  For example, the sentence, ``This
+sentence does not mention the \codevrb[cilk]|float|,
+\codevrb[cilk]|double|, or \codevrb[cilk]|long double| types.'' can be
+written with the following \LaTeX{}:
+\begin{latexcode}
+This sentence does not mention the \codevrb[cilk]|float|,
+\codevrb[cilk]|double|, or \codevrb[cilk]|long double| types.
+\end{latexcode}
+
+For convenience, the \terminal{fccode} package provides some macros to
+include such inline code snippets for common programming languages.
+\begin{closeitemize}
+
+\item The \latex+\cc+ macro treats its argument as Cilk code.  The
+  above example sentence can therefore be written more simply as
+  follows:
+\begin{latexcode}
+This sentence does not mention the \cc|float|, \cc|double|, or
+\cc|long double| types.
+\end{latexcode}
+
+\item The \latex+\sh+ macro treats its argument as console input and
+  output.
+
+\item The \latex+\asm+ macro treats its argument as assembly code.
+
+\end{closeitemize}
+
+\begin{figure}[t]
+  \resetLineNumbers
+  \begin{flushleft}
+    \codefig{code/mm_dac_coarsen_transpose.c}
+  \end{flushleft}
+  \caption{C code to perform divide-and-conquer matrix multiplication.}
+  \figlabel{mm_dac_coarsen_transpose}
+\end{figure}
+
+The \terminal{codehilite} and \terminal{fccode} packages also support
+including snippets of code from external files.
+\figref{mm_dac_coarsen_transpose} presents an example figure
+containing code in the external file
+\sh|code/mm_dac_coarsen_transpose.c|.  This figure includes a
+syntax-highlighted version of this C code using the following \LaTeX{}:
+\begin{latexcode}
+\resetLineNumbers
+\begin{flushleft}
+\codefig{code/mm_dac_coarsen_transpose.c}
+\end{flushleft}
+\end{latexcode}
+In this \LaTeX{} code, the \latex|\resetLineNumbers| resets the line
+numbers of this code such that the first line is 1, while the
+\latex|\codefig| macro causes \terminal{latexmk} and \LaTeX{} to
+include a syntax-highlighted version of the
+\sh|code/mm_dac_coarsen_transpose.c| code.
+
+As the source code in \sh|code/mm_dac_coarsen_transpose.c| shows,
+these packages understand special formatting of C source files to
+control the syntax-highlighted code figure corresponding to that file.
+
+First, these packages allow you to create a syntax-highlighted code
+figure from a subset of the C code in a file.  If you examine the
+contents of the \sh|code/mm_dac_coarsen_transpose.c| file, you will
+find that this file is actually a complete C program, even though
+\figref{mm_dac_coarsen_transpose} only presents a snippet of it.  In
+the C code, the lines that start with
+\begin{inparcode}
+\begin{codehiliteOut}{c}
+///<<
+\end{codehiliteOut}
+\end{inparcode}
+and
+\begin{inparcode}
+\begin{codehiliteOut}{c}
+///>>
+\end{codehiliteOut}
+\end{inparcode}
+delineate portions of the code to include in the figure.  Code on
+lines that do not fall between these markers will not appear in the
+syntax-highlighted code figure.
+
+Furthermore, these packages support ``invisible comments'' in C source
+files.  For instance, you will find in
+\sh|code/mm_dac_coarsen_transpose.c| comments that include \LaTeX{}
+macros, such as \latex|\lilabel|, that do not appear in the
+syntax-highlighted code figure.  These \defn{invisible comments} allow
+you to include \LaTeX{} code in the C source file that does not affect
+the appearance of the syntax-highlighted code figure produced.  For
+example the \latex|\lilabel{call_base_case}| macro in
+\sh|code/mm_dac_coarsen_transpose.c| symbolically labels
+\liref{call_base_case} in the file, which the \LaTeX{} document can
+refer to via \latex|\liref{call_base_case}|.
+
+In its current form, the \latex|\codefig| macro exhibits the following
+surprising behavior.
+
+First, to properly place the code such that the line numbers lie
+adjacent to the left edge of the code box, you might need to wrap the
+\latex|\codefig| command withing the \latex|flushleft| environment or
+within a table.
+
+Second, when initially compiling a \LaTeX{} document that uses the
+\latex|\codefig| macro, \LaTeX{} might complain about missing file
+ending in \sh|-pyg|.  It is safe to ignore this error the first time.
+After this error occurs once, the \sh|latexmk| build script will
+attempt to create this file from the corresponding piece of code,
+using \sh|pygments|.  If successful, \LaTeX{} should not complain
+about this missing file in future compilations.
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
