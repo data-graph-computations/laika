@@ -114,13 +114,13 @@ static void calculateNodeDependencies(vertex_t * nodes, const int cntNodes) {
 }
 
 static void processNode(vertex_t * nodes, const int index, const int cntNodes) {
-  // ensuring that the number of updates in total
-  WHEN_TEST({
-    __sync_add_and_fetch(&roundUpdateCount, 1);
-  })
-
   vertex_t * current = &nodes[index];
   if (current->satisfied == current->dependencies) {
+    // ensuring that the number of updates in total is correct per round
+    WHEN_TEST({
+      __sync_add_and_fetch(&roundUpdateCount, 1);
+    })
+
     // recalculate this node's data
     double data = current->data;
     for (size_t i = 0; i < current->cntEdges; ++i) {
