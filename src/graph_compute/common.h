@@ -21,7 +21,7 @@
 //   assert(result == expectedResult);
 // })
 #if TEST
-  #define WHEN_TEST(ex) { ex }
+  #define WHEN_TEST(ex) ex
 #else
   #define WHEN_TEST(ex)
 #endif
@@ -33,7 +33,7 @@
 //   printf("Still debugging...");
 // })
 #if DEBUG
-  #define WHEN_DEBUG(ex) { ex }
+  #define WHEN_DEBUG(ex) ex
 #else
   #define WHEN_DEBUG(ex)
 #endif

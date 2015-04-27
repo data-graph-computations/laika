@@ -39,6 +39,10 @@ using namespace std;
   #define cilk_sync
 #endif
 
+WHEN_TEST(
+  static uint64_t roundUpdateCount = 0;
+)
+
 static int calculateIdBitSize(const uint64_t cntNodes) {
   uint64_t numBits = cntNodes - 1;
   numBits |= numBits >> 1;
@@ -110,6 +114,11 @@ static void calculateNodeDependencies(vertex_t * nodes, const int cntNodes) {
 }
 
 static void processNode(vertex_t * nodes, const int index, const int cntNodes) {
+  // ensuring that the number of updates in total
+  WHEN_TEST({
+    __sync_add_and_fetch(&roundUpdateCount, 1);
+  })
+
   vertex_t * current = &nodes[index];
   if (current->satisfied == current->dependencies) {
     // recalculate this node's data
@@ -141,6 +150,10 @@ static void runRound(const int round, vertex_t * nodes, const int cntNodes) {
     cout << "Running round " << round << endl;
   })
 
+  WHEN_TEST({
+    roundUpdateCount = 0;
+  })
+
   cilk_for (int i = 0; i < cntNodes; ++i) {
     nodes[i].satisfied = 0;
   }
@@ -148,6 +161,10 @@ static void runRound(const int round, vertex_t * nodes, const int cntNodes) {
   cilk_for (int i = 0; i < cntNodes; ++i) {
     processNode(nodes, i, cntNodes);
   }
+
+  WHEN_TEST({
+    assert(roundUpdateCount == (uint64_t)cntNodes);
+  })
 }
 
 int main(int argc, char *argv[]) {
@@ -191,7 +208,7 @@ int main(int argc, char *argv[]) {
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
-  // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9
+  // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int i = 0; i < numRounds; ++i) {
     runRound(i, nodes, cntNodes);
