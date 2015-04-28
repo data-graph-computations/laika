@@ -38,10 +38,56 @@
 %
 \institute{Massachusetts Institute of Technology\\
 Cambridge, MA 02139, USA\\
-\{predrag, whasenpl, lesani, jjthomas\}@mit.edu\\
+\{predrag, whasenpl, jjthomas\}@mit.edu\\
 \url{http://toc.csail.mit.edu/}}
 
 \maketitle
+
+\punt{
+Outline:
+\begin{itemize}
+\item Introduction
+	\item Motivation and Problem Definition
+	\item DGC
+		\begin{itemize}
+		\item Definition
+		\item Scheduling algorithms
+		\item Qualitative rationale for cache perils of chromatic and potential benefit to dag scheduling
+		\end{itemize}
+	\item Simit
+		\begin{itemize}
+		\item High-level description
+		\item How to represent graph as a DGC
+		\end{itemize}
+	\item Hilbert 
+		\begin{itemize}
+		\item Quick qualitative overview of the cache behavior of our approach 
+		\item Ditto for partitioning 
+		\end{itemize}
+	\item Paper organization
+\item Multi-core Cache Performance
+	\begin{itemize}
+	\item Define hilbert priority function and general work flow of ordering algorithm
+	\item Show distribution of vertex ID distance between every pair of neighbors w/ and w/o Hilbert ordering
+	\item Give rationale for why it exhibits good cache behavior (perhaps show Theorem w/o proof)
+	\end{itemize}
+\item Multi-core Experimental Results
+	\begin{itemize}
+	\item Define experimental methodology
+	\item Give results
+	\end{itemize}
+\item Distributed Memory
+	\begin{itemize}
+	\item Rationale for why Hilbert ordering should be good for distributed memory
+	\item Show fraction of edges that cross partitions w/ and w/o Hilbert ordering
+	\end{itemize}
+\item Distributed Memory Experimental Results
+	\begin{itemize}
+	\item Define experimental methodology
+	\item Give results
+	\end{itemize}
+\end{itemize}
+}
 
 % \begin{itemize}
 % \item Describe BFS and why the data-access pattern is problematic
@@ -55,9 +101,9 @@ Cambridge, MA 02139, USA\\
 \input{intro.tex}
 \input{hilbert.tex}
 \input{partitions.tex}
-%\input{conclusion.tex}
+\input{conclusion.tex}
 
-%\bibliographystyle{acm}
-%\small\bibliography{allpapers}
+\bibliographystyle{acm}
+\small\bibliography{allpapers}
 
 \end{document}

@@ -1,5 +1,6 @@
 #===Dependents for progress_report.tex:
 progress_report.pdf .deps/progress_report.pdfP :\
+    /usr/local/texlive/2013/texmf-dist/bibtex/bst/base/acm.bst\
     /usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/base/8r.enc\
     /usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-6.enc\
     /usr/local/texlive/2013/texmf-dist/fonts/map/fontname/texfonts.map\
@@ -45,8 +46,11 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasyb10.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmb8a.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb\
@@ -234,12 +238,23 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf.cnf\
     2d_hilbert.pdf\
     abstract.tex\
+    allpapers.bib\
+    chromatic_scheduling.pdf\
     clrscode4e.sty\
+    conclusion.tex\
+    dag_scheduling.pdf\
     dragon.jpg\
+    fourthifs.jpg\
     hilbert.tex\
+    hilbert_compact.pdf\
+    hilbert_priority_function.pdf\
+    hyperedge.pdf\
     intro.tex\
     llncs2e/llncs.cls\
     partitions.tex\
     progress_report.tex\
-    supertech.sty
+    sparse_matrix_representation.pdf\
+    supertech.sty\
+    tetrahedron.pdf\
+    z.png
 #===End dependents for progress_report.tex:
