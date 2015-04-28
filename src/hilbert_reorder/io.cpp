@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include "./common.h"
 
 using namespace std;
@@ -52,6 +53,94 @@ int readNodesFromFile(const string filepath, vertex_t ** outNodes, int * outCoun
 
   *outCount = n;
   *outNodes = nodes;
+  return 0;
+}
+
+int readUndirectedEdgesFromFile(const string filepath, vertex_t * nodes, int cntNodes) {
+  FILE * input = fopen(filepath.c_str(), "r");
+  if (input == NULL) {
+    cerr << "ERROR: Couldn't open file " << filepath << endl;
+    return -1;
+  }
+
+  char adjGraph[15];
+  int n, m, result;
+
+  result = fscanf(input, "%15s\n%d\n%d\n", adjGraph, &n, &m);
+  if (result != 3 || strcmp(ADJGRAPH, adjGraph) != 0) {
+    cleanupOnFormatError(input, "edge", 1);
+    return -1;
+  }
+
+  if (n != cntNodes) {
+    cerr << "ERROR: Expected " << cntNodes << " nodes, found "
+         << n << " nodes in edge file.";
+    result = fclose(input);
+    assert(result == 0);
+    return -1;
+  }
+
+  assert(m >= 0);
+
+  edge_t * edgeList = new (std::nothrow) edge_t[2 * m];
+  assert(edgeList != 0);
+  uint64_t offset, previousOffset = 0;
+  for (int i = 0; i < n; ++i) {
+    result = fscanf(input, "%lu\n", &offset);
+    if (result != 1) {
+      cleanupOnFormatError(input, "edge", i + 3);
+      return -1;
+    }
+
+    nodes[i].edgeData.edges = NULL;
+    if (i > 0) {
+      nodes[i-1].edgeData.cntEdges = offset - previousOffset;
+    }
+    previousOffset = offset;
+  }
+  nodes[n-1].edgeData.cntEdges = m - previousOffset;
+
+  vid_t curNode = 0;
+  size_t curNodeEdges = nodes[curNode].edgeData.cntEdges;
+  size_t curNodeSeen = 0;
+  vid_t e;
+  for (int i = 0; i < m; ++i) {
+    if (curNodeSeen == curNodeEdges) {
+      while (nodes[++curNode].edgeData.cntEdges == 0) {}
+      curNodeEdges = nodes[curNode].edgeData.cntEdges;
+      curNodeSeen = 0;
+    }
+    result = fscanf(input, "%lu\n", &e);
+    if (result != 1) {
+      cleanupOnFormatError(input, "edge", i + n + 3);
+      return -1;
+    }
+    edgeList[2 * i] = edge_t(curNode, e);
+    edgeList[2 * i + 1] = edge_t(e, curNode);
+    curNodeSeen++;
+  }
+  std::sort(edgeList, edgeList + 2 * m);
+
+  vid_t *nbrs = new vid_t[2 * m];
+  nbrs[0] = edgeList[0].second;
+  nodes[edgeList[0].first].edgeData.edges = nbrs;
+
+  int numReal = 1;
+  for (int i = 1; i < 2 * m; i++) {
+    if (edgeList[i] == edgeList[i - 1]) {
+      continue;  // duplicate
+    }
+    if (edgeList[i].first != edgeList[i - 1].first) {
+      nodes[edgeList[i].first].edgeData.edges = nbrs + numReal;
+      nodes[edgeList[i - 1].first].edgeData.cntEdges =
+        (nbrs + numReal) - nodes[edgeList[i - 1].first].edgeData.edges;
+    }
+    nbrs[numReal++] = edgeList[i].second;
+  }
+  nodes[edgeList[2 * m - 1].first].edgeData.cntEdges =
+    (nbrs + numReal) - nodes[edgeList[2 * m - 1].first].edgeData.edges;
+
+  delete edgeList;
   return 0;
 }
 
@@ -128,7 +217,7 @@ static int outputNodes(const vertex_t * const reorderedNodes, const int cntNodes
   return 0;
 }
 
-static int outputEdges(const vertex_t * const reorderedNodes, const int cntNodes,
+int outputEdges(const vertex_t * const reorderedNodes, const int cntNodes,
                           const vid_t * const translationMapping,
                           const string& filepath) {
   FILE * output = fopen(filepath.c_str(), "w");
@@ -158,7 +247,8 @@ static int outputEdges(const vertex_t * const reorderedNodes, const int cntNodes
   for (int i = 0; i < cntNodes; ++i) {
     const edges_t * const edgeData = &reorderedNodes[i].edgeData;
     for (size_t j = 0; j < edgeData->cntEdges; ++j) {
-      const vid_t translatedEdge = translationMapping[edgeData->edges[j]];
+      const vid_t translatedEdge = translationMapping != NULL ?
+        translationMapping[edgeData->edges[j]] : edgeData->edges[j];
       fprintf(output, "%lu\n", translatedEdge);
     }
   }

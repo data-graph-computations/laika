@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <exception>
+#include <vector>
 #include "./common.h"
 #include "./io.h"
 
@@ -31,6 +32,14 @@ using namespace std;
   #define PARALLEL 0
 #endif
 
+#ifndef D0_BSP
+  #define D0_BSP 0
+#endif
+
+#ifndef D0_PRIO
+  #define D0_PRIO 0
+#endif
+
 #if PARALLEL
   #include <cilk/cilk.h>
 #else
@@ -42,6 +51,7 @@ using namespace std;
 WHEN_TEST(
   static uint64_t roundUpdateCount = 0;
 )
+#define MAX_REC_DEPTH 10
 
 static int calculateIdBitSize(const uint64_t cntNodes) {
   uint64_t numBits = cntNodes - 1;
@@ -113,41 +123,77 @@ static void calculateNodeDependencies(vertex_t * nodes, const int cntNodes) {
   }
 }
 
-static void processNode(vertex_t * nodes, const int index, const int cntNodes) {
+static void update(vertex_t * nodes, const int index) {
+  // ensuring that the number of updates in total is correct per round
+  WHEN_TEST({
+    __sync_add_and_fetch(&roundUpdateCount, 1);
+  })
+
   vertex_t * current = &nodes[index];
-  if (current->satisfied == current->dependencies) {
-    // ensuring that the number of updates in total is correct per round
-    WHEN_TEST({
-      __sync_add_and_fetch(&roundUpdateCount, 1);
-    })
+  // recalculate this node's data
+  double data = current->data;
+  for (size_t i = 0; i < current->cntEdges; ++i) {
+    data += nodes[current->edges[i]].data;
+  }
+  data /= (current->cntEdges + 1);
+  current->data = data;
+}
 
-    // recalculate this node's data
-    double data = current->data;
-    for (size_t i = 0; i < current->cntEdges; ++i) {
-      data += nodes[current->edges[i]].data;
-    }
-    data /= (current->cntEdges + 1);
-    current->data = data;
+#pragma GCC diagnostic ignored "-Wunused-variable"
+// we need this processNodeSerial hack to avoid a Cilk bug when trying to do
+// spawn depth limiting (which in turn is necessary because otherwise on large problem
+// sizes worker stacks are overflowed)
+static void processNodeSerial(vertex_t * nodes, const int index, const int cntNodes) {
+  update(nodes, index);
+  vertex_t * current = &nodes[index];
 
-    // increment the dependencies for all nodes of greater priority
-    // TODO(predrag): consider sorting the edges by priority
-    //                so we don't have to check all of them at every step
-    for (size_t i = 0; i < current->cntEdges; ++i) {
-      vid_t neighborId = current->edges[i];
-      vertex_t * neighbor = &nodes[neighborId];
-      if (neighbor->priority > current->priority) {
-        size_t newSatisfied = __sync_add_and_fetch(&neighbor->satisfied, 1);
-        if (newSatisfied == neighbor->dependencies) {
-          processNode(nodes, neighborId, cntNodes);
-        }
+  // increment the dependencies for all nodes of greater priority
+  // TODO(predrag): consider sorting the edges by priority
+  //                so we don't have to check all of them at every step
+  for (size_t i = 0; i < current->cntEdges; ++i) {
+    vid_t neighborId = current->edges[i];
+    vertex_t * neighbor = &nodes[neighborId];
+    if (neighbor->priority > current->priority) {
+      size_t newSatisfied = __sync_add_and_fetch(&neighbor->satisfied, 1);
+      if (newSatisfied == neighbor->dependencies) {
+        processNodeSerial(nodes, neighborId, cntNodes);
       }
     }
   }
 }
 
-static void runRound(const int round, vertex_t * nodes, const int cntNodes) {
+#pragma GCC diagnostic ignored "-Wunused-variable"
+static void processNode(vertex_t * nodes, const int index, const int cntNodes,
+  const int depth) {
+  update(nodes, index);
+  vertex_t * current = &nodes[index];
+
+  // increment the dependencies for all nodes of greater priority
+  // TODO(predrag): consider sorting the edges by priority
+  //                so we don't have to check all of them at every step
+  for (size_t i = 0; i < current->cntEdges; ++i) {
+    vid_t neighborId = current->edges[i];
+    vertex_t * neighbor = &nodes[neighborId];
+    if (neighbor->priority > current->priority) {
+      size_t newSatisfied = __sync_add_and_fetch(&neighbor->satisfied, 1);
+      if (newSatisfied == neighbor->dependencies) {
+        if (depth < MAX_REC_DEPTH) {
+          cilk_spawn processNode(nodes, neighborId, cntNodes, depth + 1);
+        } else {
+          processNodeSerial(nodes, neighborId, cntNodes);
+        }
+        // cilk_spawn processNode(nodes, neighborId, cntNodes);
+      }
+    }
+  }
+  cilk_sync;
+}
+
+#pragma GCC diagnostic ignored "-Wunused-function"
+static void runRoundPrioD1(const int round, vector<int> roots, vertex_t * nodes,
+  const int cntNodes) {
   WHEN_DEBUG({
-    cout << "Running round " << round << endl;
+    cout << "Running d1 prio round " << round << endl;
   })
 
   WHEN_TEST({
@@ -158,8 +204,36 @@ static void runRound(const int round, vertex_t * nodes, const int cntNodes) {
     nodes[i].satisfied = 0;
   }
 
+  cilk_for (vid_t i = 0; i < roots.size(); ++i) {
+    processNode(nodes, roots[i], cntNodes, 0);
+  }
+}
+
+#pragma GCC diagnostic ignored "-Wunused-function"
+static void runRoundPrioD0(const int round, vector<int> roots, vertex_t * nodes,
+  const int cntNodes) {
+  WHEN_DEBUG({
+    cout << "Running d0 prio round " << round << endl;
+  })
+
   cilk_for (int i = 0; i < cntNodes; ++i) {
-    processNode(nodes, i, cntNodes);
+    nodes[i].satisfied = nodes[i].dependencies - 1;
+  }
+
+  cilk_for (vid_t i = 0; i < roots.size(); ++i) {
+    nodes[roots[i]].satisfied = nodes[roots[i]].dependencies;
+    processNode(nodes, roots[i], cntNodes, 0);
+  }
+}
+
+#pragma GCC diagnostic ignored "-Wunused-function"
+static void runRoundBsp(const int round, vertex_t * nodes, const int cntNodes) {
+  WHEN_DEBUG({
+    cout << "Running bsp round " << round << endl;
+  })
+
+  cilk_for (int i = 0; i < cntNodes; ++i) {
+    update(nodes, i);
   }
 
   WHEN_TEST({
@@ -208,10 +282,23 @@ int main(int argc, char *argv[]) {
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
+  vector<int> roots;
+  for (int i = 0; i < cntNodes; ++i) {
+    if (nodes[i].dependencies == 0) {
+      roots.push_back(i);
+    }
+  }
+
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int i = 0; i < numRounds; ++i) {
-    runRound(i, nodes, cntNodes);
+#if D0_BSP
+    runRoundBsp(i, nodes, cntNodes);
+#elif D0_PRIO
+    runRoundPrioD0(i, roots, nodes, cntNodes);
+#else
+    runRoundPrioD1(i, roots, nodes, cntNodes);
+#endif
   }
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
@@ -227,6 +314,8 @@ int main(int argc, char *argv[]) {
   cout << "Baseline: " << BASELINE << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Priority group bits: " << PRIORITY_GROUP_BITS << '\n';
+  cout << "D0_BSP: " << D0_BSP << '\n';
+  cout << "D0_PRIO: " << D0_PRIO << '\n';
   cout << "Debug flag: " << DEBUG << '\n';
   cout << "Test flag: " << TEST << '\n';
 
@@ -235,7 +324,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < cntNodes; ++i) {
     data += nodes[i].data;
   }
+  cout << "Number of roots: " << roots.size() << '\n';
   cout << "Final result (ignore this line): " << data << '\n';
+
 
   return 0;
 }

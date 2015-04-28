@@ -20,6 +20,14 @@ ifneq ($(PARALLEL),)
 	DEFS += -DPARALLEL=$(PARALLEL)
 endif
 
+ifneq ($(D0_BSP),)
+	DEFS += -DD0_BSP=$(D0_BSP)
+endif
+
+ifneq ($(D0_PRIO),)
+	DEFS += -DD0_PRIO=$(D0_PRIO)
+endif
+
 ifneq ($(BASELINE),)
 	DEFS += -DBASELINE=$(BASELINE)
 endif

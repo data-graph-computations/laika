@@ -28,6 +28,10 @@ using namespace std;
   #define cilk_sync
 #endif
 
+#ifndef BFS
+  #define BFS 0
+#endif
+
 // This function populates the hilbertId field of each vertex_t in nodes, by
 // remapping every vertex onto an n^3 lattice using appropriate scaling factors,
 // and then traversing the lattice using a 3-D Hilbert curve.
@@ -100,6 +104,49 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
   }
 }
 
+void bfs(vertex_t * const nodes, const int cntNodes, const vid_t source) {
+  for (int i = 0; i < cntNodes; i++) {
+    nodes[i].hilbertId = 0;
+  }
+
+  vid_t *bfs_q = new (std::nothrow) vid_t[cntNodes];
+  bfs_q[0] = source;
+  vid_t cur_q_ptr = 0;
+  nodes[source].hilbertId = 1;
+  vid_t cur_dist = 2;
+  vid_t next_batch_start_index = 1;
+  vid_t append_q_ptr = 1;
+
+  bool done = false;
+  while (!done) {
+    done = true;
+    while (cur_q_ptr != next_batch_start_index) {
+      vid_t vid = bfs_q[cur_q_ptr];
+      vid_t *edges = nodes[vid].edgeData.edges;
+      for (vid_t e = 0; e < nodes[vid].edgeData.cntEdges; e++) {
+        if (nodes[edges[e]].hilbertId == 0) {
+          nodes[edges[e]].hilbertId = cur_dist;
+          bfs_q[append_q_ptr++] = edges[e];
+        }
+      }
+      cur_q_ptr++;
+    }
+    // we added more nodes to the queue
+    if (next_batch_start_index < append_q_ptr) {
+      done = false;
+    }
+    // start of the next distance (from the BFS root) in the BFS queue
+    next_batch_start_index = append_q_ptr;
+    cur_dist++;
+  }
+
+  delete bfs_q;
+}
+
+void assignBfsIds(vertex_t * const nodes, const int cntNodes) {
+  bfs(nodes, cntNodes, 0);
+}
+
 bool vertexComparator(const vertex_t& a, const vertex_t& b) {
   if (a.hilbertId != b.hilbertId) {
     return a.hilbertId < b.hilbertId;
@@ -142,14 +189,18 @@ int main(int argc, char *argv[]) {
   cout << "Output node file: " << outputNodeFile << '\n';
   cout << "Output edge file: " << outputEdgeFile << '\n';
   cout << "Hilbert bits per dimension: " << HILBERTBITS << '\n';
+  cout << "BFS: " << BFS << '\n';
 
   int result = readNodesFromFile(inputNodeFile, &nodes, &cntNodes);
   assert(result == 0);
-
   result = readEdgesFromFile(inputEdgeFile, nodes, cntNodes);
   assert(result == 0);
 
+#if BFS
+  assignBfsIds(nodes, cntNodes);
+#else
   assignHilbertIds(nodes, cntNodes, HILBERTBITS);
+#endif
 
   stable_sort(nodes, nodes + cntNodes, vertexComparator);
 

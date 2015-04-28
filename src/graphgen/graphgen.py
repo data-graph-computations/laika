@@ -52,8 +52,9 @@ def generate_graph(num_points, gen_point, gen_edge_count, edge_stream, point_str
 
     kdtree = cKDTree(points)
     for pt, num_edges in zip(points, edge_counts):
-        _, ids = kdtree.query(pt, k=num_edges)
-        write_edges(ids, edge_stream)
+        # will return the pt itself, and we don't want self-edges
+        _, ids = kdtree.query(pt, k=num_edges + 1)
+        write_edges(ids[1:], edge_stream)
 
 # Writes the header and offset indices for the edge file.
 def write_edge_file_header(num_points, edge_counts, edge_stream):

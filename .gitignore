@@ -28,6 +28,7 @@
 *.app
 reorder
 compute
+undirect
 
 # Log and Temporary files
 *.tmp

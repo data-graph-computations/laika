@@ -2,13 +2,14 @@ CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall
 CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
-LDFLAGS = -lcilkrts
+LDFLAGS = -lcilkrts -lrt -ldl
 ROOT = ../../
 
 .PHONY: all clean lint
 
 HEADERS = common.h hilbert/hilbert.h io.h
-CXXSOURCES = reorder.cpp io.cpp
+REORDER_SOURCES = reorder.cpp io.cpp
+UNDIRECT_SOURCES = undirect.cpp io.cpp
 
 TEST ?= 0
 DEBUG ?= 0
@@ -22,7 +23,11 @@ ifneq ($(PARALLEL),)
 	DEFS += -DPARALLEL=$(PARALLEL)
 endif
 
-all: lint reorder
+ifneq ($(BFS),)
+	DEFS += -DBFS=$(BFS)
+endif
+
+all: lint reorder undirect
 
 lint:
 	$(ROOT)/cpplint.py --root=src/hilbert_reorder *.cpp *.h
@@ -30,8 +35,11 @@ lint:
 hilbert:
 	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
 
-reorder: $(CXXSOURCES) hilbert
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder hilbert.o $(CXXSOURCES)
+reorder: $(REORDER_SOURCES) hilbert
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder hilbert.o $(REORDER_SOURCES)
+
+undirect: $(UNDIRECT_SOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o undirect $(UNDIRECT_SOURCES)
 
 clean:
 	rm -f *~ *.o *.out reorder

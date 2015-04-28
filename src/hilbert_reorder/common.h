@@ -3,6 +3,7 @@
 
 #include <cinttypes>
 #include <cassert>
+#include <utility>
 
 #ifndef TEST
 #define TEST 0
@@ -56,5 +57,7 @@ struct vertex_t {
   edges_t edgeData;
 };
 typedef struct vertex_t vertex_t;
+
+typedef std::pair<vid_t, vid_t> edge_t;
 
 #endif  // COMMON_H_
