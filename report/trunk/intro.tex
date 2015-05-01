@@ -3,7 +3,31 @@
 
 The age of {\large big data} is upon us as organizations large and small 
 are coping with massive volumes of data from sensors, website 
-clicks, e-commerce, and more. In recent years, there has been 
+clicks, e-commerce, and more. One such type of big data
+problem is in the space of physical simulations (e.g. fluid dynamics,
+the $n$-body problem, computer graphics etc.).  This paper investigates 
+the specific problem of performing physical simulations
+expressed in the language Simit on very large datasets quickly and
+deterministically.  Simit generates a static graph, as in \figref{mesh}, 
+which is typically
+locally connected and embeddable in a $N$D space, where typically
+$N=3$.\footnote{We use the notation $N$D to refer to an $N$-dimensional
+space.}  Then, a function that operates on each vertex and its neighbors 
+is applied to all vertices over many (e.g. at least millions) time steps.
+These functions are typically some approximation of physical forces (e.g.
+Newton's laws).  Our goal is to develop a software platform that performs these
+physical simulations in a fast and scalable manner on a distributed system of 
+multi-core nodes.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=2.5in]{dragon}
+\caption{A mesh graph where lines correspond to edges and intersections of lines correspond to vertices.}
+\label{fig:mesh}
+\end{figure}
+
+
+In recent years, there has been 
 growing interest in developing frameworks for the storage and 
 analysis of this data on large compute clusters, 
 Hadoop~\cite{CuttingCa05,DeanGh08} being among among the most 
@@ -38,53 +62,34 @@ the task.
 %Fault tolerance - not valued in physical simulation space
 
 
-\subheading{Motivation and Problem Definition}
-
-This paper investigates the problem of performing physical simulations
-expressed in the language Simit on very large datasets quickly and
-deterministically.  Simit generates a static graph, as in \figref{mesh}, 
-which is typically
-locally connected and embeddable in a $N$-dimensional space, where typically
-$N=3$.  Then, a function that operates on each vertex and its neighbors 
-is applied to all vertices over many (e.g. at least millions) time steps.
-These functions are typically some approximation of physical forces (e.g.
-Newton's laws)  
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=2.5in]{dragon}
-\caption{A mesh graph where lines correspond to edges and intersections of lines correspond to vertices.}
-\label{fig:mesh}
-\end{figure}
+%\subheading{Motivation and Problem Definition}
 
 
 
 
 \subsection{Data-graph Computations}
-		\begin{itemize}
-		\item Definition
-		\item Scheduling algorithms
-		\item Qualitative rationale for cache perils of chromatic and potential benefit to dag scheduling
-		\end{itemize}
 
-In response to these shortcomings of Hadoop and similar systems, 
+In response to the shortcomings of applying Hadoop and similar systems
+to graph problems, 
 Guestrin et al developed the GraphLab 
-framework~\cite{LowBiGo12} for iterative graph algorithms. 
-The computation model here associates data with each node in a 
-graph, and in each iteration runs an update function on each 
-node that takes as input the data of the node and that of its 
-neighbors. A node can only be updated for the $n$th time if 
-its neighbors have been updated either $n-1$ or $n$ times. 
-Many interesting big data algorithms, including Google's 
+framework~\cite{LowBiGo12} for iterative graph algorithms, 
+largely consisting of machine learning algorithms. 
+In particular, GraphLab is a framework for implementing a
+\defn{data-graph computation}, which consists of a graph $G=(V,E)$,
+where each vertex has associated user-specified data and a user-specified 
+\defn{update function} which is applied to every vertex, taking
+as inputs the data associated with the associated neighbors.  On each
+\emph{round} or \emph{time step} the update function is applied to
+all vertices.  Many interesting big data algorithms, including Google's 
 PageRank, can be easily expressed under this model. GraphLab 
-comes in two variants -- a single-machine implementation that 
+comes in two variants -- a multi-core implementation that 
 attains parallelism by updating nodes concurrently on multiple 
 processing cores, and a distributed implementation that 
-additionally spreads vertices across machines.
+additionally spreads vertices across multi-core nodes.
 
+\subheading{Faster, Determinstic Data-graph Computations}
 
-
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=5in,clip,trim=0 3cm 0 0]{chromatic_scheduling.pdf}
 \caption{Example of how a graph can be partitioned into 
@@ -92,31 +97,66 @@ independent sets of vertices denoted by color, each set of which is able to
 be executed simultaneously without causing data races.  Iterating
 through the colors serially and executing the corresponding
 independent sets in parallel is a technique called \emph{chromatic scheduling}.}
-\label{fig:}
+\label{fig:chromatic_scheduling}
 \end{figure}
 
-As GraphLab and competing frameworks have become more popular, 
-there has been growing interest in optimizing their execution. 
-In the single-machine case, there has been work on reducing 
-costly sychronization steps and more generally on increasing 
-parallelism so that performance can scale up as core counts 
-grow. In the distributed case, the single-machine optimizations 
-have been supplemented by work on more effectively splitting up 
-nodes into sets with few crossing edges so that expensive 
-inter-machine communication can be reduced.
+Recently, Kaler et al~\cite{KalerHaSc14} demonstrated that general
+data-graph computations could be made to be deterministic without
+giving up high-performance, in fact, while increasing performance.
+For instance, their system \proc{Prism} is 1.2-2.1 times faster than
+the nondeterministic GraphLab framework on a representative suite of data-graph
+computations in a multi-core setting.  The technique Kaler et al proposed
+is called \defn{chromatic scheduling}.  In chromatic scheduling one
+finds a valid coloring of the graph as depicted in 
+\figref{chromatic_scheduling}, an assignment of colors to 
+vertices such that no two neighboring vertices share the same color,
+and then serializes through the colors.  Since each subset of the graph
+of a given color is an independent set (i.e. no two members share an
+edge) they may be processed simultaneously without causing a data race.
+This assumes that the update function applied to a vertex $v$ reads
+the data associated with all of its neighbors 
+$\attrib{v}{\id{adj}} = \set{w \in V | \langle v, w \rangle \in E}$ 
+and writes only the data
+associated with $v$.  Chromatic scheduling is a powerful technique
+because it allows the parallel execution of a data-graph computation
+without any concurrent operations on data.  This removes the overhead
+of mutual-exclusion locks incurred by GraphLab or other atomic operations
+that would be required in a design with concurrency.
 
-\begin{figure}[h]
+% As GraphLab and competing frameworks have become more popular, 
+% there has been growing interest in optimizing their execution. 
+% In the multi-core case, there has been work on reducing 
+% costly sychronization steps and more generally on increasing 
+% parallelism so that performance can scale up as core counts 
+% grow. In the distributed case, the multi-core optimizations 
+% have been supplemented by work on more effectively splitting up 
+% nodes into sets with few edges between nodes so that expensive 
+% inter-node communication can be reduced.
+\begin{figure}[!h]
 \centering
 \includegraphics[keepaspectratio,width=4.5in,clip,trim=0 5cm 0 0]{sparse_matrix_representation.pdf}
 \caption{Graphs are stored in memory on a single cache-coherent
 multi-core in a sparse-matrix format.  The vertex array contains
 vertex data and an index into an edge array, which contains vertex
 IDs of the associated neighbors.}
-\label{fig_layout}
+\label{fig:layout}
 \end{figure}
 
 
-\begin{figure}[h]
+While chromatic scheduling does a good job of enabling high parallelism
+without any concurrency, it can be inefficient for cache usage.  In 
+\figref{layout} we see the standard sparse-matrix representation
+used in \proc{Prism} and GraphLab.  We can see that to process
+the update function of a vertex $v$ of color $c$ the worker needs to read data
+associated with all of its neighbors $\attrib{v}{\id{adj}}$, but 
+by virtue of being in different color sets by defintion, each
+vertex $w \in \attrib{v}{\id{adj}}$ can not be processed until
+after all vertices of $c$ have been processed.  This potentially
+squanders the potential cache advantage of processing the neighbors
+of $v$ soon after $v$ is processed itself, while they are still
+in cache.
+
+\begin{figure}[!h]
 \centering
 \includegraphics[width=5in,clip,trim=0 3cm 0 0]{dag_scheduling.pdf}
 \caption{An alternative to chromatic scheduling, which 
@@ -126,18 +166,36 @@ to create a partial order on the vertices, orienting an edge from
 low to high priority results in a 
 dag.  The vertices are processed in dag order: a vertex is not
 processed until all of its predecessors have been processed.}
-\label{fig:}
+\label{fig:dag_scheduling}
 \end{figure}
 
+An alternative approach to chromatic scheduling is 
+\defn{dag scheduling}~\cite{JonesPl93},
+depicted in \figref{dag_scheduling} and used extensively by 
+Hasenplaugh et al~\cite{HasenplaughKaLe14} in the context of graph
+coloring.  In dag scheduling, the graph
+is turned into a dag through the use of a priority function 
+$\rho | V \rightarrow \mathbb{R}$.  In particular, an undirected
+edge connecting vertices $v$ and $w$ is oriented as $\langle v, w \rangle$
+if $\rho(v) < \rho(w)$ (ties are broken by comparing the vertex numbers).  
+The vertices are then processed in dag order, meaning that a vertex
+$v$ may be processed only once all of its predecessors 
+$\attrib{v}{\id{pred}} = \set{w \in \attrib{v}{\id{adj}} | \rho(w) < \rho(v)}$
+have been processed.  A relatively simple implementation of dag
+scheduling involves initializing a counter at each vertex with the 
+number of predecessors in the dag.  Then, after a vertex $v$ is updated
+the worker atomically decrements the counters for all successors 
+$\attrib{v}{\id{succ}} = \attrib{v}{\id{adj}} \setminus \attrib{v}{\id{pred}}$,
+recursively updating any successors whose counters drop to zero.
+This scheduling approach affords us the opportunity
+to process vertices shortly after they are read by their neighbors,
+a potential caching advantage.  We will explore a technique 
+for achieving such cache behavior for a special class of graphs 
+corresponding to physical simulations in \secref{hilbert}.
 
 
 
 \subsection{\proc{Simit}}
-		\begin{itemize}
-		\item High-level description
-		\item How to represent graph as a DGC
-		\end{itemize}
-
 
 \begin{figure}[h]
 \centering
@@ -150,6 +208,34 @@ per-hyperedge data.}
 \label{fig:hyperedge}
 \end{figure}
 
+
+Simit is a language used to describe physical simulations 
+(e.g. fluid dynamics, the $n$-body problem, computer graphics etc.).
+Typically, Simit generates a mesh graph (i.e. a wire mesh discretization
+of a continuous 3D object) of an object in 
+physical 3D space, like the one depicted in \figref{mesh}.  
+These meshes contain vertices at intersections of line segments, 
+hyperedges (e.g. triangular faces) and tetrahedron volumes, each of which of
+these three constructs has associated data.  An immediate hurdle
+presents itself when trying to cast operations on such a mesh graph
+as a data-graph computation: data-graphs do not natively support
+hyperedges or tetrahedra.  However, Simit is a language and thus
+the compiler can intervene to represent the mesh graph as a data-graph
+where each vertex has a \emph{type}.  We see in \figref{hyperedge}
+how a face (or hyperedge) connecting vertices $B$, $D$, and $E$, for example, 
+can be represented as a new type of vertex (i.e. the blue squares
+in the figure) which is conntected to $B$, $D$, and
+$E$ by individual edges.  In addition, a tetrahedron can be 
+viewed as a set of four adjacent triangular faces (or hyperedges).  In 
+\figref{tetrahedron} we see such an example, where a third type
+of vertex (i.e. the purple diamond in the figure) is connected 
+to four face type vertices.  Finally, the update function, which
+is generated by the Simit compiler can generate an update function
+which takes the type of the vertex as a parameter and jumps
+to the relevant code as in a case statement.
+
+
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=4in]{tetrahedron.pdf}
@@ -160,56 +246,103 @@ of which is in blue on the left.  Tetrahedra are represented by different
 \emph{types} of vertices in the resulting data-graph computation.
 The diamong vertex on the right represents a tetrahedron and is 
 connected to its four constituent hyperedges.}
-\label{fig:hyperedge}
+\label{fig:tetrahedron}
 \end{figure}
 
 
 
-\subsection{Space-filling Curves}
-		\begin{itemize}
-		\item Quick qualitative overview of the cache behavior of our approach 
-		\item Ditto for partitioning 
-		\end{itemize}
+\subsection{The Hilbert Space-filling Curve}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
-\includegraphics[width=4in,clip,trim=0 4cm 0 0]{2d_hilbert.pdf}
-\caption{Three recursion levels of a 2-dimensional Hilbert space-filling
+\includegraphics[width=4in,clip,trim=0 0cm 0 0]{2d_hilbert.pdf}
+\caption{Three recursion levels of a 2D Hilbert space-filling
 curve.  The red curve is the first recursion level and illustrates 
-the basic 'U' shape.  The blue curve shows how each quadrant is
+the basic inverted 'U' shape.  The blue curve shows how each quadrant is
 partitioned into four independent first-level Hilbert curves (up to 
 rotations) of half the size in each dimension.  The black curve
 illustrates the third recursion level.}
 \label{fig:2d_hilbert}
 \end{figure}
 
+In this paper we propose a new priority function for 
+use with dag scheduling of data-graph computations generated
+by Simit.  In particular, we use the bounding box of the
+graph in 3D space to normalize the graph to the
+unit cube.  Then, we decompose the unit cube into a regular
+grid $2^k \times 2^k \times 2^k$ each grid point of which
+is assigned a scalar value by the Hilbert space-filling curve.
+A 2D example of the Hilbert space-filling
+curve is given in \figref{2d_hilbert}.  Then, all vertices
+are assigned to the closest grid point and assigned the 
+corresponding the scalar value along the Hilbert curve, as
+depicted in \figref{hilbert_priority}.  This
+scalar value is known as a point's value in \defn{Hilbert space}.  
+Since some vertices may be assigned to the same grid point, ties
+are broken in the ordering randomly.  Thus, the vertices are 
+processed in the order dictated by the Hilbert curve iterating
+through the 3D grid.
+
+Intuitively, one can see why the Hilbert curve might be a good
+ordering for the vertices by considering that mesh graphs
+are locally connected, meaning that the neighborhood of a vertex
+is typically nearby in 3D space.  One well-known property
+of the Hilbert curve is that points that are close together
+in Hilbert space are also close in 3D space.  However, it is also
+true that randomly chosen points that are close together in 
+3D space are quite likely to be close in Hilbert space, as well.
+This leads to excellent cache behavior, since the neighbors of
+each vertex are close in 3D space for Simit-generated mesh graphs,
+and will thus tend to also be close in memory.
+
+In addition, the Hilbert curve has another convenient property
+that we can exploit toward the goal of partitioning a mesh graph
+in distributed memory.  That is, a subinterval in Hilbert space
+corresponds to a compact subspace in $N$D space which has a
+low surface area to volume ratio.  Since mesh graphs are locally
+connected, we would then expect that the relative number of edges crossing
+from one such subspace to another would be low.  Thus, to
+distributed the computation among $p$ different multi-core
+nodes in a distributed system, we merely splic the Hilbert space
+evenly in $p$ chunks, while incurring relatively few inter-node
+messages.
 
 \subheading{Paper organization}
 
+We will explore the theoretical and experimental 
+cache behavior of Hilbert-ordered 
+data-graph computations of locally-connected mesh graphs in
+\secref{hilbert} and \secref{experimental_results}, respectively.
+Then, we will explore the theoretical and experimental
+properties of the same class of mesh graphs, albeit much larger,
+in \secref{partitions} and \secref{scaling_out}, respectively.
+Then, we will offer some concluding remarks in \secref{conclusion}.
 
 
-Old intro material:
+% -------------------
+% Old intro material:
 
-In this work, we optimize a graph processing framework for a 
-specific workload: physical mesh simulations. A mesh graph 
-is embeddable in 3D space, and an example is shown in Figure 
-1. Mesh graphs have the nice property that we can partition 
-them into sets corresponding to arbitrary contiguous regions 
-in physical space, and edges cross out of a particular set 
-only from vertices near the boundaries of its physical region. 
-Thus, the number of edges crossing out of a set is proportional 
-to the surface area of its physical region, which is a fairly 
-small quantity relative to the number of vertices, especially 
-when the region has large volume.
+% In this work, we optimize a graph processing framework for a 
+% specific workload: physical mesh simulations. A mesh graph 
+% is embeddable in 3D space, and an example is shown in Figure 
+% 1. Mesh graphs have the nice property that we can partition 
+% them into sets corresponding to arbitrary contiguous regions 
+% in physical space, and edges cross out of a particular set 
+% only from vertices near the boundaries of its physical region. 
+% Thus, the number of edges crossing out of a set is proportional 
+% to the surface area of its physical region, which is a fairly 
+% small quantity relative to the number of vertices, especially 
+% when the region has large volume.
 
-Taking advantage of these properties, we use a novel method 
-based on space-filling curves to split up an input mesh graph 
-across machines to limit inter-machine communication. We then 
-optimize performance on individual machines by evaluating a 
-number of techniques for the scheduling of vertex updates that 
-hit different points in the cache/TLB locality and parallelism 
-design space. Some of our results yield insights for more 
-general classes of graphs.
+% Taking advantage of these properties, we use a novel method 
+% based on space-filling curves to split up an input mesh graph 
+% across machines to limit inter-machine communication. We then 
+% optimize performance on individual machines by evaluating a 
+% number of techniques for the scheduling of vertex updates that 
+% hit different points in the cache/TLB locality and parallelism 
+% design space. Some of our results yield insights for more 
+% general classes of graphs.
+
 
 % Discussion of BSP vs. Gauss-Siedel?
 

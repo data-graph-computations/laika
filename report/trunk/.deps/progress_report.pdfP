@@ -37,6 +37,9 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/cm/cmr9.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm\
+    /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/cm/cmti10.tfm\
+    /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/cm/cmti7.tfm\
+    /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/cm/cmti9.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/inconsolata/t1-zi4r-6.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasy10.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasy5.tfm\
@@ -45,11 +48,13 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasy9.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasyb10.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmb8a.pfb\
@@ -248,13 +253,14 @@ progress_report.pdf .deps/progress_report.pdfP :\
     hilbert.tex\
     hilbert_compact.pdf\
     hilbert_priority_function.pdf\
+    hilbert_results.tex\
     hyperedge.pdf\
     intro.tex\
     llncs2e/llncs.cls\
     partitions.tex\
+    partitions_results.tex\
     progress_report.tex\
     sparse_matrix_representation.pdf\
     supertech.sty\
-    tetrahedron.pdf\
-    z.png
+    tetrahedron.pdf
 #===End dependents for progress_report.tex:
