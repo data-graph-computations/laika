@@ -28,6 +28,10 @@ using namespace std;
   #define PRIORITY_GROUP_BITS 8
 #endif
 
+#ifndef CHUNK_BITS
+  #define CHUNK_BITS 16
+#endif
+
 #ifndef PARALLEL
   #define PARALLEL 0
 #endif
@@ -36,8 +40,12 @@ using namespace std;
   #define D0_BSP 0
 #endif
 
-#ifndef D0_PRIO
-  #define D0_PRIO 0
+#ifndef D1_PRIO
+  #define D1_PRIO 0
+#endif
+
+#ifndef D1_CHUNK
+  #define D1_CHUNK 0
 #endif
 
 #if PARALLEL
@@ -81,9 +89,9 @@ static inline id_t createPriority(const vid_t id, const int bitsInId) {
   return priority;
 }
 
-static void assignNodePriorities(vertex_t * nodes, const int cntNodes,
+static void assignNodePriorities(vertex_t * nodes, const vid_t cntNodes,
                                  const int bitsInId) {
-  cilk_for (int i = 0; i < cntNodes; ++i) {
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].priority = createPriority(nodes[i].id, bitsInId);
 
     WHEN_DEBUG({
@@ -94,8 +102,8 @@ static void assignNodePriorities(vertex_t * nodes, const int cntNodes,
 
   WHEN_TEST({
     // ensure no two nodes have the same ID or priority
-    for (int i = 0; i < cntNodes; ++i) {
-      for (int j = i + 1; j < cntNodes; ++j) {
+    for (vid_t i = 0; i < cntNodes; ++i) {
+      for (vid_t j = i + 1; j < cntNodes; ++j) {
         assert(nodes[i].id != nodes[j].id);
         assert(nodes[i].priority != nodes[j].priority);
       }
@@ -104,14 +112,39 @@ static void assignNodePriorities(vertex_t * nodes, const int cntNodes,
 }
 
 // fill in each node with random-looking data
-static void fillInNodeData(vertex_t * nodes, const int cntNodes) {
-  cilk_for (int i = 0; i < cntNodes; ++i) {
+static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].data = nodes[i].priority + ((-nodes[i].id) ^ (nodes[i].dependencies * 31));
   }
 }
 
-static void calculateNodeDependencies(vertex_t * nodes, const int cntNodes) {
-  cilk_for (int i = 0; i < cntNodes; ++i) {
+static inline bool chunkDependency(vid_t v, vid_t w) {
+  static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
+  if ((v & chunkMask) == (w & chunkMask)) {
+    return ((v >> CHUNK_BITS) < (w >> CHUNK_BITS));
+  } else {
+    return ((v & chunkMask) < (w & chunkMask));
+  }
+}
+
+static void calculateNodeDependenciesChunk(vertex_t * nodes, const vid_t cntNodes) {
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
+    int chunkId = i >> CHUNK_BITS;
+    vertex_t * node = &nodes[i];
+    node->dependencies = 0;
+    for (size_t j = 0; j < node->cntEdges; ++j) {
+      if ((static_cast<int>(node->edges[j]) >> CHUNK_BITS) != chunkId) {
+        if (chunkDependency(node->edges[j], i) == true) {
+          ++node->dependencies;
+        }
+      }
+    }
+    node->satisfied = node->dependencies;
+  }
+}
+
+static void calculateNodeDependencies(vertex_t * nodes, const vid_t cntNodes) {
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     vertex_t * node = &nodes[i];
     node->dependencies = 0;
     for (size_t j = 0; j < node->cntEdges; ++j) {
@@ -123,7 +156,7 @@ static void calculateNodeDependencies(vertex_t * nodes, const int cntNodes) {
   }
 }
 
-static void update(vertex_t * nodes, const int index) {
+static void update(vertex_t * nodes, const vid_t index) {
   // ensuring that the number of updates in total is correct per round
   WHEN_TEST({
     __sync_add_and_fetch(&roundUpdateCount, 1);
@@ -143,7 +176,7 @@ static void update(vertex_t * nodes, const int index) {
 // we need this processNodeSerial hack to avoid a Cilk bug when trying to do
 // spawn depth limiting (which in turn is necessary because otherwise on large problem
 // sizes worker stacks are overflowed)
-static void processNodeSerial(vertex_t * nodes, const int index, const int cntNodes) {
+static void processNodeSerial(vertex_t * nodes, const vid_t index, const vid_t cntNodes) {
   update(nodes, index);
   vertex_t * current = &nodes[index];
 
@@ -163,7 +196,7 @@ static void processNodeSerial(vertex_t * nodes, const int index, const int cntNo
 }
 
 #pragma GCC diagnostic ignored "-Wunused-variable"
-static void processNode(vertex_t * nodes, const int index, const int cntNodes,
+static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNodes,
   const int depth) {
   update(nodes, index);
   vertex_t * current = &nodes[index];
@@ -190,8 +223,8 @@ static void processNode(vertex_t * nodes, const int index, const int cntNodes,
 }
 
 #pragma GCC diagnostic ignored "-Wunused-function"
-static void runRoundPrioD1(const int round, vector<int> roots, vertex_t * nodes,
-  const int cntNodes) {
+static void runRoundPrioD1(const int round, vertex_t * nodes,
+  const vid_t cntNodes) {
   WHEN_DEBUG({
     cout << "Running d1 prio round " << round << endl;
   })
@@ -200,7 +233,14 @@ static void runRoundPrioD1(const int round, vector<int> roots, vertex_t * nodes,
     roundUpdateCount = 0;
   })
 
-  cilk_for (int i = 0; i < cntNodes; ++i) {
+  vector<vid_t> roots;
+  for (vid_t i = 0; i < cntNodes; ++i) {
+    if (nodes[i].dependencies == 0) {
+      roots.push_back(i);
+    }
+  }
+
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].satisfied = 0;
   }
 
@@ -210,29 +250,56 @@ static void runRoundPrioD1(const int round, vector<int> roots, vertex_t * nodes,
 }
 
 #pragma GCC diagnostic ignored "-Wunused-function"
-static void runRoundPrioD0(const int round, vector<int> roots, vertex_t * nodes,
-  const int cntNodes) {
+static void runRoundChunk(const int round, vertex_t * nodes, const vid_t cntNodes) {
   WHEN_DEBUG({
-    cout << "Running d0 prio round " << round << endl;
+    cout << "Running chunk round" << round << endl;
   })
 
-  cilk_for (int i = 0; i < cntNodes; ++i) {
-    nodes[i].satisfied = nodes[i].dependencies - 1;
-  }
+  // cilk_for (vid_t i = 0; i < cntNodes; i++) {
+  //   nodes[i].satisfied = nodes[i].dependencies;
+  // }
 
-  cilk_for (vid_t i = 0; i < roots.size(); ++i) {
-    nodes[roots[i]].satisfied = nodes[roots[i]].dependencies;
-    processNode(nodes, roots[i], cntNodes, 0);
+  static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
+  vid_t numChunks = ((cntNodes + chunkMask) >> CHUNK_BITS);
+  vid_t * chunkIndex = new vid_t[numChunks];
+  for (vid_t i = 0; i < numChunks; i++) {
+    chunkIndex[i] = i << CHUNK_BITS;
   }
+  bool doneFlag = false;
+  while (!doneFlag) {
+    doneFlag = true;
+    cilk_for (vid_t i = 0; i < numChunks; i++) {
+      vid_t j = chunkIndex[i];
+      bool localDoneFlag = false;
+      while (!localDoneFlag && (j < std::min((i + 1) << CHUNK_BITS, cntNodes))) {
+        if (nodes[j].satisfied == 0) {
+          update(nodes, j);
+          nodes[j].satisfied = nodes[j].dependencies;
+          for (vid_t k = 0; k < nodes[j].cntEdges; k++) {
+            if ((nodes[j].edges[k] >> CHUNK_BITS) != i) {
+              if (chunkDependency(j, nodes[j].edges[k]) == true) {
+                __sync_sub_and_fetch(&nodes[nodes[j].edges[k]].satisfied, 1);
+              }
+            }
+          }
+        } else {
+          chunkIndex[i] = j;
+          localDoneFlag = true;  // we couldn't process one of the nodes, so break
+          doneFlag = false;  // we couldn't process one, so we need another round
+        }
+      }
+    }
+  }
+  delete chunkIndex;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-function"
-static void runRoundBsp(const int round, vertex_t * nodes, const int cntNodes) {
+static void runRoundBsp(const int round, vertex_t * nodes, const vid_t cntNodes) {
   WHEN_DEBUG({
     cout << "Running bsp round " << round << endl;
   })
 
-  cilk_for (int i = 0; i < cntNodes; ++i) {
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     update(nodes, i);
   }
 
@@ -243,7 +310,7 @@ static void runRoundBsp(const int round, vertex_t * nodes, const int cntNodes) {
 
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
-  int cntNodes;
+  vid_t cntNodes;
   char * inputEdgeFile;
   int numRounds = 0;
 
@@ -272,8 +339,11 @@ int main(int argc, char *argv[]) {
   int bitsInId = calculateIdBitSize(cntNodes);
   WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
   assignNodePriorities(nodes, cntNodes, bitsInId);
+#if D1_CHUNK
+  calculateNodeDependenciesChunk(nodes, cntNodes);
+#else
   calculateNodeDependencies(nodes, cntNodes);
-
+#endif
   // our nodes don't have any real data associated with them
   // generate some fake data instead
   fillInNodeData(nodes, cntNodes);
@@ -282,22 +352,15 @@ int main(int argc, char *argv[]) {
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
-  vector<int> roots;
-  for (int i = 0; i < cntNodes; ++i) {
-    if (nodes[i].dependencies == 0) {
-      roots.push_back(i);
-    }
-  }
-
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int i = 0; i < numRounds; ++i) {
-#if D0_BSP
+#if D1_CHUNK
+    runRoundChunk(i, nodes, cntNodes);
+#elif D0_BSP
     runRoundBsp(i, nodes, cntNodes);
-#elif D0_PRIO
-    runRoundPrioD0(i, roots, nodes, cntNodes);
 #else
-    runRoundPrioD1(i, roots, nodes, cntNodes);
+    runRoundPrioD1(i, nodes, cntNodes);
 #endif
   }
 
@@ -314,17 +377,18 @@ int main(int argc, char *argv[]) {
   cout << "Baseline: " << BASELINE << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Priority group bits: " << PRIORITY_GROUP_BITS << '\n';
+  cout << "Chunk size bits: " << CHUNK_BITS << '\n';
   cout << "D0_BSP: " << D0_BSP << '\n';
-  cout << "D0_PRIO: " << D0_PRIO << '\n';
+  cout << "D1_PRIO: " << D1_PRIO << '\n';
+  cout << "D1_CHUNK: " << D1_CHUNK << '\n';
   cout << "Debug flag: " << DEBUG << '\n';
   cout << "Test flag: " << TEST << '\n';
 
   // so GCC doesn't eliminate the rounds loop as unnecessary work
   double data = 0.0;
-  for (int i = 0; i < cntNodes; ++i) {
+  for (vid_t i = 0; i < cntNodes; ++i) {
     data += nodes[i].data;
   }
-  cout << "Number of roots: " << roots.size() << '\n';
   cout << "Final result (ignore this line): " << data << '\n';
 
 

@@ -7,14 +7,16 @@ REORDERED_EDGES_FILE ?= $(TMP)/edges_reordered.adjlist
 OUTPUT ?= $(TMP)/output.out
 
 GRAPH_SIZE ?= 10000000
-ROUNDS ?= 100
+ROUNDS ?= 3
 PARALLEL ?= 0
 PRIORITY_GROUP_BITS ?= 8
+CHUNK_BITS ?= 16
 HILBERTBITS ?= 4
 BASELINE ?= 0
 BFS ?= 0
 D0_BSP ?= 0
-D0_PRIO ?= 0
+D1_PRIO ?= 0
+D1_CHUNK ?= 0
 
 all: build-full
 

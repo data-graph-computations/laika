@@ -17,7 +17,7 @@ static void cleanupOnFormatError(FILE * input, string type, int line) {
   assert(result == 0);
 }
 
-int readEdgesFromFile(const string filepath, vertex_t ** outNodes, int * outCntNodes) {
+int readEdgesFromFile(const string filepath, vertex_t ** outNodes, vid_t * outCntNodes) {
   FILE * input = fopen(filepath.c_str(), "r");
   if (input == NULL) {
     cerr << "ERROR: Couldn't open file " << filepath << endl;
@@ -25,9 +25,9 @@ int readEdgesFromFile(const string filepath, vertex_t ** outNodes, int * outCntN
   }
 
   char adjGraph[15];
-  int n, m, result;
+  vid_t n, m, result;
 
-  result = fscanf(input, "%15s\n%d\n%d\n", adjGraph, &n, &m);
+  result = fscanf(input, "%15s\n%ld\n%ld\n", adjGraph, &n, &m);
   if (result != 3 || strcmp(ADJGRAPH, adjGraph) != 0) {
     cleanupOnFormatError(input, "edge", 1);
     return -1;
@@ -40,7 +40,7 @@ int readEdgesFromFile(const string filepath, vertex_t ** outNodes, int * outCntN
   vid_t * edgeList = new (std::nothrow) vid_t[m];
   assert(edgeList != 0);
   uint64_t offset, previousOffset = 0;
-  for (int i = 0; i < n; ++i) {
+  for (vid_t i = 0; i < n; ++i) {
     result = fscanf(input, "%lu\n", &offset);
     if (result != 1) {
       cleanupOnFormatError(input, "edge", i + 3);
@@ -56,7 +56,7 @@ int readEdgesFromFile(const string filepath, vertex_t ** outNodes, int * outCntN
   }
   nodes[n-1].cntEdges = m - previousOffset;
 
-  for (int i = 0; i < m; ++i) {
+  for (vid_t i = 0; i < m; ++i) {
     result = fscanf(input, "%lu\n", &edgeList[i]);
     if (result != 1) {
       cleanupOnFormatError(input, "edge", i + n + 3);
