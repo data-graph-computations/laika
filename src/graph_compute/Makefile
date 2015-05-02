@@ -28,6 +28,14 @@ ifneq ($(D0_PRIO),)
 	DEFS += -DD0_PRIO=$(D0_PRIO)
 endif
 
+ifneq ($(D1_CHUNK),)
+	DEFS += -DD1_CHUNK=$(D1_CHUNK)
+endif
+
+ifneq ($(CHUNK_BITS),)
+	DEFS += -DCHUNK_BITS=$(CHUNK_BITS)
+endif
+
 ifneq ($(BASELINE),)
 	DEFS += -DBASELINE=$(BASELINE)
 endif

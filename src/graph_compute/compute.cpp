@@ -287,6 +287,7 @@ static void runRoundChunk(const int round, vertex_t * nodes, const vid_t cntNode
           localDoneFlag = true;  // we couldn't process one of the nodes, so break
           doneFlag = false;  // we couldn't process one, so we need another round
         }
+        j++;
       }
     }
   }
