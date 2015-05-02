@@ -289,6 +289,9 @@ static void runRoundChunk(const int round, vertex_t * nodes, const vid_t cntNode
         }
         j++;
       }
+      if (!localDoneFlag) {
+        chunkIndex[i] = j;
+      }
     }
   }
   delete chunkIndex;
