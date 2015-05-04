@@ -38,6 +38,34 @@
   #define WHEN_DEBUG(ex)
 #endif
 
+#ifndef BASELINE
+  #define BASELINE 0
+#endif
+
+#ifndef D0_BSP
+  #define D0_BSP 0
+#endif
+
+#ifndef D1_PRIO
+  #define D1_PRIO 0
+#endif
+
+#ifndef D1_CHUNK
+  #define D1_CHUNK 0
+#endif
+
+#ifndef PARALLEL
+  #define PARALLEL 0
+#endif
+
+#if PARALLEL
+  #include <cilk/cilk.h>
+#else
+  #define cilk_for for
+  #define cilk_spawn
+  #define cilk_sync
+#endif
+
 typedef uint64_t vid_t;  // vertex id type
 
 struct vertex_t {

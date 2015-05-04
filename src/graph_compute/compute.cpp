@@ -14,10 +14,6 @@
 
 using namespace std;
 
-#ifndef BASELINE
-  #define BASELINE 0
-#endif
-
 #if BASELINE
   #ifndef PRIORITY_GROUP_BITS
     #define PRIORITY_GROUP_BITS 0
@@ -32,28 +28,14 @@ using namespace std;
   #define CHUNK_BITS 16
 #endif
 
-#ifndef PARALLEL
-  #define PARALLEL 0
-#endif
-
-#ifndef D0_BSP
-  #define D0_BSP 0
-#endif
-
-#ifndef D1_PRIO
-  #define D1_PRIO 0
-#endif
-
-#ifndef D1_CHUNK
-  #define D1_CHUNK 0
-#endif
-
-#if PARALLEL
-  #include <cilk/cilk.h>
+#if BASELINE || D1_PRIO
+  #include "./priority_scheduling.h"
+#elif D1_CHUNK
+  #include "./chunk_scheduling.h"
+#elif D0_BSP
+  #include "./bsp_scheduling.h"
 #else
-  #define cilk_for for
-  #define cilk_spawn
-  #define cilk_sync
+  #error "No scheduling type defined! Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK."
 #endif
 
 WHEN_TEST(
