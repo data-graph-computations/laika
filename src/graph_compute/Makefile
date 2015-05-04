@@ -24,8 +24,8 @@ ifneq ($(D0_BSP),)
 	DEFS += -DD0_BSP=$(D0_BSP)
 endif
 
-ifneq ($(D0_PRIO),)
-	DEFS += -DD0_PRIO=$(D0_PRIO)
+ifneq ($(D1_PRIO),)
+	DEFS += -DD1_PRIO=$(D1_PRIO)
 endif
 
 ifneq ($(D1_CHUNK),)
