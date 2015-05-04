@@ -48,7 +48,7 @@ undirect-graph: build-hilbert-reorder
 reorder-graph: build-hilbert-reorder
 	src/hilbert_reorder/reorder $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(REORDERED_NODES_FILE) $(REORDERED_EDGES_FILE)
 
-run-original:
+run-original: build-graph-compute
 	src/graph_compute/compute $(ROUNDS) $(ORIGINAL_EDGES_FILE) 2>&1 >$(TMP)/original.out
 
 run-reordered: build-graph-compute
