@@ -4,6 +4,7 @@
 #if D1_PRIO || BASELINE
 
 #include <vector>
+#include <algorithm>
 #include "./common.h"
 #include "./update_function.h"
 
@@ -62,6 +63,8 @@ static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNode
         }
         // cilk_spawn processNode(nodes, neighborId, cntNodes);
       }
+    } else {
+      i = current->cntEdges;
     }
   }
   cilk_sync;
@@ -134,6 +137,10 @@ static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
   int bitsInId = calculateIdBitSize(cntNodes);
   WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
   assignNodePriorities(nodes, cntNodes, bitsInId);
+  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
+    std::partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
+      [nodes, i](const vid_t& val) {return (nodes[i].priority < nodes[val].priority);});
+  }
   calculateNodeDependencies(nodes, cntNodes);
 }
 

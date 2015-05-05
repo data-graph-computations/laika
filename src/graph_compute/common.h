@@ -72,7 +72,7 @@ struct vertex_t {
   vid_t id;
   vid_t priority;
   size_t dependencies;
-  size_t satisfied;
+  volatile size_t satisfied;
   size_t cntEdges;
   vid_t * edges;
   double data;
