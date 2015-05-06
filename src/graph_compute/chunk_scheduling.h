@@ -14,6 +14,7 @@
 struct chunkdata_t {
   vid_t nextIndex;  // the next vertex in this chunk to be processed
   vid_t endIndex;   // the index of the first vertex beyond this chunk
+  vid_t firstInterChunkIndex;
 };
 typedef struct chunkdata_t chunkdata_t;
 
@@ -69,8 +70,23 @@ static void createChunkData(vertex_t * const nodes, const vid_t cntNodes,
   scheddata->chunkdata = new (std::nothrow) chunkdata_t[scheddata->cntChunks];
   assert(scheddata->chunkdata != NULL);
 
-  for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
+  cilk_for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
     scheddata->chunkdata[i].endIndex = std::min((i + 1) << CHUNK_BITS, cntNodes);
+    chunkdata_t * chunk = &scheddata->chunkdata[i];
+    chunk->firstInterChunkIndex = cntNodes + 1;
+    for (vid_t j = chunk->nextIndex; j < chunk->endIndex; ++j) {
+      for (vid_t k = 0; k < nodes[j].cntEdges; ++k) {
+        if (((nodes[j].edges[k] >> CHUNK_BITS) != i) &&
+            (chunk->firstInterChunkIndex != cntNodes + 1)) {  // different chunk
+          chunk->firstInterChunkIndex = j;
+          j = chunk->endIndex;
+          break;
+        }
+      }
+    }
+    if (chunk->firstInterChunkIndex == cntNodes + 1) {
+      chunk->firstInterChunkIndex = chunk->endIndex;
+    }
   }
 }
 
@@ -96,6 +112,9 @@ static void execute_round(const int round, vertex_t * const nodes,
     doneFlag = true;
     cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
       vid_t j = scheddata->chunkdata[i].nextIndex;
+      for (; j < scheddata->chunkdata[i].firstInterChunkIndex; j++) {
+        update(nodes, j);
+      }
       bool localDoneFlag = false;
       while (!localDoneFlag && (j < scheddata->chunkdata[i].endIndex)) {
         if (nodes[j].satisfied == 0) {
