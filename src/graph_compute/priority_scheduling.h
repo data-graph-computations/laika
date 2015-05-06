@@ -128,14 +128,19 @@ static void assignNodePriorities(vertex_t * nodes, const vid_t cntNodes,
   })
 }
 
-static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
-  int bitsInId = calculateIdBitSize(cntNodes);
-  WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
-  assignNodePriorities(nodes, cntNodes, bitsInId);
+// for each node, move its successors (by priority) to the front of the edges list
+static void orderEdgesByPriority(vertex_t * nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
       [nodes, i](const vid_t& val) {return (nodes[i].priority < nodes[val].priority);});
   }
+}
+
+static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
+  int bitsInId = calculateIdBitSize(cntNodes);
+  WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
+  assignNodePriorities(nodes, cntNodes, bitsInId);
+  orderEdgesByPriority(nodes, cntNodes);
   calculateNodeDependencies(nodes, cntNodes);
 }
 

@@ -42,11 +42,16 @@ static void calculateNodeDependenciesChunk(vertex_t * nodes, const vid_t cntNode
   }
 }
 
-static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
+// for each node, move inter-chunk successors to the front of the edges list
+static void orderEdgesByChunk(vertex_t * nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
       [i](const vid_t& val) {return interChunkDependency(i, val);});
   }
+}
+
+static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
+  orderEdgesByChunk(nodes, cntNodes);
   calculateNodeDependenciesChunk(nodes, cntNodes);
 }
 
