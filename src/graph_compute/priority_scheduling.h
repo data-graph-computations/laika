@@ -143,6 +143,26 @@ static void orderEdgesByPriority(vertex_t * const nodes, const vid_t cntNodes) {
   }
 }
 
+static void findRoots(vertex_t * const nodes, const vid_t cntNodes,
+                      scheddata_t * const scheddata) {
+  scheddata->cntRoots = 0;
+  for (vid_t i = 0; i < cntNodes; ++i) {
+    if (nodes[i].dependencies == 0) {
+      ++scheddata->cntRoots;
+    }
+  }
+
+  scheddata->roots = new (std::nothrow) vid_t[scheddata->cntRoots];
+  assert(scheddata->roots != NULL);
+
+  vid_t position = 0;
+  for (vid_t i = 0; i < cntNodes; ++i) {
+    if (nodes[i].dependencies == 0) {
+      scheddata->roots[position++] = i;
+    }
+  }
+}
+
 static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
                             scheddata_t * const scheddata) {
   int bitsInId = calculateIdBitSize(cntNodes);
@@ -150,6 +170,7 @@ static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
   assignNodePriorities(nodes, cntNodes, bitsInId);
   orderEdgesByPriority(nodes, cntNodes);
   calculateNodeDependencies(nodes, cntNodes);
+  findRoots(nodes, cntNodes, scheddata);
 }
 
 static void execute_round(const int round, vertex_t * const nodes, const vid_t cntNodes,
@@ -158,25 +179,18 @@ static void execute_round(const int round, vertex_t * const nodes, const vid_t c
     cout << "Running d1 prio round " << round << endl;
   })
 
-  vector<vid_t> roots;
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    if (nodes[i].dependencies == 0) {
-      roots.push_back(i);
-    }
-  }
-
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].satisfied = 0;
   }
 
-  cilk_for (vid_t i = 0; i < roots.size(); ++i) {
-    processNode(nodes, roots[i], cntNodes, 0);
+  cilk_for (vid_t i = 0; i < scheddata->cntRoots; ++i) {
+    processNode(nodes, scheddata->roots[i], cntNodes, 0);
   }
 }
 
 static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
                                scheddata_t * const scheddata) {
-  // no-op
+  delete[] scheddata->roots;
 }
 
 static void print_execution_data() {

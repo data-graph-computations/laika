@@ -104,7 +104,7 @@ static void execute_round(const int round, vertex_t * const nodes,
       }
     }
   }
-  delete chunkIndex;
+  delete[] chunkIndex;
 }
 
 static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
