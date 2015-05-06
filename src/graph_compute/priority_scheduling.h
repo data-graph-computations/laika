@@ -28,8 +28,6 @@ static void processNodeSerial(vertex_t * nodes, const vid_t index, const vid_t c
   vertex_t * current = &nodes[index];
 
   // increment the dependencies for all nodes of greater priority
-  // TODO(predrag): consider sorting the edges by priority
-  //                so we don't have to check all of them at every step
   for (size_t i = 0; i < current->cntEdges; ++i) {
     vid_t neighborId = current->edges[i];
     vertex_t * neighbor = &nodes[neighborId];
@@ -48,8 +46,6 @@ static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNode
   vertex_t * current = &nodes[index];
 
   // increment the dependencies for all nodes of greater priority
-  // TODO(predrag): consider sorting the edges by priority
-  //                so we don't have to check all of them at every step
   for (size_t i = 0; i < current->cntEdges; ++i) {
     vid_t neighborId = current->edges[i];
     vertex_t * neighbor = &nodes[neighborId];
