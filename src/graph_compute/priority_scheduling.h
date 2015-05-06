@@ -20,10 +20,17 @@
 
 #define MAX_REC_DEPTH 10
 
+struct scheddata_t {
+  vid_t * roots;
+  vid_t cntRoots;
+};
+typedef struct scheddata_t scheddata_t;
+
 // we need this processNodeSerial hack to avoid a Cilk bug when trying to do
 // spawn depth limiting (which in turn is necessary because otherwise on large problem
 // sizes worker stacks are overflowed)
-static void processNodeSerial(vertex_t * nodes, const vid_t index, const vid_t cntNodes) {
+static void processNodeSerial(vertex_t * const nodes, const vid_t index,
+                              const vid_t cntNodes) {
   update(nodes, index);
   vertex_t * current = &nodes[index];
 
@@ -40,8 +47,8 @@ static void processNodeSerial(vertex_t * nodes, const vid_t index, const vid_t c
   }
 }
 
-static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNodes,
-  const int depth) {
+static void processNode(vertex_t * const nodes, const vid_t index, const vid_t cntNodes,
+                        const int depth) {
   update(nodes, index);
   vertex_t * current = &nodes[index];
 
@@ -65,7 +72,7 @@ static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNode
   cilk_sync;
 }
 
-static void calculateNodeDependencies(vertex_t * nodes, const vid_t cntNodes) {
+static void calculateNodeDependencies(vertex_t * const nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     vertex_t * node = &nodes[i];
     node->dependencies = 0;
@@ -106,7 +113,7 @@ static inline id_t createPriority(const vid_t id, const int bitsInId) {
   return priority;
 }
 
-static void assignNodePriorities(vertex_t * nodes, const vid_t cntNodes,
+static void assignNodePriorities(vertex_t * const nodes, const vid_t cntNodes,
                                  const int bitsInId) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].priority = createPriority(nodes[i].id, bitsInId);
@@ -129,14 +136,15 @@ static void assignNodePriorities(vertex_t * nodes, const vid_t cntNodes,
 }
 
 // for each node, move its successors (by priority) to the front of the edges list
-static void orderEdgesByPriority(vertex_t * nodes, const vid_t cntNodes) {
+static void orderEdgesByPriority(vertex_t * const nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
       [nodes, i](const vid_t& val) {return (nodes[i].priority < nodes[val].priority);});
   }
 }
 
-static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
+static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                            scheddata_t * const scheddata) {
   int bitsInId = calculateIdBitSize(cntNodes);
   WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
   assignNodePriorities(nodes, cntNodes, bitsInId);
@@ -144,7 +152,8 @@ static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
   calculateNodeDependencies(nodes, cntNodes);
 }
 
-static void execute_round(const int round, vertex_t * nodes, const vid_t cntNodes) {
+static void execute_round(const int round, vertex_t * const nodes, const vid_t cntNodes,
+                          scheddata_t * const scheddata) {
   WHEN_DEBUG({
     cout << "Running d1 prio round " << round << endl;
   })
@@ -163,6 +172,11 @@ static void execute_round(const int round, vertex_t * nodes, const vid_t cntNode
   cilk_for (vid_t i = 0; i < roots.size(); ++i) {
     processNode(nodes, roots[i], cntNodes, 0);
   }
+}
+
+static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                               scheddata_t * const scheddata) {
+  // no-op
 }
 
 static void print_execution_data() {

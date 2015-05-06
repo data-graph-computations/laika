@@ -6,11 +6,16 @@
 #include "./common.h"
 #include "./update_function.h"
 
-static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
+struct scheddata_t { };
+typedef struct scheddata_t scheddata_t;
+
+static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                            scheddata_t * const scheddata) {
   // no-op
 }
 
-static void execute_round(const int round, vertex_t * nodes, const vid_t cntNodes) {
+static void execute_round(const int round, vertex_t * const nodes, const vid_t cntNodes,
+                          scheddata_t * const scheddata) {
   WHEN_DEBUG({
     cout << "Running bsp round " << round << endl;
   })
@@ -18,6 +23,11 @@ static void execute_round(const int round, vertex_t * nodes, const vid_t cntNode
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     update(nodes, i);
   }
+}
+
+static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                               scheddata_t * const scheddata) {
+  // no-op
 }
 
 static void print_execution_data() {

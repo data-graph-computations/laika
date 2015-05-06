@@ -80,7 +80,9 @@ int main(int argc, char *argv[]) {
 
   cout << "Graph size: " << cntNodes << '\n';
 
-  init_scheduling(nodes, cntNodes);
+  scheddata_t scheddata;
+
+  init_scheduling(nodes, cntNodes, &scheddata);
 
   // our nodes don't have any real data associated with them
   // generate some fake data instead
@@ -96,7 +98,7 @@ int main(int argc, char *argv[]) {
     WHEN_TEST({
       roundUpdateCount = 0;
     })
-    execute_round(i, nodes, cntNodes);
+    execute_round(i, nodes, cntNodes, &scheddata);
     WHEN_TEST({
       assert(roundUpdateCount == (uint64_t)cntNodes);
     })
@@ -108,6 +110,8 @@ int main(int argc, char *argv[]) {
   ns -= starttime.tv_nsec;
   double seconds = static_cast<double>(ns) * 1e-9;
   seconds += endtime.tv_sec - starttime.tv_sec;
+
+  cleanup_scheduling(nodes, cntNodes, &scheddata);
 
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";

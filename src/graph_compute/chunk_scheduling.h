@@ -11,6 +11,9 @@
   #define CHUNK_BITS 16
 #endif
 
+struct scheddata_t { };
+typedef struct scheddata_t scheddata_t;
+
 static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
   if ((v >> CHUNK_BITS) == (w >> CHUNK_BITS)) {
@@ -29,7 +32,8 @@ static inline bool chunkDependency(vid_t v, vid_t w) {
   }
 }
 
-static void calculateNodeDependenciesChunk(vertex_t * nodes, const vid_t cntNodes) {
+static void calculateNodeDependenciesChunk(vertex_t * const nodes,
+                                           const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; i++) {
     vertex_t * node = &nodes[i];
     node->dependencies = 0;
@@ -43,19 +47,21 @@ static void calculateNodeDependenciesChunk(vertex_t * nodes, const vid_t cntNode
 }
 
 // for each node, move inter-chunk successors to the front of the edges list
-static void orderEdgesByChunk(vertex_t * nodes, const vid_t cntNodes) {
+static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
       [i](const vid_t& val) {return interChunkDependency(i, val);});
   }
 }
 
-static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
+static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                            scheddata_t * const scheddata) {
   orderEdgesByChunk(nodes, cntNodes);
   calculateNodeDependenciesChunk(nodes, cntNodes);
 }
 
-static void execute_round(const int round, vertex_t * nodes, const vid_t cntNodes) {
+static void execute_round(const int round, vertex_t * const nodes,
+                          const vid_t cntNodes, scheddata_t * const scheddata) {
   WHEN_DEBUG({
     cout << "Running chunk round" << round << endl;
   })
@@ -99,6 +105,11 @@ static void execute_round(const int round, vertex_t * nodes, const vid_t cntNode
     }
   }
   delete chunkIndex;
+}
+
+static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                               scheddata_t * const scheddata) {
+  // no-op
 }
 
 static void print_execution_data() {
