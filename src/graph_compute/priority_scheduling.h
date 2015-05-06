@@ -57,7 +57,6 @@ static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNode
         } else {
           processNodeSerial(nodes, neighborId, cntNodes);
         }
-        // cilk_spawn processNode(nodes, neighborId, cntNodes);
       }
     } else {
       break;
