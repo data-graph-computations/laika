@@ -60,7 +60,7 @@ static void processNode(vertex_t * nodes, const vid_t index, const vid_t cntNode
         // cilk_spawn processNode(nodes, neighborId, cntNodes);
       }
     } else {
-      i = current->cntEdges;
+      break;
     }
   }
   cilk_sync;

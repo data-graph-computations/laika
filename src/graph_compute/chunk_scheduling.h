@@ -77,8 +77,8 @@ static void execute_round(const int round, vertex_t * nodes, const vid_t cntNode
             if (interChunkDependency(j, nodes[j].edges[k])) {
                 __sync_sub_and_fetch(&nodes[nodes[j].edges[k]].satisfied, 1);
                 k++;
-            }  else {
-              k = nodes[j].cntEdges;
+            } else {
+              break;
             }
           }
         } else {
