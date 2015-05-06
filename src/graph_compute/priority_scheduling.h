@@ -133,7 +133,7 @@ static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
   WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
   assignNodePriorities(nodes, cntNodes, bitsInId);
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
-    std::partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
+    std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
       [nodes, i](const vid_t& val) {return (nodes[i].priority < nodes[val].priority);});
   }
   calculateNodeDependencies(nodes, cntNodes);
