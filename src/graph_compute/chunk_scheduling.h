@@ -44,7 +44,7 @@ static void calculateNodeDependenciesChunk(vertex_t * nodes, const vid_t cntNode
 
 static void init_scheduling(vertex_t * nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
-    std::partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
+    std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
       [i](const vid_t& val) {return interChunkDependency(i, val);});
   }
   calculateNodeDependenciesChunk(nodes, cntNodes);
