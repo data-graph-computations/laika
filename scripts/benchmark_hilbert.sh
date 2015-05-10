@@ -38,7 +38,7 @@ done ;
 # for each Hilbert granularity,
 # benchmark the baseline code, the fake BSP, and the best optimized one,
 # both in parallel and in series
-hilbert=4 ; while [[ $hilbert -le 9 ]] ; do
+hilbert=1 ; while [[ $hilbert -le 9 ]] ; do
   echo "Reordering with $hilbert Hilbert bits per dimension"
 
   (make TMP=$benchroot clean-hilbert-reorder) 2>&1 >/dev/null;
