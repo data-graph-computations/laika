@@ -135,7 +135,7 @@ static void assignNodePriorities(vertex_t * const nodes, const vid_t cntNodes,
   })
 }
 
-// for each node, move its successors (by priority) to the front of the edges list
+// for each vertex, move its successors (by priority) to the front of the edges list
 static void orderEdgesByPriority(vertex_t * const nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
