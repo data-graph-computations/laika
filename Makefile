@@ -18,6 +18,8 @@ D0_BSP ?= 0
 D1_PRIO ?= 0
 D1_CHUNK ?= 0
 
+DIST_UNIFORM ?= 1
+
 all: build-full
 
 build-full: build-hilbert-reorder build-graph-compute
@@ -33,14 +35,23 @@ clean-hilbert-reorder:
 clean-graph-compute:
 	cd src/graph_compute && $(MAKE) clean
 
+clean-graphgen2:
+	cd src/graphgen2 && $(MAKE) clean
+
 build-hilbert-reorder:
 	cd src/hilbert_reorder && $(MAKE)
 
 build-graph-compute:
 	cd src/graph_compute && $(MAKE)
 
+build-graphgen2:
+	cd src/graphgen2 && $(MAKE)
+
 gen-graph:
 	python src/graphgen/graphgen.py $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
+
+gen-graph2:
+	src/graphgen2/graphgen2 $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
 
 undirect-graph: build-hilbert-reorder
 	src/hilbert_reorder/undirect $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
