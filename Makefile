@@ -22,9 +22,9 @@ DIST_UNIFORM ?= 1
 
 all: build-full
 
-build-full: build-hilbert-reorder build-graph-compute
+build-full: build-hilbert-reorder build-graph-compute build-graphgen2
 
-clean: clean-hilbert-reorder clean-graph-compute
+clean: clean-hilbert-reorder clean-graph-compute clean-graphgen2
 
 distclean: clean
 	@cd $(TMP) && rm -f *.adjlist *.node *.out *.txt
