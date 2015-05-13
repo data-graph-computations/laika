@@ -19,6 +19,18 @@ ifneq ($(DIST_UNIFORM),)
 	DEFS += -DDIST_UNIFORM=$(DIST_UNIFORM)
 endif
 
+ifneq ($(MIN_COORD),)
+	DEFS += -DMIN_COORD=$(MIN_COORD)
+endif
+
+ifneq ($(MAX_COORD),)
+	DEFS += -DMAX_COORD=$(MAX_COORD)
+endif
+
+ifneq ($(MAX_EDGE_LENGTH),)
+	DEFS += -DMAX_EDGE_LENGTH=$(MAX_EDGE_LENGTH)
+endif
+
 all: lint graphgen2
 
 lint:

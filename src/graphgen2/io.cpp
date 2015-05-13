@@ -5,14 +5,15 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 #include "./common.h"
 
 using namespace std;
 
 #define ADJGRAPH "AdjacencyGraph"
 
-static int outputNodes(const vertex_t * const nodes, const int cntNodes,
-                       const string& filepath) {
+static int outputNodes(const vertex_t * const nodes, const vector<vid_t> * const edges,
+                       const int cntNodes, const string& filepath) {
   FILE * output = fopen(filepath.c_str(), "w");
   if (output == NULL) {
     cerr << "ERROR: Couldn't open file " << filepath << endl;
@@ -29,8 +30,8 @@ static int outputNodes(const vertex_t * const nodes, const int cntNodes,
   return 0;
 }
 
-static int outputEdges(const vertex_t * const nodes, const int cntNodes,
-                       const string& filepath) {
+static int outputEdges(const vertex_t * const nodes, const vector<vid_t> * const edges,
+                       const int cntNodes, const string& filepath) {
   FILE * output = fopen(filepath.c_str(), "w");
   if (output == NULL) {
     cerr << "ERROR: Couldn't open file " << filepath << endl;
@@ -41,9 +42,9 @@ static int outputEdges(const vertex_t * const nodes, const int cntNodes,
   fprintf(output, "%d\n", cntNodes);
 
   // calculating the total number of edges
-  size_t totalEdges = 0;
+  vid_t totalEdges = 0;
   for (int i = 0; i < cntNodes; ++i) {
-    totalEdges += nodes[i].edgeData.cntEdges;
+    totalEdges += edges[i].size();
   }
   fprintf(output, "%lu\n", totalEdges);
 
@@ -51,27 +52,28 @@ static int outputEdges(const vertex_t * const nodes, const int cntNodes,
   totalEdges = 0;
   for (int i = 0; i < cntNodes; ++i) {
     fprintf(output, "%lu\n", totalEdges);
-    totalEdges += nodes[i].edgeData.cntEdges;
+    totalEdges += edges[i].size();
   }
 
   // outputing edges
   for (int i = 0; i < cntNodes; ++i) {
-    const edges_t * const edgeData = &nodes[i].edgeData;
-    for (size_t j = 0; j < edgeData->cntEdges; ++j) {
-      fprintf(output, "%lu\n", edgeData->edges[j]);
+    vid_t numEdges = edges[i].size();
+    for (vid_t j = 0; j < numEdges; ++j) {
+      fprintf(output, "%lu\n", edges[i][j]);
     }
   }
 
   return 0;
 }
 
-int outputGraph(const vertex_t * const nodes, const int cntNodes,
-                const string& outputNodeFile, const string& outputEdgeFile) {
+int outputGraph(const vertex_t * const nodes, const vector<vid_t> * const edges,
+                const vid_t cntNodes, const string& outputNodeFile,
+                const string& outputEdgeFile) {
   int result;
-  result = outputNodes(nodes, cntNodes, outputNodeFile);
+  result = outputNodes(nodes, edges, cntNodes, outputNodeFile);
   if (result != 0) {
     return result;
   }
 
-  return outputEdges(nodes, cntNodes, translationMapping, outputEdgeFile);
+  return outputEdges(nodes, edges, cntNodes, outputEdgeFile);
 }

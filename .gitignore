@@ -29,6 +29,7 @@
 reorder
 compute
 undirect
+graphgen2
 
 # Log and Temporary files
 *.tmp
