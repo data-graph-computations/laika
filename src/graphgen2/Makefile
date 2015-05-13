@@ -7,8 +7,8 @@ ROOT = ../../
 
 .PHONY: all clean lint
 
-HEADERS = common.h io.h uniform_distribution.h
-SOURCES = graphgen2.cpp io.cpp
+HEADERS = common.h io.h uniform_distribution.h stats.h
+SOURCES = graphgen2.cpp io.cpp stats.cpp
 
 TEST ?= 0
 DEBUG ?= 0

@@ -26,10 +26,10 @@
 *.exe
 *.out
 *.app
-reorder
-compute
-undirect
-graphgen2
+src/graph_compute/compute
+src/hilbert_reorder/reorder
+src/hilbert_reorder/undirect
+src/graphgen2/graphgen2
 
 # Log and Temporary files
 *.tmp
