@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -8,6 +9,7 @@
 #include "./common.h"
 #include "./io.h"
 #include "./stats.h"
+#include "./edge_generator.h"
 
 #if DIST_UNIFORM
   #include "./uniform_distribution.h"
@@ -15,7 +17,27 @@
   #error "No distribution selected, please use DIST_UNIFORM."
 #endif
 
+#ifndef MAX_EDGE_LENGTH
+  #define MAX_EDGE_LENGTH 16.0
+#endif
+
 using namespace std;
+
+// static inline double runtime(clock_t first, clock_t second) {
+//   return (static_cast<double>(second - first)) / CLOCKS_PER_SEC;
+// }
+
+static void execute(vertex_t * const nodes,
+                    vector<vid_t> * const edges,
+                    const vid_t cntNodes,
+                    const string outputNodeFile,
+                    const string outputEdgeFile) {
+  generateGraph(nodes, edges, cntNodes);
+  generateEdges(nodes, edges, cntNodes, MAX_EDGE_LENGTH);
+  printGraphStats(nodes, edges, cntNodes);
+  int result = outputGraph(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
+  assert(result == 0);
+}
 
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
@@ -54,10 +76,7 @@ int main(int argc, char *argv[]) {
   nodes = new vertex_t[cntNodes];
   edges = new vector<vid_t>[cntNodes];
 
-  generateGraph(nodes, edges, cntNodes);
-  printGraphStats(nodes, edges, cntNodes);
-  int result = outputGraph(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
-  assert(result == 0);
+  execute(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
 
   delete[] nodes;
   delete[] edges;
