@@ -209,7 +209,7 @@ static int outputNodes(const vertex_t * const reorderedNodes, const int cntNodes
 
   fprintf(output, "%d 3 0 0\n", cntNodes);
   for (int i = 0; i < cntNodes; ++i) {
-    fprintf(output, "%d %14.14f %14.14f %14.14f\n",
+    fprintf(output, "%d %.8f %.8f %.8f\n",
             i, reorderedNodes[i].x, reorderedNodes[i].y, reorderedNodes[i].z);
   }
   fprintf(output, "# Reordered using Hilbert curve reordering.\n");

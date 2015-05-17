@@ -21,7 +21,7 @@ echo "  $originalnodes" >>$output
 echo "  $originaledges" >>$output
 echo "" >>$output
 
-rounds=20
+rounds=10
 
 # benchmark the unordered input, parallel and not
 parallel=0 ; while [[ $parallel -le 1 ]] ; do
