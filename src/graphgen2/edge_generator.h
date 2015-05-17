@@ -5,9 +5,9 @@
 #include <algorithm>
 #include "./common.h"
 
-void generateEdges(vertex_t * const nodes,
-                   std::vector<vid_t> * const edges,
-                   const vid_t cntNodes,
-                   const double maxEdgeLength);
+int generateEdges(vertex_t * const nodes,
+                  std::vector<vid_t> * const edges,
+                  const vid_t cntNodes,
+                  const double maxEdgeLength);
 
 #endif  // EDGE_GENERATOR_H_

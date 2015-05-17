@@ -31,6 +31,14 @@ ifneq ($(MAX_EDGE_LENGTH),)
 	DEFS += -DMAX_EDGE_LENGTH=$(MAX_EDGE_LENGTH)
 endif
 
+ifneq ($(PARALLEL),)
+	DEFS += -DPARALLEL=$(PARALLEL)
+endif
+
+ifneq ($(GRID_SIZE),)
+	DEFS += -DGRID_SIZE=$(GRID_SIZE)
+endif
+
 all: lint graphgen2
 
 lint:
