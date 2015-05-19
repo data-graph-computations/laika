@@ -2,7 +2,7 @@
 
 import argparse
 import math
-import itertools
+import collections
 
 def main():
     parser = argparse.ArgumentParser()
@@ -41,16 +41,13 @@ def process_edge_lengths(edges):
     zeroes = sum([1 for x in edges if x == 0])
     print "self edges: %d" % zeroes
 
-    ceillog = [math.ceil(math.log(x, 2)) for x in edges if x != 0]
-    ceillog.sort()
+    result = collections.defaultdict(int)
+    for x in edges:
+        if x != 0:
+            result[math.ceil(math.log(x, 2))] += 1
 
-    result = dict()
-    for k, g in itertools.groupby(ceillog):
-        count = 0
-        for _ in g:
-            count += 1
-        print k, count
-        result[k] = count
+    for key in sorted(result):
+        print key, result[key]
 
     return result
 
