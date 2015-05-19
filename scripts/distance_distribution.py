@@ -41,9 +41,9 @@ def process_edge_lengths(edges):
     zeroes = sum([1 for x in edges if x == 0])
     print "self edges: %d" % zeroes
 
-    edges = [x for x in edges if x != 0]
+    ceillog = [math.ceil(math.log(x, 2)) for x in edges if x != 0]
+    ceillog.sort()
 
-    ceillog = sorted([math.ceil(math.log(x, 2)) for x in edges])
     result = dict()
     for k, g in itertools.groupby(ceillog):
         count = 0
