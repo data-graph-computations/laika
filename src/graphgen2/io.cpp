@@ -22,7 +22,7 @@ static int outputNodes(const vertex_t * const nodes, const vector<vid_t> * const
 
   fprintf(output, "%d 3 0 0\n", cntNodes);
   for (int i = 0; i < cntNodes; ++i) {
-    fprintf(output, "%d %.8f %.8f %.8f\n",
+    fprintf(output, "%d %.6f %.6f %.6f\n",
             i, nodes[i].x, nodes[i].y, nodes[i].z);
   }
   fprintf(output, "# Generated with graphgen2.\n");
