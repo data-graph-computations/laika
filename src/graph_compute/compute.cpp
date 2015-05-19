@@ -80,6 +80,12 @@ int main(int argc, char *argv[]) {
 
   cout << "Graph size: " << cntNodes << '\n';
 
+#if PARALLEL
+  cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
+#else
+  cout << "Cilk workers: 1\n";
+#endif
+
   scheddata_t scheddata;
 
   init_scheduling(nodes, cntNodes, &scheddata);
