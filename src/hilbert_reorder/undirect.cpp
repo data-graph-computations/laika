@@ -9,7 +9,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
-  int cntNodes;
+  vid_t cntNodes;
   char * inputNodeFile, * inputEdgeFile;
   char * outputNodeFile, * outputEdgeFile;
 
