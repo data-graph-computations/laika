@@ -206,7 +206,9 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/tex/latex/listings/listings.cfg\
     /usr/local/texlive/2013/texmf-dist/tex/latex/listings/listings.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/listings/lstmisc.sty\
+    /usr/local/texlive/2013/texmf-dist/tex/latex/ms/everysel.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/ms/everyshi.sty\
+    /usr/local/texlive/2013/texmf-dist/tex/latex/ms/ragged2e.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/multirow/bigstrut.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/multirow/multirow.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/oberdiek/aliascnt.sty\
@@ -227,6 +229,7 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/tex/latex/pgfplots/pgfplots.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/t1ptm.fd\
     /usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/times.sty\
+    /usr/local/texlive/2013/texmf-dist/tex/latex/sidecap/sidecap.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/tools/afterpage.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/tools/array.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/tools/dcolumn.sty\
@@ -235,32 +238,40 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/tex/latex/tools/xspace.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/upquote/upquote.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/url/url.sty\
+    /usr/local/texlive/2013/texmf-dist/tex/latex/wrapfig/wrapfig.sty\
     /usr/local/texlive/2013/texmf-dist/tex/latex/xcolor/x11nam.def\
     /usr/local/texlive/2013/texmf-dist/tex/latex/xcolor/xcolor.sty\
     /usr/local/texlive/2013/texmf-dist/web2c/texmf.cnf\
     /usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map\
     /usr/local/texlive/2013/texmf-var/web2c/pdftex/pdflatex.fmt\
     /usr/local/texlive/2013/texmf.cnf\
-    2d_hilbert.pdf\
     abstract.tex\
     allpapers.bib\
-    chromatic_scheduling.pdf\
     clrscode4e.sty\
     conclusion.tex\
-    dag_scheduling.pdf\
-    dragon.jpg\
-    fourthifs.jpg\
+    figures/2d_hilbert.pdf\
+    figures/chromatic_scheduling.pdf\
+    figures/dag_scheduling.pdf\
+    figures/dragon.jpg\
+    figures/fourthifs.jpg\
+    figures/hilbert_compact.pdf\
+    figures/hilbert_priority_function.pdf\
+    figures/hyperedge.pdf\
+    figures/laika.jpg\
+    figures/miss_rate_curve.pdf\
+    figures/scalability_bsp.pdf\
+    figures/scalability_hilbert_bits_parallel.pdf\
+    figures/scalability_hilbert_bits_serial.pdf\
+    figures/scalability_original.pdf\
+    figures/scalability_reordered.pdf\
+    figures/sparse_matrix_representation.pdf\
+    figures/tetrahedron.pdf\
     hilbert.tex\
-    hilbert_compact.pdf\
-    hilbert_priority_function.pdf\
     hilbert_results.tex\
-    hyperedge.pdf\
     intro.tex\
     llncs2e/llncs.cls\
     partitions.tex\
     partitions_results.tex\
     progress_report.tex\
-    sparse_matrix_representation.pdf\
-    supertech.sty\
-    tetrahedron.pdf
+    supertech.sty
 #===End dependents for progress_report.tex:
