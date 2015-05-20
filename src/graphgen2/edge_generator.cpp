@@ -112,10 +112,13 @@ static void generateEdgesForNode(vid_t index,
         auto gridCell = *getVectorInGrid(grid, x, y, z);
         if (gridCell != NULL) {
           for (vid_t cellNodeId : *gridCell) {
-            auto cellNode = &nodes[cellNodeId];
-            double sqDist = squaredDistance(currentNode, cellNode);
-            if (sqDist <= maxSquaredDistance) {
-              currentEdges->push_back(cellNodeId);
+            // ensure we don't create self-edges
+            if (cellNodeId != index) {
+              auto cellNode = &nodes[cellNodeId];
+              double sqDist = squaredDistance(currentNode, cellNode);
+              if (sqDist <= maxSquaredDistance) {
+                currentEdges->push_back(cellNodeId);
+              }
             }
           }
         }
