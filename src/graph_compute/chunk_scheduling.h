@@ -112,9 +112,12 @@ static void execute_round(const int round, vertex_t * const nodes,
     doneFlag = true;
     cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
       vid_t j = scheddata->chunkdata[i].nextIndex;
-      for (; j < scheddata->chunkdata[i].firstInterChunkIndex; j++) {
-        update(nodes, j);
-      }
+
+      // Optimization disabled due to correctness problem
+      // for (; j < scheddata->chunkdata[i].firstInterChunkIndex; j++) {
+      //   update(nodes, j);
+      // }
+
       bool localDoneFlag = false;
       while (!localDoneFlag && (j < scheddata->chunkdata[i].endIndex)) {
         if (nodes[j].satisfied == 0) {

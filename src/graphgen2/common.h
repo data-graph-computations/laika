@@ -5,15 +5,31 @@
 #include <cassert>
 
 #ifndef TEST
-#define TEST 1
+  #define TEST 1
 #endif
 
 #ifndef DEBUG
-#define DEBUG 0
+  #define DEBUG 0
 #endif
 
 #ifndef PARALLEL
-#define PARALLEL 1
+  #define PARALLEL 1
+#endif
+
+#ifndef MIN_COORD
+  #define MIN_COORD 0.0
+#endif
+
+#ifndef MAX_COORD
+  #define MAX_COORD 1024.0
+#endif
+
+#ifndef GRID_SIZE
+  #define GRID_SIZE 300ULL
+#endif
+
+#ifndef MAX_EDGE_LENGTH
+  #define MAX_EDGE_LENGTH 3.0
 #endif
 
 // Use WHEN_TEST to conditionally include expensive sanity-checks,

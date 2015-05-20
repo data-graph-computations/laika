@@ -6,17 +6,17 @@
 
 using namespace std;
 
-int readNodesFromFile(const string filepath, vertex_t ** outNodes, int * outCount);
+int readNodesFromFile(const string filepath, vertex_t ** outNodes, vid_t * outCount);
 
-int readEdgesFromFile(const string filepath, vertex_t * nodes, const int cntNodes);
+int readEdgesFromFile(const string filepath, vertex_t * nodes, const vid_t cntNodes);
 
-int readUndirectedEdgesFromFile(const string filepath, vertex_t * nodes, int cntNodes);
+int readUndirectedEdgesFromFile(const string filepath, vertex_t * nodes, vid_t cntNodes);
 
-int outputReorderedGraph(const vertex_t * const reorderedNodes, const int cntNodes,
+int outputReorderedGraph(const vertex_t * const reorderedNodes, const vid_t cntNodes,
                          const vid_t * const translationMapping,
                          const string& outputNodeFile, const string& outputEdgeFile);
 
-int outputEdges(const vertex_t * const reorderedNodes, const int cntNodes,
+int outputEdges(const vertex_t * const reorderedNodes, const vid_t cntNodes,
                 const vid_t * const translationMapping,
                 const string& filepath);
 

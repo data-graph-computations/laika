@@ -168,7 +168,7 @@ static vid_t * createIdTranslationMapping(vertex_t * reorderedNodes, int cntNode
 
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
-  int cntNodes;
+  vid_t cntNodes;
   char * inputNodeFile, * inputEdgeFile;
   char * outputNodeFile, * outputEdgeFile;
 

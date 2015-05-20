@@ -7,8 +7,8 @@ ROOT = ../../
 
 .PHONY: all clean lint
 
-HEADERS = common.h io.h uniform_distribution.h stats.h
-SOURCES = graphgen2.cpp io.cpp stats.cpp
+HEADERS = common.h io.h uniform_distribution.h stats.h edge_generator.h
+SOURCES = graphgen2.cpp io.cpp stats.cpp edge_generator.cpp
 
 TEST ?= 0
 DEBUG ?= 0
@@ -29,6 +29,14 @@ endif
 
 ifneq ($(MAX_EDGE_LENGTH),)
 	DEFS += -DMAX_EDGE_LENGTH=$(MAX_EDGE_LENGTH)
+endif
+
+ifneq ($(PARALLEL),)
+	DEFS += -DPARALLEL=$(PARALLEL)
+endif
+
+ifneq ($(GRID_SIZE),)
+	DEFS += -DGRID_SIZE=$(GRID_SIZE)
 endif
 
 all: lint graphgen2

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -8,6 +9,7 @@
 #include "./common.h"
 #include "./io.h"
 #include "./stats.h"
+#include "./edge_generator.h"
 
 #if DIST_UNIFORM
   #include "./uniform_distribution.h"
@@ -16,6 +18,72 @@
 #endif
 
 using namespace std;
+
+static inline double runtime(clock_t first, clock_t second) {
+  return (static_cast<double>(second - first)) / CLOCKS_PER_SEC;
+}
+
+WHEN_TEST(
+static void ensureEdgesAreBidirectional(const vector<vid_t> * const edges,
+                                        vid_t cntNodes) {
+  for (vid_t current = 0; current < cntNodes; ++current) {
+    for (auto& neighbor : edges[current]) {
+      bool found = false;
+      for (auto& backEdge : edges[neighbor]) {
+        if (current == backEdge) {
+          found = true;
+          break;
+        }
+      }
+      assert(found);
+    }
+  }
+})
+
+static int execute(vertex_t * const nodes,
+                   vector<vid_t> * const edges,
+                   const vid_t cntNodes,
+                   const string outputNodeFile,
+                   const string outputEdgeFile) {
+  int result = 0;
+  clock_t before, after;
+
+  before = clock();
+  generateGraph(nodes, edges, cntNodes);
+  after = clock();
+  cout << "Point generation complete in: " << runtime(before, after) << "s\n";
+
+  before = after;
+  result = generateEdges(nodes, edges, cntNodes, MAX_EDGE_LENGTH);
+  if (result != 0) {
+    return result;
+  }
+  after = clock();
+  cout << "Edge generation complete in: " << runtime(before, after) << "s\n";
+
+  before = after;
+  printGraphStats(nodes, edges, cntNodes);
+  after = clock();
+  cout << "Stats calculation complete in: " << runtime(before, after) << "s\n";
+
+  WHEN_TEST({
+    before = after;
+    ensureEdgesAreBidirectional(edges, cntNodes);
+    after = clock();
+    cout << "Edges verified to exist in both directions: " <<
+            runtime(before, after) << "s\n";
+  })
+
+  before = after;
+  result = outputGraph(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
+  if (result != 0) {
+    return result;
+  }
+  after = clock();
+  cout << "Graph written to file in: " << runtime(before, after) << "s\n";
+
+  return 0;
+}
 
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
@@ -26,8 +94,10 @@ int main(int argc, char *argv[]) {
 
   const int numArgs = 3;
 
+  cout << '\n';
+
   if (argc != (numArgs + 1)) {
-    cerr << "\nERROR: Expected " << numArgs << " arguments, received " << argc-1 << '\n';
+    cerr << "ERROR: Expected " << numArgs << " arguments, received " << argc-1 << '\n';
     cerr << "Usage: ./graphgen2 <num_nodes> "
             "<node_file> <edge_file>" << endl;
     return 1;
@@ -39,7 +109,7 @@ int main(int argc, char *argv[]) {
   try {
     cntNodes = stoi(argv[1]);
   } catch (exception& e) {
-    cerr << "\nERROR: " << e.what() << endl;
+    cerr << "ERROR: " << e.what() << endl;
     return 1;
   }
   #pragma GCC diagnostic pop
@@ -54,9 +124,7 @@ int main(int argc, char *argv[]) {
   nodes = new vertex_t[cntNodes];
   edges = new vector<vid_t>[cntNodes];
 
-  generateGraph(nodes, edges, cntNodes);
-  printGraphStats(nodes, edges, cntNodes);
-  int result = outputGraph(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
+  int result = execute(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
   assert(result == 0);
 
   delete[] nodes;
