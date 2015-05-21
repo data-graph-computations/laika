@@ -13,6 +13,15 @@
 \usepackage{sidecap} %use \begin{SCfigure}
 \usepackage{wrapfig} %use \begin{wrapfigure}[lineheight]{position (r=right, l=left, i=inside, o=outside)}{width}
 
+\newcommand{\preds}[1] {\attrib{#1}{pred}}
+\newcommand{\succs}[1] {\attrib{#1}{succ}}
+\newcommand{\adj}[1] {\attrib{#1}{adj}}
+\newcommand{\vertices}[1] {\attrib{#1}{vertices}}
+\newcommand{\edges}[1] {\attrib{#1}{edges}}
+\newcommand{\vcolor}[1] {\attrib{#1}{color}}
+\newcommand{\join}[1] {\attrib{#1}{join}}
+\newcommand{\counter}[1] {\attrib{#1}{counter}}
+
 \let\epsilon=\varepsilon
 
 \begin{document}
@@ -25,7 +34,7 @@
 %
 \mainmatter              % start of the contributions
 %
-\title{Bigger and Faster Data-graph Computations for Physical Simulations}
+\title{6.886 Final Project: \\ Bigger and Faster Data-graph Computations for Physical Simulations}
 %
 \titlerunning{Bigger and Faster}  % abbreviated title (for running head)
 %                                     also used for the TOC unless
@@ -42,6 +51,7 @@
 Cambridge, MA 02139, USA\\
 \{predrag, whasenpl, jjthomas\}@mit.edu\\
 \url{http://toc.csail.mit.edu/}}
+
 
 \maketitle
 
@@ -101,11 +111,12 @@ Outline:
 
 \input{abstract.tex}
 \input{intro.tex}
-\input{hilbert.tex}
-\input{hilbert_results.tex}
+\input{reordering.tex}
+\input{laika.tex}
+\input{empirical.tex}
 \input{partitions.tex}
-\input{partitions_results.tex}
-\input{conclusion.tex}
+%\input{partitions_results.tex}
+%\input{conclusion.tex}
 
 \bibliographystyle{acm}
 \small\bibliography{allpapers}

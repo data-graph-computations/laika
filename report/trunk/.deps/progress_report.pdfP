@@ -47,14 +47,24 @@ progress_report.pdf .deps/progress_report.pdfP :\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasy7.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasy9.tfm\
     /usr/local/texlive/2013/texmf-dist/fonts/tfm/public/latex-fonts/lasyb10.tfm\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb\
+    /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb\
     /usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmb8a.pfb\
@@ -248,7 +258,7 @@ progress_report.pdf .deps/progress_report.pdfP :\
     abstract.tex\
     allpapers.bib\
     clrscode4e.sty\
-    conclusion.tex\
+    empirical.tex\
     figures/2d_hilbert.pdf\
     figures/chromatic_scheduling.pdf\
     figures/dag_scheduling.pdf\
@@ -258,6 +268,7 @@ progress_report.pdf .deps/progress_report.pdfP :\
     figures/hilbert_priority_function.pdf\
     figures/hyperedge.pdf\
     figures/laika.jpg\
+    figures/laika_diagram.pdf\
     figures/miss_rate_curve.pdf\
     figures/scalability_bsp.pdf\
     figures/scalability_hilbert_bits_parallel.pdf\
@@ -266,12 +277,11 @@ progress_report.pdf .deps/progress_report.pdfP :\
     figures/scalability_reordered.pdf\
     figures/sparse_matrix_representation.pdf\
     figures/tetrahedron.pdf\
-    hilbert.tex\
-    hilbert_results.tex\
     intro.tex\
+    laika.tex\
     llncs2e/llncs.cls\
     partitions.tex\
-    partitions_results.tex\
     progress_report.tex\
+    reordering.tex\
     supertech.sty
 #===End dependents for progress_report.tex:
