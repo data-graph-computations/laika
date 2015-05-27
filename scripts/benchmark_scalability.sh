@@ -26,7 +26,7 @@ echo "" >>$output
 
 rounds=10
 
-nworkers=2 ; while [[ $nworkers -le 12 ]] ; do
+nworkers=1 ; while [[ $nworkers -le 12 ]] ; do
   export CILK_NWORKERS=$nworkers ;
 
   (make TMP=$benchroot clean-graph-compute) 2>&1 >/dev/null ;
@@ -59,7 +59,7 @@ done ;
 (make TMP=$benchroot clean-hilbert-reorder) 2>&1 >/dev/null;
 make TMP=$benchroot PARALLEL=1 HILBERTBITS=$hilbert ORIGINAL_NODES_FILE=$originalnodes ORIGINAL_EDGES_FILE=$originaledges reorder-graph ;
 
-nworkers=2 ; while [[ $nworkers -le 12 ]] ; do
+nworkers=1 ; while [[ $nworkers -le 12 ]] ; do
   export CILK_NWORKERS=$nworkers ;
 
   (make TMP=$benchroot clean-graph-compute) 2>&1 >/dev/null ;
