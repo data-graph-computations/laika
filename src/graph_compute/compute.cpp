@@ -19,6 +19,8 @@ using namespace std;
   #include "./priority_scheduling.h"
 #elif D1_CHUNK
   #include "./chunk_scheduling.h"
+#elif D1_PHASE
+  #include "./phase_scheduling.h"
 #elif D0_BSP
   #include "./bsp_scheduling.h"
 #else
@@ -126,7 +128,9 @@ int main(int argc, char *argv[]) {
   cout << "D0_BSP: " << D0_BSP << '\n';
   cout << "D1_PRIO: " << D1_PRIO << '\n';
   cout << "D1_CHUNK: " << D1_CHUNK << '\n';
+  cout << "D1_PHASE: " << D1_PHASE << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
+  cout << "Distance: " << DISTANCE << '\n';
 
   print_execution_data();
 

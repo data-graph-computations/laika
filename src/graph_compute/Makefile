@@ -2,7 +2,7 @@ CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall
 CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
-LDFLAGS = -lcilkrts -ldl -lrt
+LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
 HEADERS = common.h io.h
@@ -32,8 +32,16 @@ ifneq ($(D1_CHUNK),)
 	DEFS += -DD1_CHUNK=$(D1_CHUNK)
 endif
 
+ifneq ($(D1_PHASE),)
+	DEFS += -DD1_PHASE=$(D1_PHASE)
+endif
+
 ifneq ($(CHUNK_BITS),)
 	DEFS += -DCHUNK_BITS=$(CHUNK_BITS)
+endif
+
+ifneq ($(DISTANCE),)
+	DEFS += -DDISTANCE=$(DISTANCE)
 endif
 
 ifneq ($(BASELINE),)

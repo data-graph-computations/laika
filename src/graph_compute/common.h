@@ -54,8 +54,16 @@
   #define D1_CHUNK 0
 #endif
 
+#ifndef D1_PHASE
+  #define D1_PHASE 0
+#endif
+
 #ifndef PARALLEL
   #define PARALLEL 0
+#endif
+
+#ifndef DISTANCE
+  #define DISTANCE 1
 #endif
 
 #if PARALLEL

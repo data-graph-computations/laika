@@ -44,16 +44,20 @@ static inline bool chunkDependency(vid_t v, vid_t w) {
 
 static void calculateNodeDependenciesChunk(vertex_t * const nodes,
                                            const vid_t cntNodes) {
-  cilk_for (vid_t i = 0; i < cntNodes; i++) {
+  vid_t cntDependencies = 0;
+  for (vid_t i = 0; i < cntNodes; i++) {
     vertex_t * node = &nodes[i];
     node->dependencies = 0;
     for (vid_t j = 0; j < node->cntEdges; j++) {
       if (interChunkDependency(node->edges[j], i)) {
         ++node->dependencies;
+        cntDependencies++;
       }
     }
     node->satisfied = node->dependencies;
   }
+  printf("InterChunkDependencies: %lu\n",
+    static_cast<uint64_t>(cntDependencies));
 }
 
 // for each node, move inter-chunk successors to the front of the edges list

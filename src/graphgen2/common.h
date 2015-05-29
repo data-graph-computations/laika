@@ -24,12 +24,12 @@
   #define MAX_COORD 1024.0
 #endif
 
-#ifndef GRID_SIZE
-  #define GRID_SIZE 300ULL
-#endif
-
 #ifndef MAX_EDGE_LENGTH
   #define MAX_EDGE_LENGTH 3.0
+#endif
+
+#ifndef GRID_SIZE
+  #define GRID_SIZE static_cast<vid_t>(((MAX_COORD-MIN_COORD)/MAX_EDGE_LENGTH)-1)
 #endif
 
 // Use WHEN_TEST to conditionally include expensive sanity-checks,

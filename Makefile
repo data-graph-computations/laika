@@ -17,6 +17,8 @@ BFS ?= 0
 D0_BSP ?= 0
 D1_PRIO ?= 0
 D1_CHUNK ?= 0
+D1_PHASE ?= 0
+DISTANCE ?= 1
 
 DIST_UNIFORM ?= 1
 
