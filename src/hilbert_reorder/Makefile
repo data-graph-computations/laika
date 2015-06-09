@@ -7,6 +7,7 @@ ROOT = ../../
 
 .PHONY: all clean lint
 
+LIBS = ../libgraphio/libgraphio.o hilbert.o
 HEADERS = common.h hilbert/hilbert.h io.h
 REORDER_SOURCES = reorder.cpp io.cpp
 UNDIRECT_SOURCES = undirect.cpp io.cpp
@@ -36,10 +37,10 @@ hilbert:
 	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
 
 reorder: $(REORDER_SOURCES) hilbert
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder hilbert.o $(REORDER_SOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder $(LIBS) $(REORDER_SOURCES)
 
 undirect: $(UNDIRECT_SOURCES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o undirect $(UNDIRECT_SOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o undirect $(LIBS) $(UNDIRECT_SOURCES)
 
 clean:
-	rm -f *~ *.o *.out reorder
+	rm -f *~ *.o *.out reorder undirect

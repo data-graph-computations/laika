@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include "./common.h"
+#include "../libgraphio/libgraphio.h"
 
 using namespace std;
 
@@ -143,7 +144,58 @@ int readUndirectedEdgesFromFile(const string filepath,
   return 0;
 }
 
+class ReorderEdgeListBuilder : public EdgeListBuilder {
+ private:
+  vertex_t * nodes;
+  vid_t expectedCntNodes;
+  vid_t ** edges;
+  vid_t totalEdges;
+
+ public:
+  ReorderEdgeListBuilder(vertex_t * nodes,
+                         vid_t expectedCntNodes,
+                         vid_t ** outEdges) : EdgeListBuilder() {
+    this->nodes = nodes;
+    this->expectedCntNodes = expectedCntNodes;
+    this->edges = outEdges;
+    *outEdges = NULL;
+  }
+
+  void set_node_count(vid_t cntNodes) {
+    assert(this->expectedCntNodes == cntNodes);
+  }
+
+  void set_total_edge_count(vid_t totalEdges) {
+    // this function should only ever be called once
+    assert(*(this->edges) == NULL);
+    *(this->edges) = new vid_t[totalEdges];
+    this->totalEdges = totalEdges;
+  }
+
+  void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
+    this->nodes[nodeid].edgeData.edges = *(this->edges) + firstEdgeIndex;
+  }
+
+  void create_edge(vid_t edgeIndex, vid_t destination) {
+    *(this->edges)[edgeIndex] = destination;
+  }
+
+  void build() {
+    for (vid_t i = 1; i < this->expectedCntNodes; ++i) {
+      this->nodes[i-1].edgeData.cntEdges =
+        this->nodes[i].edgeData.edges - this->nodes[i-1].edgeData.edges;
+    }
+  }
+};
+
 int readEdgesFromFile(const string filepath, vertex_t * nodes, vid_t cntNodes) {
+  vid_t * edges;
+  ReorderEdgeListBuilder builder(nodes, cntNodes, &edges);
+
+  return adjlistfile_read(filepath, &builder);
+}
+
+int readEdgesFromFile2(const string filepath, vertex_t * nodes, vid_t cntNodes) {
   FILE * input = fopen(filepath.c_str(), "r");
   if (input == NULL) {
     cerr << "ERROR: Couldn't open file " << filepath << endl;

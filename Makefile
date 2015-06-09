@@ -26,7 +26,7 @@ all: build-full
 
 build-full: build-hilbert-reorder build-graph-compute build-graphgen2
 
-clean: clean-hilbert-reorder clean-graph-compute clean-graphgen2
+clean: clean-hilbert-reorder clean-graph-compute clean-graphgen2 clean-libgraphio
 
 distclean: clean
 	@cd $(TMP) && rm -f *.adjlist *.node *.out *.txt
@@ -40,6 +40,9 @@ clean-graph-compute:
 clean-graphgen2:
 	cd src/graphgen2 && $(MAKE) clean
 
+clean-libgraphio:
+	cd src/libgraphio && $(MAKE) clean
+
 build-hilbert-reorder:
 	cd src/hilbert_reorder && $(MAKE)
 
@@ -48,6 +51,9 @@ build-graph-compute:
 
 build-graphgen2:
 	cd src/graphgen2 && $(MAKE)
+
+build-libgraphio:
+	cd src/libgraphio && $(MAKE)
 
 gen-graph:
 	python src/graphgen/graphgen.py $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)

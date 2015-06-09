@@ -5,6 +5,7 @@ CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
+LIBS = ../libgraphio/libgraphio.o
 HEADERS = common.h io.h
 CXXSOURCES = compute.cpp io.cpp
 
@@ -54,7 +55,7 @@ lint:
 	$(ROOT)/cpplint.py --root=src/graph_compute *.cpp *.h
 
 compute: $(CXXSOURCES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o compute $(CXXSOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o compute $(CXXSOURCES) $(LIBS)
 
 clean:
 	rm -f *~ *.o *.out compute
