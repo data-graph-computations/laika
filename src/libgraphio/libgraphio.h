@@ -10,10 +10,21 @@ class EdgeListBuilder {
  public:
   // these methods must be called in order, top to bottom
   // otherwise, the behavior is undefined
+
+  // this function should only ever be called once
   virtual void set_node_count(vid_t cntNodes) {}
+
+
+  // this function should only ever be called once
   virtual void set_total_edge_count(vid_t totalEdges) {}
+
+  // this function should be called in increasing order of nodeid
   virtual void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {}
+
+  // this function should be called in increasing order of edgeIndex
   virtual void create_edge(vid_t edgeIndex, vid_t destination) {}
+
+  // this function should only ever be called once
   virtual void build() {}
 };
 

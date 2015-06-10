@@ -61,8 +61,9 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
  private:
   vertex_t * nodes;
   vid_t expectedCntNodes;
-  vid_t ** edgesPtr;
+  vid_t ** outEdges;
   vid_t * edges;
+  vid_t * outTotalEdges;
   vid_t totalEdges;
 
  public:
@@ -71,20 +72,21 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
                          vid_t ** const outEdges) : EdgeListBuilder() {
     this->nodes = nodes;
     this->expectedCntNodes = expectedCntNodes;
-    this->edgesPtr = outEdges;
+    this->outEdges = outEdges;
     this->edges = NULL;
     *outEdges = NULL;
   }
 
   void set_node_count(vid_t cntNodes) {
+    // this function should only ever be called once
     assert(this->expectedCntNodes == cntNodes);
   }
 
   void set_total_edge_count(vid_t totalEdges) {
     // this function should only ever be called once
-    assert(*(this->edgesPtr) == NULL);
-    this->edges = *(this->edgesPtr) = new vid_t[totalEdges];
-    this->totalEdges = totalEdges;
+    assert(this->edges == NULL);
+    this->edges = *(this->outEdges) = new vid_t[totalEdges];
+    this->totalEdges = *(this->outTotalEdges) = totalEdges;
   }
 
   void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
@@ -99,7 +101,7 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
 
   void build() {
     vid_t i;
-    for (i = 1; i < this->expectedCntNodes; ++i) {
+    cilk_for (i = 1; i < this->expectedCntNodes; ++i) {
       this->nodes[i-1].edgeData.cntEdges =
         this->nodes[i].edgeData.edges - this->nodes[i-1].edgeData.edges;
     }
@@ -119,7 +121,8 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
 
 int readEdgesFromFile(const string filepath, vertex_t * nodes, vid_t cntNodes) {
   vid_t * edges;
-  ReorderEdgeListBuilder builder(nodes, cntNodes, &edges);
+  vid_t totalEdges;
+  ReorderEdgeListBuilder builder(nodes, cntNodes, &edges, &totalEdges);
 
   return adjlistfile_read(filepath, &builder);
 }

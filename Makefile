@@ -61,9 +61,6 @@ gen-graph:
 gen-graph2:
 	src/graphgen2/graphgen2 $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
 
-undirect-graph: build-hilbert-reorder
-	src/hilbert_reorder/undirect $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
-
 reorder-graph: build-hilbert-reorder
 	src/hilbert_reorder/reorder $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(REORDERED_NODES_FILE) $(REORDERED_EDGES_FILE)
 
