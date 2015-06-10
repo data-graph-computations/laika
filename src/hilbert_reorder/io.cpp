@@ -148,16 +148,18 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
  private:
   vertex_t * nodes;
   vid_t expectedCntNodes;
-  vid_t ** edges;
+  vid_t ** edgesPtr;
+  vid_t * edges;
   vid_t totalEdges;
 
  public:
-  ReorderEdgeListBuilder(vertex_t * nodes,
-                         vid_t expectedCntNodes,
-                         vid_t ** outEdges) : EdgeListBuilder() {
+  ReorderEdgeListBuilder(vertex_t * const nodes,
+                         const vid_t expectedCntNodes,
+                         vid_t ** const outEdges) : EdgeListBuilder() {
     this->nodes = nodes;
     this->expectedCntNodes = expectedCntNodes;
-    this->edges = outEdges;
+    this->edgesPtr = outEdges;
+    this->edges = NULL;
     *outEdges = NULL;
   }
 
@@ -167,24 +169,38 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
 
   void set_total_edge_count(vid_t totalEdges) {
     // this function should only ever be called once
-    assert(*(this->edges) == NULL);
-    *(this->edges) = new vid_t[totalEdges];
+    assert(*(this->edgesPtr) == NULL);
+    this->edges = *(this->edgesPtr) = new vid_t[totalEdges];
     this->totalEdges = totalEdges;
   }
 
   void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
-    this->nodes[nodeid].edgeData.edges = *(this->edges) + firstEdgeIndex;
+    assert(nodeid < this->expectedCntNodes);
+    this->nodes[nodeid].edgeData.edges = this->edges + firstEdgeIndex;
   }
 
   void create_edge(vid_t edgeIndex, vid_t destination) {
-    *(this->edges)[edgeIndex] = destination;
+    assert(edgeIndex < this->totalEdges);
+    this->edges[edgeIndex] = destination;
   }
 
   void build() {
-    for (vid_t i = 1; i < this->expectedCntNodes; ++i) {
+    vid_t i;
+    for (i = 1; i < this->expectedCntNodes; ++i) {
       this->nodes[i-1].edgeData.cntEdges =
         this->nodes[i].edgeData.edges - this->nodes[i-1].edgeData.edges;
     }
+    i = this->expectedCntNodes - 1;
+    vid_t * edgesEnd = this->edges + this->totalEdges;
+    this->nodes[i].edgeData.cntEdges = edgesEnd - this->nodes[i].edgeData.edges;
+
+    WHEN_TEST({
+      vid_t totalCountedEdges = 0;
+      for (vid_t i = 0; i < this->expectedCntNodes; ++i) {
+        totalCountedEdges += this->nodes[i].edgeData.cntEdges;
+      }
+      assert(totalCountedEdges == this->totalEdges);
+    })
   }
 };
 
@@ -193,61 +209,6 @@ int readEdgesFromFile(const string filepath, vertex_t * nodes, vid_t cntNodes) {
   ReorderEdgeListBuilder builder(nodes, cntNodes, &edges);
 
   return adjlistfile_read(filepath, &builder);
-}
-
-int readEdgesFromFile2(const string filepath, vertex_t * nodes, vid_t cntNodes) {
-  FILE * input = fopen(filepath.c_str(), "r");
-  if (input == NULL) {
-    cerr << "ERROR: Couldn't open file " << filepath << endl;
-    return -1;
-  }
-
-  char adjGraph[15];
-  vid_t n, m, result;
-
-  result = fscanf(input, "%15s\n%lu\n%lu\n", adjGraph, &n, &m);
-  if (result != 3 || strcmp(ADJGRAPH, adjGraph) != 0) {
-    cleanupOnFormatError(input, "edge", 1);
-    return -1;
-  }
-
-  if (n != cntNodes) {
-    cerr << "ERROR: Expected " << cntNodes << " nodes, found "
-         << n << " nodes in edge file.";
-    result = fclose(input);
-    assert(result == 0);
-    return -1;
-  }
-
-  assert(m >= 0);
-
-  vid_t * edgeList = new (std::nothrow) vid_t[m];
-  assert(edgeList != 0);
-  uint64_t offset, previousOffset = 0;
-  for (vid_t i = 0; i < n; ++i) {
-    result = fscanf(input, "%lu\n", &offset);
-    if (result != 1) {
-      cleanupOnFormatError(input, "edge", i + 3);
-      return -1;
-    }
-    nodes[i].edgeData.edges = edgeList + offset;
-
-    if (i > 0) {
-      nodes[i-1].edgeData.cntEdges = offset - previousOffset;
-    }
-    previousOffset = offset;
-  }
-  nodes[n-1].edgeData.cntEdges = m - previousOffset;
-
-  for (vid_t i = 0; i < m; ++i) {
-    result = fscanf(input, "%lu\n", &edgeList[i]);
-    if (result != 1) {
-      cleanupOnFormatError(input, "edge", i + n + 3);
-      return -1;
-    }
-  }
-
-  return 0;
 }
 
 static int outputNodes(const vertex_t * const reorderedNodes, const vid_t cntNodes,

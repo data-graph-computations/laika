@@ -206,8 +206,8 @@ int main(int argc, char *argv[]) {
 
   WHEN_DEBUG({
     printf("\nOrder after sorting:\n");
-    for (int i = 0; i < cntNodes; ++i) {
-      printf("Position %8d: id %8lu\n", i, nodes[i].id);
+    for (vid_t i = 0; i < cntNodes; ++i) {
+      printf("Position %8lu: id %8lu\n", i, nodes[i].id);
     }
   })
 
