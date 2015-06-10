@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <stdexcept>
 #include "./libgraphio.h"
 #include "./common.h"
 
@@ -59,4 +60,62 @@ int adjlistfile_read(const std::string& filepath,
 
   builder->build();
   return 0;
+}
+
+class AdjlistWriter : public EdgeListBuilder {
+ private:
+  std::string filepath;
+  FILE * output;
+  vid_t cntNodes;
+  vid_t totalEdges;
+  vid_t lastUsedNodeId = static_cast<vid_t>(-1);
+  vid_t lastUsedEdgeId = static_cast<vid_t>(-1);
+
+ public:
+  explicit AdjlistWriter(const std::string& filepath) {
+    this->filepath = filepath;
+    output = std::fopen(filepath.c_str(), "w");
+    if (output == NULL) {
+      throw new std::runtime_error("Couldn't open file: " + filepath);
+    }
+
+    std::fprintf(output, ADJGRAPH "\n");
+  }
+
+  void set_node_count(vid_t cntNodes) {
+    this->cntNodes = cntNodes;
+    std::fprintf(output, "%lu\n", cntNodes);
+  }
+
+  void set_total_edge_count(vid_t totalEdges) {
+    this->totalEdges = totalEdges;
+    std::fprintf(output, "%lu\n", totalEdges);
+  }
+
+  void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
+    assert(nodeid == this->lastUsedNodeId + 1);
+    assert(nodeid < this->cntNodes);
+    this->lastUsedNodeId = nodeid;
+    std::fprintf(output, "%lu\n", firstEdgeIndex);
+  }
+
+  void create_edge(vid_t edgeIndex, vid_t destination) {
+    assert(edgeIndex == this->lastUsedEdgeId + 1);
+    assert(edgeIndex < this->totalEdges);
+    this->lastUsedEdgeId = edgeIndex;
+    std::fprintf(output, "%lu\n", destination);
+  }
+
+  void build() {
+    assert(this->lastUsedEdgeId == this->totalEdges - 1);
+    assert(this->lastUsedNodeId == this->cntNodes - 1);
+    if (std::ferror(output)) {
+      throw new std::runtime_error("Error writing file: " + this->filepath);
+    }
+    std::fclose(output);
+  }
+};
+
+EdgeListBuilder * adjlistfile_write(const std::string& filepath) {
+  return new AdjlistWriter(filepath);
 }
