@@ -148,8 +148,9 @@ static int outputNodes(const vertex_t * const reorderedNodes, const vid_t cntNod
 int outputEdges(const vertex_t * const reorderedNodes, const vid_t cntNodes,
                 const vid_t * const translationMapping,
                 const string& filepath) {
+  EdgeListBuilder * builder = NULL;
   try {
-    EdgeListBuilder * builder = adjlistfile_write(filepath);
+    builder = adjlistfile_write(filepath);
     if (builder == NULL) {
       std::cerr << "Received null builder when writing to file " << filepath << std::endl;
       return -1;
@@ -183,9 +184,14 @@ int outputEdges(const vertex_t * const reorderedNodes, const vid_t cntNodes,
     }
 
     builder->build();
+
+    delete builder;
     return 0;
   } catch (std::exception& e) {
     std::cerr << "ERROR: " << e.what() << std::endl;
+    if (builder != NULL) {
+      delete builder;
+    }
     return -1;
   }
 }

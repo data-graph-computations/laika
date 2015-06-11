@@ -26,6 +26,9 @@ class EdgeListBuilder {
 
   // this function should only ever be called once
   virtual void build() {}
+
+  // virtual destructor, to eliminate compiler warning
+  virtual ~EdgeListBuilder() {}
 };
 
 int binadjlistfile_read(const std::string& filepath,
