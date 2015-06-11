@@ -39,6 +39,26 @@
   #define WHEN_DEBUG(ex)
 #endif
 
+#ifndef HILBERTBITS
+  #define HILBERTBITS 4
+#endif
+
+#ifndef PARALLEL
+  #define PARALLEL 1
+#endif
+
+#if PARALLEL
+  #include <cilk/cilk.h>
+#else
+  #define cilk_for for
+  #define cilk_spawn
+  #define cilk_sync
+#endif
+
+#ifndef BFS
+  #define BFS 0
+#endif
+
 typedef uint64_t vid_t;  // vertex id type
 
 struct edges_t {

@@ -69,10 +69,12 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
  public:
   ReorderEdgeListBuilder(vertex_t * const nodes,
                          const vid_t expectedCntNodes,
-                         vid_t ** const outEdges) : EdgeListBuilder() {
+                         vid_t ** const outEdges,
+                         vid_t * const outTotalEdges) : EdgeListBuilder() {
     this->nodes = nodes;
     this->expectedCntNodes = expectedCntNodes;
     this->outEdges = outEdges;
+    this->outTotalEdges = outTotalEdges;
     this->edges = NULL;
     *outEdges = NULL;
   }
@@ -100,14 +102,14 @@ class ReorderEdgeListBuilder : public EdgeListBuilder {
   }
 
   void build() {
-    vid_t i;
-    cilk_for (i = 1; i < this->expectedCntNodes; ++i) {
+    cilk_for (vid_t i = 1; i < this->expectedCntNodes; ++i) {
       this->nodes[i-1].edgeData.cntEdges =
         this->nodes[i].edgeData.edges - this->nodes[i-1].edgeData.edges;
     }
-    i = this->expectedCntNodes - 1;
+    vid_t lastNode = this->expectedCntNodes - 1;
     vid_t * edgesEnd = this->edges + this->totalEdges;
-    this->nodes[i].edgeData.cntEdges = edgesEnd - this->nodes[i].edgeData.edges;
+    this->nodes[lastNode].edgeData.cntEdges =
+      edgesEnd - this->nodes[lastNode].edgeData.edges;
 
     WHEN_TEST({
       vid_t totalCountedEdges = 0;
@@ -124,7 +126,7 @@ int readEdgesFromFile(const string filepath, vertex_t * nodes, vid_t cntNodes) {
   vid_t totalEdges;
   ReorderEdgeListBuilder builder(nodes, cntNodes, &edges, &totalEdges);
 
-  return adjlistfile_read(filepath, &builder);
+  return edgelistfile_read(filepath, &builder);
 }
 
 static int outputNodes(const vertex_t * const reorderedNodes, const vid_t cntNodes,

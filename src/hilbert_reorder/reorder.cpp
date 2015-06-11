@@ -12,26 +12,6 @@
 
 using namespace std;
 
-#ifndef HILBERTBITS
-  #define HILBERTBITS 4
-#endif
-
-#ifndef PARALLEL
-  #define PARALLEL 0
-#endif
-
-#if PARALLEL
-  #include <cilk/cilk.h>
-#else
-  #define cilk_for for
-  #define cilk_spawn
-  #define cilk_sync
-#endif
-
-#ifndef BFS
-  #define BFS 0
-#endif
-
 // This function populates the hilbertId field of each vertex_t in nodes, by
 // remapping every vertex onto an n^3 lattice using appropriate scaling factors,
 // and then traversing the lattice using a 3-D Hilbert curve.

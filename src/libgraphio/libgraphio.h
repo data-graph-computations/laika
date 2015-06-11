@@ -37,6 +37,24 @@ int binadjlistfile_read(const std::string& filepath,
 int adjlistfile_read(const std::string& filepath,
                      EdgeListBuilder * const builder);
 
+static inline int edgelistfile_read(const std::string& filepath,
+                                    EdgeListBuilder * const builder) {
+  const std::string adjlistExtension = ".adjlist";
+  const std::string binadjlistExtension = ".binadjlist";
+
+  std::string extension = filepath.substr(filepath.find_last_of('.'));
+
+  if (extension == adjlistExtension) {
+    return adjlistfile_read(filepath, builder);
+  } else if (extension == binadjlistExtension) {
+    return binadjlistfile_read(filepath, builder);
+  } else {
+    std::cerr << "ERROR: Unrecognized file extension for file: "
+              << filepath << std::endl;
+    return -1;
+  }
+}
+
 EdgeListBuilder * binadjlistfile_write(const std::string& filepath);
 
 EdgeListBuilder * adjlistfile_write(const std::string& filepath);

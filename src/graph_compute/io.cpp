@@ -85,5 +85,5 @@ int readEdgesFromFile(const string filepath,
   vid_t totalEdges;
   ComputeEdgeListBuilder builder(outNodes, outCntNodes, &edges, &totalEdges);
 
-  return adjlistfile_read(filepath, &builder);
+  return edgelistfile_read(filepath, &builder);
 }
