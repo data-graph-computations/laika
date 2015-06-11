@@ -24,9 +24,9 @@ DIST_UNIFORM ?= 1
 
 all: build-full
 
-build-full: build-hilbert-reorder build-graph-compute build-graphgen2
+build-full: build-hilbert-reorder build-graph-compute build-graphgen2 build-libgraphio build-binconvert
 
-clean: clean-hilbert-reorder clean-graph-compute clean-graphgen2 clean-libgraphio
+clean: clean-hilbert-reorder clean-graph-compute clean-graphgen2 clean-libgraphio clean-binconvert
 
 distclean: clean
 	@cd $(TMP) && rm -f *.adjlist *.node *.out *.txt
@@ -43,6 +43,9 @@ clean-graphgen2:
 clean-libgraphio:
 	cd src/libgraphio && $(MAKE) clean
 
+clean-binconvert:
+	cd src/binconvert && $(MAKE) clean
+
 build-hilbert-reorder:
 	cd src/hilbert_reorder && $(MAKE)
 
@@ -54,6 +57,9 @@ build-graphgen2:
 
 build-libgraphio:
 	cd src/libgraphio && $(MAKE)
+
+build-binconvert:
+	cd src/binconvert && $(MAKE)
 
 gen-graph:
 	python src/graphgen/graphgen.py $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)

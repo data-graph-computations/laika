@@ -48,12 +48,6 @@ static int binadjlistfile_read_v1(const std::string& filepath,
     return -1;
   }
 
-  if (!binadjlist->eof()) {
-    std::cerr << "File seems to continue past specified end: "
-              << filepath << std::endl;
-    return -1;
-  }
-
   builder->build();
   binadjlist->close();
   return 0;
@@ -100,24 +94,28 @@ class BinadjlistWriterV1 : public EdgeListBuilder {
  private:
   std::string filepath;
   std::ofstream * output;
-  vid_t cntNodes;
-  vid_t totalEdges;
+  vid_t cntNodes = -1;
+  vid_t totalEdges = -1;
   vid_t lastUsedNodeId = static_cast<vid_t>(-1);
   vid_t lastUsedEdgeId = static_cast<vid_t>(-1);
 
  public:
   BinadjlistWriterV1(const std::string& filepath,
-                   std::ofstream * const output) {
+                     std::ofstream * const output) {
     this->filepath = filepath;
     this->output = output;
   }
 
+  // this function should only be called once
   void set_node_count(vid_t cntNodes) {
+    assert(this->cntNodes == static_cast<vid_t>(-1));
     this->cntNodes = cntNodes;
     this->output->write(reinterpret_cast<char*>(&cntNodes), sizeof(cntNodes));
   }
 
+  // this function should only be called once
   void set_total_edge_count(vid_t totalEdges) {
+    assert(this->totalEdges == static_cast<vid_t>(-1));
     this->totalEdges = totalEdges;
     this->output->write(reinterpret_cast<char*>(&totalEdges), sizeof(totalEdges));
   }
@@ -146,20 +144,21 @@ class BinadjlistWriterV1 : public EdgeListBuilder {
     }
 
     this->output->close();
+    delete this->output;
   }
 };
 
 EdgeListBuilder * binadjlistfile_write(const std::string& filepath) {
-  std::ofstream output(filepath, std::ofstream::binary);
+  std::ofstream * output = new std::ofstream(filepath, std::ofstream::binary);
 
-  if (!output.is_open()) {
+  if (!output->is_open()) {
     std::cerr << "Could not open file " << filepath << std::endl;
     return NULL;
   }
 
   const uint32_t magic = BINADJLIST_MAGIC;
   const uint32_t version = 1;
-  output.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
-  output.write(reinterpret_cast<const char*>(&version), sizeof(version));
-  return new BinadjlistWriterV1(filepath, &output);
+  output->write(reinterpret_cast<const char*>(&magic), sizeof(magic));
+  output->write(reinterpret_cast<const char*>(&version), sizeof(version));
+  return new BinadjlistWriterV1(filepath, output);
 }
