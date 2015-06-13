@@ -7,6 +7,7 @@ REORDERED_EDGES_FILE ?= $(TMP)/edges_reordered.adjlist
 OUTPUT ?= $(TMP)/output.out
 
 GRAPH_SIZE ?= 10000000
+GRAPH_AVG_DEGREE ?= 15
 ROUNDS ?= 3
 PARALLEL ?= 0
 PRIORITY_GROUP_BITS ?= 8
@@ -53,7 +54,7 @@ gen-graph:
 	python src/graphgen/graphgen.py $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
 
 gen-graph2:
-	src/graphgen2/graphgen2 $(GRAPH_SIZE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
+	src/graphgen2/graphgen2 $(GRAPH_SIZE) $(GRAPH_AVG_DEGREE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)
 
 undirect-graph: build-hilbert-reorder
 	src/hilbert_reorder/undirect $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE) $(ORIGINAL_NODES_FILE) $(ORIGINAL_EDGES_FILE)

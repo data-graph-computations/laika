@@ -8,6 +8,6 @@
 int generateEdges(vertex_t * const nodes,
                   std::vector<vid_t> * const edges,
                   const vid_t cntNodes,
-                  const double maxEdgeLength);
+                  const vid_t nodeAvgDegree);
 
 #endif  // EDGE_GENERATOR_H_

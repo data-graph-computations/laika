@@ -43,6 +43,7 @@ static void ensureEdgesAreBidirectional(const vector<vid_t> * const edges,
 static int execute(vertex_t * const nodes,
                    vector<vid_t> * const edges,
                    const vid_t cntNodes,
+                   const vid_t nodeAvgDegree,
                    const string outputNodeFile,
                    const string outputEdgeFile) {
   int result = 0;
@@ -54,7 +55,7 @@ static int execute(vertex_t * const nodes,
   cout << "Point generation complete in: " << runtime(before, after) << "s\n";
 
   before = after;
-  result = generateEdges(nodes, edges, cntNodes, MAX_EDGE_LENGTH);
+  result = generateEdges(nodes, edges, cntNodes, nodeAvgDegree);
   if (result != 0) {
     return result;
   }
@@ -89,16 +90,17 @@ int main(int argc, char *argv[]) {
   vertex_t * nodes;
   vector<vid_t> * edges;
   vid_t cntNodes = 0;
+  vid_t nodeAvgDegree = 0;
   char * outputNodeFile;
   char * outputEdgeFile;
 
-  const int numArgs = 3;
+  const int numArgs = 4;
 
   cout << '\n';
 
   if (argc != (numArgs + 1)) {
     cerr << "ERROR: Expected " << numArgs << " arguments, received " << argc-1 << '\n';
-    cerr << "Usage: ./graphgen2 <num_nodes> "
+    cerr << "Usage: ./graphgen2 <num_nodes> <node_avg_degree> "
             "<node_file> <edge_file>" << endl;
     return 1;
   }
@@ -108,23 +110,26 @@ int main(int argc, char *argv[]) {
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   try {
     cntNodes = stoi(argv[1]);
+    nodeAvgDegree = stoi(argv[2]);
   } catch (exception& e) {
     cerr << "ERROR: " << e.what() << endl;
     return 1;
   }
   #pragma GCC diagnostic pop
 
-  outputNodeFile = argv[2];
-  outputEdgeFile = argv[3];
+  outputNodeFile = argv[3];
+  outputEdgeFile = argv[4];
 
   cout << "Graph size: " << cntNodes << '\n';
+  cout << "Graph average degree: " << nodeAvgDegree << '\n';
   cout << "Output node file: " << outputNodeFile << '\n';
   cout << "Output edge file: " << outputEdgeFile << '\n';
 
   nodes = new vertex_t[cntNodes];
   edges = new vector<vid_t>[cntNodes];
 
-  int result = execute(nodes, edges, cntNodes, outputNodeFile, outputEdgeFile);
+  int result = execute(nodes, edges, cntNodes, nodeAvgDegree,
+                       outputNodeFile, outputEdgeFile);
   assert(result == 0);
 
   delete[] nodes;
