@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include "./common.h"
+#include "../libgraphio/libgraphio.h"
 
 using namespace std;
 
@@ -56,146 +57,76 @@ int readNodesFromFile(const string filepath, vertex_t ** outNodes, vid_t * outCo
   return 0;
 }
 
-int readUndirectedEdgesFromFile(const string filepath,
-                                vertex_t * nodes, vid_t cntNodes) {
-  FILE * input = fopen(filepath.c_str(), "r");
-  if (input == NULL) {
-    cerr << "ERROR: Couldn't open file " << filepath << endl;
-    return -1;
+class ReorderEdgeListBuilder : public EdgeListBuilder {
+ private:
+  vertex_t * nodes;
+  vid_t expectedCntNodes;
+  vid_t ** outEdges;
+  vid_t * edges;
+  vid_t * outTotalEdges;
+  vid_t totalEdges;
+
+ public:
+  ReorderEdgeListBuilder(vertex_t * const nodes,
+                         const vid_t expectedCntNodes,
+                         vid_t ** const outEdges,
+                         vid_t * const outTotalEdges) : EdgeListBuilder() {
+    this->nodes = nodes;
+    this->expectedCntNodes = expectedCntNodes;
+    this->outEdges = outEdges;
+    this->outTotalEdges = outTotalEdges;
+    this->edges = NULL;
+    *outEdges = NULL;
   }
 
-  char adjGraph[15];
-  vid_t n, m, result;
-
-  result = fscanf(input, "%15s\n%lu\n%lu\n", adjGraph, &n, &m);
-  if (result != 3 || strcmp(ADJGRAPH, adjGraph) != 0) {
-    cleanupOnFormatError(input, "edge", 1);
-    return -1;
+  void set_node_count(vid_t cntNodes) {
+    // this function should only ever be called once
+    assert(this->expectedCntNodes == cntNodes);
   }
 
-  if (n != cntNodes) {
-    cerr << "ERROR: Expected " << cntNodes << " nodes, found "
-         << n << " nodes in edge file.";
-    result = fclose(input);
-    assert(result == 0);
-    return -1;
+  void set_total_edge_count(vid_t totalEdges) {
+    // this function should only ever be called once
+    assert(this->edges == NULL);
+    this->edges = *(this->outEdges) = new vid_t[totalEdges];
+    this->totalEdges = *(this->outTotalEdges) = totalEdges;
   }
 
-  edge_t * edgeList = new (std::nothrow) edge_t[2 * m];
-  assert(edgeList != 0);
-  uint64_t offset, previousOffset = 0;
-  for (vid_t i = 0; i < n; ++i) {
-    result = fscanf(input, "%lu\n", &offset);
-    if (result != 1) {
-      cleanupOnFormatError(input, "edge", i + 3);
-      return -1;
-    }
-
-    nodes[i].edgeData.edges = NULL;
-    if (i > 0) {
-      nodes[i-1].edgeData.cntEdges = offset - previousOffset;
-    }
-    previousOffset = offset;
+  void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
+    assert(nodeid < this->expectedCntNodes);
+    this->nodes[nodeid].edgeData.edges = this->edges + firstEdgeIndex;
   }
-  nodes[n-1].edgeData.cntEdges = m - previousOffset;
 
-  vid_t curNode = 0;
-  size_t curNodeEdges = nodes[curNode].edgeData.cntEdges;
-  size_t curNodeSeen = 0;
-  vid_t e;
-  for (vid_t i = 0; i < m; ++i) {
-    if (curNodeSeen == curNodeEdges) {
-      while (nodes[++curNode].edgeData.cntEdges == 0) {}
-      curNodeEdges = nodes[curNode].edgeData.cntEdges;
-      curNodeSeen = 0;
-    }
-    result = fscanf(input, "%lu\n", &e);
-    if (result != 1) {
-      cleanupOnFormatError(input, "edge", i + n + 3);
-      return -1;
-    }
-    edgeList[2 * i] = edge_t(curNode, e);
-    edgeList[2 * i + 1] = edge_t(e, curNode);
-    curNodeSeen++;
+  void create_edge(vid_t edgeIndex, vid_t destination) {
+    assert(edgeIndex < this->totalEdges);
+    this->edges[edgeIndex] = destination;
   }
-  std::sort(edgeList, edgeList + 2 * m);
 
-  vid_t *nbrs = new vid_t[2 * m];
-  nbrs[0] = edgeList[0].second;
-  nodes[edgeList[0].first].edgeData.edges = nbrs;
+  void build() {
+    cilk_for (vid_t i = 1; i < this->expectedCntNodes; ++i) {
+      this->nodes[i-1].edgeData.cntEdges =
+        this->nodes[i].edgeData.edges - this->nodes[i-1].edgeData.edges;
+    }
+    vid_t lastNode = this->expectedCntNodes - 1;
+    vid_t * edgesEnd = this->edges + this->totalEdges;
+    this->nodes[lastNode].edgeData.cntEdges =
+      edgesEnd - this->nodes[lastNode].edgeData.edges;
 
-  int numReal = 1;
-  for (vid_t i = 1; i < 2 * m; i++) {
-    if (edgeList[i] == edgeList[i - 1]) {
-      continue;  // duplicate
-    }
-    if (edgeList[i].first != edgeList[i - 1].first) {
-      nodes[edgeList[i].first].edgeData.edges = nbrs + numReal;
-      nodes[edgeList[i - 1].first].edgeData.cntEdges =
-        (nbrs + numReal) - nodes[edgeList[i - 1].first].edgeData.edges;
-    }
-    nbrs[numReal++] = edgeList[i].second;
+    WHEN_TEST({
+      vid_t totalCountedEdges = 0;
+      for (vid_t i = 0; i < this->expectedCntNodes; ++i) {
+        totalCountedEdges += this->nodes[i].edgeData.cntEdges;
+      }
+      assert(totalCountedEdges == this->totalEdges);
+    })
   }
-  nodes[edgeList[2 * m - 1].first].edgeData.cntEdges =
-    (nbrs + numReal) - nodes[edgeList[2 * m - 1].first].edgeData.edges;
-
-  delete edgeList;
-  return 0;
-}
+};
 
 int readEdgesFromFile(const string filepath, vertex_t * nodes, vid_t cntNodes) {
-  FILE * input = fopen(filepath.c_str(), "r");
-  if (input == NULL) {
-    cerr << "ERROR: Couldn't open file " << filepath << endl;
-    return -1;
-  }
+  vid_t * edges;
+  vid_t totalEdges;
+  ReorderEdgeListBuilder builder(nodes, cntNodes, &edges, &totalEdges);
 
-  char adjGraph[15];
-  vid_t n, m, result;
-
-  result = fscanf(input, "%15s\n%lu\n%lu\n", adjGraph, &n, &m);
-  if (result != 3 || strcmp(ADJGRAPH, adjGraph) != 0) {
-    cleanupOnFormatError(input, "edge", 1);
-    return -1;
-  }
-
-  if (n != cntNodes) {
-    cerr << "ERROR: Expected " << cntNodes << " nodes, found "
-         << n << " nodes in edge file.";
-    result = fclose(input);
-    assert(result == 0);
-    return -1;
-  }
-
-  assert(m >= 0);
-
-  vid_t * edgeList = new (std::nothrow) vid_t[m];
-  assert(edgeList != 0);
-  uint64_t offset, previousOffset = 0;
-  for (vid_t i = 0; i < n; ++i) {
-    result = fscanf(input, "%lu\n", &offset);
-    if (result != 1) {
-      cleanupOnFormatError(input, "edge", i + 3);
-      return -1;
-    }
-    nodes[i].edgeData.edges = edgeList + offset;
-
-    if (i > 0) {
-      nodes[i-1].edgeData.cntEdges = offset - previousOffset;
-    }
-    previousOffset = offset;
-  }
-  nodes[n-1].edgeData.cntEdges = m - previousOffset;
-
-  for (vid_t i = 0; i < m; ++i) {
-    result = fscanf(input, "%lu\n", &edgeList[i]);
-    if (result != 1) {
-      cleanupOnFormatError(input, "edge", i + n + 3);
-      return -1;
-    }
-  }
-
-  return 0;
+  return edgelistfile_read(filepath, &builder);
 }
 
 static int outputNodes(const vertex_t * const reorderedNodes, const vid_t cntNodes,
@@ -217,42 +148,54 @@ static int outputNodes(const vertex_t * const reorderedNodes, const vid_t cntNod
 }
 
 int outputEdges(const vertex_t * const reorderedNodes, const vid_t cntNodes,
-                          const vid_t * const translationMapping,
-                          const string& filepath) {
-  FILE * output = fopen(filepath.c_str(), "w");
-  if (output == NULL) {
-    cerr << "ERROR: Couldn't open file " << filepath << endl;
+                const vid_t * const translationMapping,
+                const string& filepath) {
+  EdgeListBuilder * builder = NULL;
+  try {
+    builder = adjlistfile_write(filepath);
+    if (builder == NULL) {
+      std::cerr << "Received null builder when writing to file " << filepath << std::endl;
+      return -1;
+    }
+
+    builder->set_node_count(cntNodes);
+
+    vid_t totalEdges = 0;
+    for (vid_t i = 0; i < cntNodes; ++i) {
+      totalEdges += reorderedNodes[i].edgeData.cntEdges;
+    }
+    builder->set_total_edge_count(totalEdges);
+
+    // calculate offsets
+    totalEdges = 0;
+    for (vid_t i = 0; i < cntNodes; ++i) {
+      builder->set_first_edge_of_node(i, totalEdges);
+      totalEdges += reorderedNodes[i].edgeData.cntEdges;
+    }
+
+    // writing edges
+    totalEdges = 0;
+    for (vid_t i = 0; i < cntNodes; ++i) {
+      const edges_t * const edgeData = &reorderedNodes[i].edgeData;
+      for (vid_t j = 0; j < edgeData->cntEdges; ++j) {
+        const vid_t translatedEdge = translationMapping != NULL ?
+          translationMapping[edgeData->edges[j]] : edgeData->edges[j];
+
+        builder->create_edge(totalEdges++, translatedEdge);
+      }
+    }
+
+    builder->build();
+
+    delete builder;
+    return 0;
+  } catch (std::exception& e) {
+    std::cerr << "ERROR: " << e.what() << std::endl;
+    if (builder != NULL) {
+      delete builder;
+    }
     return -1;
   }
-
-  fprintf(output, ADJGRAPH "\n");
-  fprintf(output, "%lu\n", cntNodes);
-
-  // calculating the total number of edges
-  size_t totalEdges = 0;
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    totalEdges += reorderedNodes[i].edgeData.cntEdges;
-  }
-  fprintf(output, "%lu\n", totalEdges);
-
-  // calculating offsets
-  totalEdges = 0;
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    fprintf(output, "%lu\n", totalEdges);
-    totalEdges += reorderedNodes[i].edgeData.cntEdges;
-  }
-
-  // outputing edges
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    const edges_t * const edgeData = &reorderedNodes[i].edgeData;
-    for (size_t j = 0; j < edgeData->cntEdges; ++j) {
-      const vid_t translatedEdge = translationMapping != NULL ?
-        translationMapping[edgeData->edges[j]] : edgeData->edges[j];
-      fprintf(output, "%lu\n", translatedEdge);
-    }
-  }
-
-  return 0;
 }
 
 int outputReorderedGraph(const vertex_t * const reorderedNodes, const vid_t cntNodes,

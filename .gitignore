@@ -30,6 +30,7 @@ src/graph_compute/compute
 src/hilbert_reorder/reorder
 src/hilbert_reorder/undirect
 src/graphgen2/graphgen2
+src/binconvert/binconvert
 
 # Log and Temporary files
 *.tmp

@@ -12,26 +12,6 @@
 
 using namespace std;
 
-#ifndef HILBERTBITS
-  #define HILBERTBITS 4
-#endif
-
-#ifndef PARALLEL
-  #define PARALLEL 0
-#endif
-
-#if PARALLEL
-  #include <cilk/cilk.h>
-#else
-  #define cilk_for for
-  #define cilk_spawn
-  #define cilk_sync
-#endif
-
-#ifndef BFS
-  #define BFS 0
-#endif
-
 // This function populates the hilbertId field of each vertex_t in nodes, by
 // remapping every vertex onto an n^3 lattice using appropriate scaling factors,
 // and then traversing the lattice using a 3-D Hilbert curve.
@@ -206,8 +186,8 @@ int main(int argc, char *argv[]) {
 
   WHEN_DEBUG({
     printf("\nOrder after sorting:\n");
-    for (int i = 0; i < cntNodes; ++i) {
-      printf("Position %8d: id %8lu\n", i, nodes[i].id);
+    for (vid_t i = 0; i < cntNodes; ++i) {
+      printf("Position %8lu: id %8lu\n", i, nodes[i].id);
     }
   })
 

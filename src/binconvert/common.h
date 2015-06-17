@@ -3,14 +3,17 @@
 
 #include <cinttypes>
 #include <cassert>
-#include <utility>
 
 #ifndef TEST
-#define TEST 0
+  #define TEST 1
 #endif
 
 #ifndef DEBUG
-#define DEBUG 0
+  #define DEBUG 0
+#endif
+
+#ifndef PARALLEL
+  #define PARALLEL 1
 #endif
 
 // Use WHEN_TEST to conditionally include expensive sanity-checks,
@@ -22,7 +25,10 @@
 //   assert(result == expectedResult);
 // })
 #if TEST
-  #define WHEN_TEST(ex) { ex }
+  #ifdef NDEBUG
+    #error "Cannot run in TEST mode with NDEBUG set! Unset NDEBUG to continue."
+  #endif
+  #define WHEN_TEST(ex) ex
 #else
   #define WHEN_TEST(ex)
 #endif
@@ -34,17 +40,9 @@
 //   printf("Still debugging...");
 // })
 #if DEBUG
-  #define WHEN_DEBUG(ex) { ex }
+  #define WHEN_DEBUG(ex) ex
 #else
   #define WHEN_DEBUG(ex)
-#endif
-
-#ifndef HILBERTBITS
-  #define HILBERTBITS 4
-#endif
-
-#ifndef PARALLEL
-  #define PARALLEL 1
 #endif
 
 #if PARALLEL
@@ -55,29 +53,6 @@
   #define cilk_sync
 #endif
 
-#ifndef BFS
-  #define BFS 0
-#endif
-
 typedef uint64_t vid_t;  // vertex id type
-
-struct edges_t {
-  vid_t cntEdges;
-  vid_t * edges;
-};
-typedef struct edges_t edges_t;
-
-struct vertex_t {
-  vid_t id;
-  vid_t hilbertId;
-  double x;
-  double y;
-  double z;
-  void * data;
-  edges_t edgeData;
-};
-typedef struct vertex_t vertex_t;
-
-typedef std::pair<vid_t, vid_t> edge_t;
 
 #endif  // COMMON_H_

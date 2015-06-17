@@ -7,9 +7,9 @@ ROOT = ../../
 
 .PHONY: all clean lint
 
+LIBS = ../libgraphio/libgraphio.o hilbert.o
 HEADERS = common.h hilbert/hilbert.h io.h
-REORDER_SOURCES = reorder.cpp io.cpp
-UNDIRECT_SOURCES = undirect.cpp io.cpp
+SOURCES = reorder.cpp io.cpp
 
 TEST ?= 0
 DEBUG ?= 0
@@ -27,7 +27,7 @@ ifneq ($(BFS),)
 	DEFS += -DBFS=$(BFS)
 endif
 
-all: lint reorder undirect
+all: lint reorder
 
 lint:
 	$(ROOT)/cpplint.py --root=src/hilbert_reorder *.cpp *.h
@@ -35,11 +35,8 @@ lint:
 hilbert:
 	$(CC) $(CFLAGS) -c libhilbert/hilbert.c
 
-reorder: $(REORDER_SOURCES) hilbert
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder hilbert.o $(REORDER_SOURCES)
-
-undirect: $(UNDIRECT_SOURCES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o undirect $(UNDIRECT_SOURCES)
+reorder: $(SOURCES) hilbert
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o reorder $(LIBS) $(SOURCES)
 
 clean:
 	rm -f *~ *.o *.out reorder

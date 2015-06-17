@@ -7,6 +7,7 @@ ROOT = ../../
 
 .PHONY: all clean lint
 
+LIBS = ../libgraphio/libgraphio.o
 HEADERS = common.h io.h uniform_distribution.h stats.h edge_generator.h
 SOURCES = graphgen2.cpp io.cpp stats.cpp edge_generator.cpp
 
@@ -45,7 +46,7 @@ lint:
 	$(ROOT)/cpplint.py --root=src/graphgen2 *.cpp *.h
 
 graphgen2: $(SOURCES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o graphgen2 $(SOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o graphgen2 $(SOURCES) $(LIBS)
 
 clean:
 	rm -f *~ *.o *.out graphgen2
