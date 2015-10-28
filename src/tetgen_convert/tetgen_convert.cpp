@@ -23,7 +23,7 @@ void rewriteEdges(int numVertices, FILE * eleInputFile, FILE * eleOutputFile) {
     }
   }
   printf("%d nodes, %d edges\n", numVertices, (int) edges.size());
-  fprintf(eleOutputFile, "AdjacencyGraph\n%d\n%d", numVertices, (int) edges.size());
+  fprintf(eleOutputFile, "AdjacencyGraph\n%d\n%d\n", numVertices, (int) edges.size());
   int lastSource = -1; 
   int count = 0;
   for (set<pair<int, int> >::iterator it = edges.begin(); it != edges.end(); it++) {
@@ -52,10 +52,10 @@ int main(int argc, char *argv[]) {
   string baseName = argv[1];
   string nodeInputName = baseName + ".node.simple";
   string eleInputName = baseName + ".ele.simple";
-  string eleOutputName = baseName + ".adjlist.simple";
+  string eleOutputName = baseName + ".adjlist";
 
   FILE * eleInputFile = fopen(eleInputName.c_str(), "r");
-  FILE * eleOutputFile = fopen(eleOutputName.c_str(), "r");
+  FILE * eleOutputFile = fopen(eleOutputName.c_str(), "w");
 
   int numVertices, g0, g1, g2;
   FILE * nodeInputFile = fopen(nodeInputName.c_str(), "r");
