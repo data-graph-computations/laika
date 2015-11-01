@@ -6,6 +6,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 #include "./common.h"
 #include "./io.h"
 #include "./libhilbert/hilbert.h"
@@ -127,6 +128,17 @@ void assignBfsIds(vertex_t * const nodes, const int cntNodes) {
   bfs(nodes, cntNodes, 0);
 }
 
+void assignRandomIds(vertex_t * const nodes, const int cntNodes) {
+  vector<int> ordering;
+  for (int i = 0; i < cntNodes; i++) {
+    ordering.push_back(i);
+  }
+  random_shuffle(ordering.begin(), ordering.end());
+  for (int i = 0; i < cntNodes; i++) {
+    nodes[i].hilbertId = ordering[i];
+  }
+}
+
 bool vertexComparator(const vertex_t& a, const vertex_t& b) {
   if (a.hilbertId != b.hilbertId) {
     return a.hilbertId < b.hilbertId;
@@ -178,6 +190,8 @@ int main(int argc, char *argv[]) {
 
 #if BFS
   assignBfsIds(nodes, cntNodes);
+#elif RANDOM
+  assignRandomIds(nodes, cntNodes);
 #else
   assignHilbertIds(nodes, cntNodes, HILBERTBITS);
 #endif
