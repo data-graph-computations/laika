@@ -173,18 +173,21 @@ static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
   findRoots(nodes, cntNodes, scheddata);
 }
 
-static void execute_round(const int round, vertex_t * const nodes, const vid_t cntNodes,
+static void execute_round(const int numRounds, vertex_t * const nodes,
+                          const vid_t cntNodes,
                           scheddata_t * const scheddata) {
-  WHEN_DEBUG({
-    cout << "Running d1 prio round " << round << endl;
-  })
+  for (int round = 0; round < numRounds; ++round) {
+    WHEN_DEBUG({
+      cout << "Running d1 prio round " << round << endl;
+    })
 
-  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
-    nodes[i].satisfied = 0;
-  }
+    cilk_for (vid_t i = 0; i < cntNodes; ++i) {
+      nodes[i].satisfied = 0;
+    }
 
-  cilk_for (vid_t i = 0; i < scheddata->cntRoots; ++i) {
-    processNode(nodes, scheddata->roots[i], cntNodes, 0);
+    cilk_for (vid_t i = 0; i < scheddata->cntRoots; ++i) {
+      processNode(nodes, scheddata->roots[i], cntNodes, 0);
+    }
   }
 }
 

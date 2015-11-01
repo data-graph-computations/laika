@@ -1,3 +1,5 @@
+/*
+
 #include "numa_init.h"
 
 // core_id = 0, 1, ... n-1, where n is the system's number of cores
@@ -25,14 +27,14 @@ void * writeZeroes(void * param) {
   size_t start = config->coreID*chunksPerThread*chunkSize;
   size_t end = (config->coreID+1)*chunksPerThread*chunkSize;
   end = MIN(end, config->numBytes);
-  unsigned char * data = (unsigned char *) config->data;
+  unsigned char * data = static_cast<unsigned char *>(config->data);
   for (size_t i = start; i < end; i++) {
     data[i] = 0;
   }
   return NULL;
 }
 
-int numaInitWriteZeroes(numaInit_t config, 
+void numaInitWriteZeroes(numaInit_t config, 
                         size_t dataTypeSize, 
                         void *data, 
                         size_t numBytes) {
@@ -40,15 +42,19 @@ int numaInitWriteZeroes(numaInit_t config,
 
   for (int i = 0; i < config.numWorkers; i++) {
     chunkInit_t chunk(config, i, dataTypeSize, data, numBytes);
-    if (pthread_create(&workers[i], NULL, writeZeroes, &chunk)) {
-      return -1;
-    }
+    assert(pthread_create(&workers[i], NULL, writeZeroes, &chunk) == NULL)
   }
 
   for (int i = 0; i < config.numWorkers; i++) {
-    if (pthread_join(&workers[i], NULL)) {
-      return -1;
-    }
+    assert(pthread_join(&workers[i], NULL) == NULL)
   }
-  return NULL;
 }
+
+void * numaCalloc(numaInit_t config, size_t dataTypeSize, size_t numElements) {
+  void * data = malloc(numElements*dataTypeSize);
+  madvise(data, numElements*dataTypeSize, MADV_NOHUGEPAGE);
+  numaInitWriteZeroes(config, dataTypeSize, data, numElements*dataTypeSize);
+  return data;
+}
+
+*/

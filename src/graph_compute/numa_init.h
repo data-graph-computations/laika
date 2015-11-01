@@ -1,5 +1,7 @@
 #ifndef NUMA_INIT_H_
 #define NUMA_INIT_H_
+/*
+
 
 #include <string>
 #include <cstdio>
@@ -32,6 +34,10 @@ typedef struct chunkInit_t {
   chunkInit_t(numaInit_t _numaInit, int _coreID, size_t _dataTypeSize, void *_data, size_t _numBytes) : numaInit(_numaInit), coreID(_coreID), dataTypeSize(_dataTypeSize), data(_data), numBytes(_numBytes) {};
 };
 
-int numaInitWriteZeroes(numaInit_t config, size_t dataTypeSize, void *data, size_t length);
+void numaInitWriteZeroes(numaInit_t config, size_t dataTypeSize, void *data, size_t numBytes);
 
-#endif // NUMA_INIT_H_
+void * numaCalloc(numaInit_t config, size_t dataTypeSize, size_t numElements);
+
+*/
+
+#endif  // NUMA_INIT_H_

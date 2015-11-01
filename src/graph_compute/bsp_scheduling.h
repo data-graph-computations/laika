@@ -14,14 +14,17 @@ static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
   // no-op
 }
 
-static void execute_round(const int round, vertex_t * const nodes, const vid_t cntNodes,
+static void execute_round(const int numRounds, vertex_t * const nodes,
+                          const vid_t cntNodes,
                           scheddata_t * const scheddata) {
-  WHEN_DEBUG({
-    cout << "Running bsp round " << round << endl;
-  })
+  for (int round = 0; round < numRounds; ++round) {
+    WHEN_DEBUG({
+      cout << "Running bsp round " << round << endl;
+    })
 
-  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
-    update(nodes, i);
+    cilk_for (vid_t i = 0; i < cntNodes; ++i) {
+      update(nodes, i);
+    }
   }
 }
 
