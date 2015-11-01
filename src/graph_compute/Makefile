@@ -1,13 +1,13 @@
 CC  ?= gcc
 CXX ?= g++
-CFLAGS = -O3 -Wall
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
+CFLAGS = -O3 -Wall 
+CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
 LIBS = ../libgraphio/libgraphio.o
-HEADERS = common.h io.h
-CXXSOURCES = compute.cpp io.cpp
+HEADERS = common.h io.h numa_init.h
+CXXSOURCES = compute.cpp io.cpp numa_init.cpp
 
 TEST ?= 0
 DEBUG ?= 0
@@ -35,6 +35,18 @@ endif
 
 ifneq ($(D1_PHASE),)
 	DEFS += -DD1_PHASE=$(D1_PHASE)
+endif
+
+ifneq ($(D1_NUMA),)
+	DEFS += -DD1_NUMA=$(D1_NUMA)
+endif
+
+ifneq ($(NUMA_INIT),)
+	DEFS += -DNUMA_INIT=$(NUMA_INIT)
+endif
+
+ifneq ($(NUMA_WORKERS),)
+	DEFS += -DNUMA_WORKERS=$(NUMA_WORKERS)
 endif
 
 ifneq ($(CHUNK_BITS),)

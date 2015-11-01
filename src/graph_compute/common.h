@@ -58,6 +58,22 @@
   #define D1_PHASE 0
 #endif
 
+#ifndef D1_NUMA
+  #define D1_NUMA 0
+#endif
+
+#ifndef NUMA_INIT
+  #define NUMA_INIT 0
+#endif
+
+#ifndef NUMA_WORKERS
+  #define NUMA_WORKERS 1
+#endif
+
+#ifndef CHUNK_BITS
+  #define CHUNK_BITS 0
+#endif
+
 #ifndef PARALLEL
   #define PARALLEL 0
 #endif

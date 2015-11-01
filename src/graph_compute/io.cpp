@@ -1,11 +1,5 @@
 #include "./io.h"
 #include <string>
-#include <cstdio>
-#include <cassert>
-#include <cstring>
-#include <iostream>
-#include "./common.h"
-#include "../libgraphio/libgraphio.h"
 
 class ComputeEdgeListBuilder : public EdgeListBuilder {
  private:
@@ -17,12 +11,15 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
   vid_t totalEdges;
   vid_t * edges;
   vid_t ** outEdges;
+  numaInit_t numaInit;
 
  public:
   ComputeEdgeListBuilder(vertex_t ** const outNodes,
                          vid_t * const outCntNodes,
                          vid_t ** const outEdges,
-                         vid_t * const outTotalEdges) : EdgeListBuilder() {
+                         vid_t * const outTotalEdges,
+                         numaInit_t numaInit =
+                          numaInit_t(0, 0, false)) : EdgeListBuilder() {
     this->outNodes = outNodes;
     this->outCntNodes = outCntNodes;
     this->outEdges = outEdges;
@@ -31,20 +28,31 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
     this->cntNodes = 0;
     this->edges = NULL;
     this->totalEdges = 0;
+    this->numaInit = numaInit;
   }
 
   void set_node_count(vid_t cntNodes) {
     // this function should only ever be called once
     assert(this->nodes == NULL);
     this->cntNodes = *(this->outCntNodes) = cntNodes;
-    this->nodes = *(this->outNodes) = new vertex_t[cntNodes];
+    if (this->numaInit.numaInitFlag) {
+      this->nodes = *(this->outNodes) =
+        static_cast<vertex_t *>(numaCalloc(numaInit, sizeof(vertex_t), cntNodes));
+    } else {
+      this->nodes = *(this->outNodes) = new vertex_t[cntNodes];
+    }
   }
 
   void set_total_edge_count(vid_t totalEdges) {
     // this function should only ever be called once
     assert(this->edges == NULL);
     this->totalEdges = *(this->outTotalEdges) = totalEdges;
-    this->edges = *(this->outEdges) = new vid_t[totalEdges];
+    if (this->numaInit.numaInitFlag) {
+      this->edges = *(this->outEdges) =
+        static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), totalEdges));
+    } else {
+      this->edges = *(this->outEdges) = new vid_t[totalEdges];
+    }
   }
 
   void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
@@ -80,10 +88,12 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
 
 int readEdgesFromFile(const string filepath,
                       vertex_t ** outNodes,
-                      vid_t * outCntNodes) {
+                      vid_t * outCntNodes,
+                      numaInit_t numaInit =
+                        numaInit_t(0, 0, false)) {
   vid_t * edges;
   vid_t totalEdges;
-  ComputeEdgeListBuilder builder(outNodes, outCntNodes, &edges, &totalEdges);
+  ComputeEdgeListBuilder builder(outNodes, outCntNodes, &edges, &totalEdges, numaInit);
 
   return edgelistfile_read(filepath, &builder);
 }
