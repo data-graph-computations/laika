@@ -12,6 +12,7 @@
 #include "./common.h"
 #include "./io.h"
 #include "./update_function.h"
+#include "./concurrent_queue.h"
 
 using namespace std;
 
@@ -21,10 +22,13 @@ using namespace std;
   #include "./chunk_scheduling.h"
 #elif D1_PHASE
   #include "./phase_scheduling.h"
+#elif D1_NUMA
+  #include "./numa_scheduling.h"
 #elif D0_BSP
   #include "./bsp_scheduling.h"
 #else
-  #error "No scheduling type defined! Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK."
+  #error "No scheduling type defined!"
+  #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
 #endif
 
 WHEN_TEST(
@@ -33,10 +37,22 @@ WHEN_TEST(
 
 // fill in each node with random-looking data
 static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
-  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
+  for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].data = nodes[i].priority + ((-nodes[i].id) ^ (nodes[i].dependencies * 31));
   }
 }
+
+//
+// from http://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+// store dot product of each vertex in vertex struct
+// then turn sqrt((x0-x1)^2 + (y0-y1)^2 + (z0-z1)^2) into:
+// sqrt((x0*x0+y0*y0+z0*z0) + (x1*x1+y1*y1+z1*z1) - 2(x0*x1+y0*y1+z0*z1))
+// double inline __declspec (naked) __fastcall sqrt14(double n)
+// {
+//   _asm fld qword ptr [esp+4]
+//   _asm fsqrt
+//   _asm ret 8
+// }
 
 void update(vertex_t * nodes, const vid_t index) {
   // ensuring that the number of updates in total is correct per round
@@ -60,6 +76,24 @@ int main(int argc, char *argv[]) {
   char * inputEdgeFile;
   int numRounds = 0;
 
+  static const vid_t numBits = 20;
+  vid_t tmpData[1 << 20];
+  vid_t result[1 << 20];
+  mrmw_queue_t * Q = static_case<mrmw_queue_t>(new mrmw_queue_t(tmpData, numBits));
+
+  cilk_for (vid_t i = 0; i < (1 << numBits); i++) {
+    Q->push(i);
+    result[i] = Q->pop();
+  }
+
+  vid_t sum = 0;
+  for (vid_t i = 0; i < (1 << numBits); i++) {
+    sum += result[i];
+  }
+
+  cout << "numBits = " << numBits << endl;
+  cout << "Sum = " << sum << endl;
+
   if (argc != 3) {
     cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
     cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
@@ -75,11 +109,29 @@ int main(int argc, char *argv[]) {
 
   inputEdgeFile = argv[2];
 
-  cout << "Input edge file: " << inputEdgeFile << '\n';
-
-  int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes);
+  bool numaInitFlag;
+#if NUMA_INIT
+  numaInitFlag = true;
+#else
+  numaInitFlag = false;
+#endif
+  numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, numaInitFlag);
+  int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
 
+  scheddata_t scheddata;
+
+#if D1_NUMA
+  scheddata.numaInit = numaInit;
+#endif
+
+  init_scheduling(nodes, cntNodes, &scheddata);
+
+  // our nodes don't have any real data associated with them
+  // generate some fake data instead
+  fillInNodeData(nodes, cntNodes);
+
+  cout << "Input edge file: " << inputEdgeFile << '\n';
   cout << "Graph size: " << cntNodes << '\n';
 
 #if PARALLEL
@@ -88,13 +140,6 @@ int main(int argc, char *argv[]) {
   cout << "Cilk workers: 1\n";
 #endif
 
-  scheddata_t scheddata;
-
-  init_scheduling(nodes, cntNodes, &scheddata);
-
-  // our nodes don't have any real data associated with them
-  // generate some fake data instead
-  fillInNodeData(nodes, cntNodes);
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -106,7 +151,7 @@ int main(int argc, char *argv[]) {
     WHEN_TEST({
       roundUpdateCount = 0;
     })
-    execute_round(i, nodes, cntNodes, &scheddata);
+    execute_round(numRounds, nodes, cntNodes, &scheddata);
     WHEN_TEST({
       assert(roundUpdateCount == (uint64_t)cntNodes);
     })
@@ -129,6 +174,7 @@ int main(int argc, char *argv[]) {
   cout << "D1_PRIO: " << D1_PRIO << '\n';
   cout << "D1_CHUNK: " << D1_CHUNK << '\n';
   cout << "D1_PHASE: " << D1_PHASE << '\n';
+  cout << "D1_NUMA: " << D1_NUMA << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Distance: " << DISTANCE << '\n';
 
