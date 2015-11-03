@@ -16,16 +16,16 @@
 
 using namespace std;
 
-#if BASELINE || D1_PRIO
-  #include "./priority_scheduling.h"
+#if BASELINE || D0_BSP
+  #include "./bsp_scheduling.h"
 #elif D1_CHUNK
   #include "./chunk_scheduling.h"
 #elif D1_PHASE
   #include "./phase_scheduling.h"
 #elif D1_NUMA
   #include "./numa_scheduling.h"
-#elif D0_BSP
-  #include "./bsp_scheduling.h"
+#elif D1_PRIO
+  #include "./priority_scheduling.h"
 #else
   #error "No scheduling type defined!"
   #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."

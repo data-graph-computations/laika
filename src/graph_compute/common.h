@@ -6,11 +6,11 @@
 #include "../libgraphio/libgraphio.h"
 
 #ifndef TEST
-#define TEST 0
+  #define TEST 0
 #endif
 
 #ifndef DEBUG
-#define DEBUG 0
+  #define DEBUG 0
 #endif
 
 // Use WHEN_TEST to conditionally include expensive sanity-checks,
@@ -93,16 +93,5 @@
 #endif
 
 //  typedef uint32_t vid_t;  // vertex id type
-
-struct vertex_t {
-  vid_t id;
-  vid_t priority;
-  vid_t dependencies;
-  volatile vid_t satisfied;
-  vid_t cntEdges;
-  vid_t * edges;
-  double data;
-};
-typedef struct vertex_t vertex_t;
 
 #endif  // COMMON_H_

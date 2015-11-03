@@ -11,6 +11,7 @@ CXXSOURCES = compute.cpp io.cpp numa_init.cpp
 
 TEST ?= 0
 DEBUG ?= 0
+PAGERANK ?= 1
 DEFS = -DTEST=$(TEST) -DDEBUG=$(DEBUG)
 
 ifneq ($(PRIORITY_GROUP_BITS),)
@@ -59,6 +60,10 @@ endif
 
 ifneq ($(BASELINE),)
 	DEFS += -DBASELINE=$(BASELINE)
+endif
+
+ifneq ($(PAGERANK),)
+	DEFS += -DPAGERANK=$(PAGERANK)
 endif
 
 all: lint compute
