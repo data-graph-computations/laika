@@ -1,7 +1,7 @@
 #ifndef BSP_SCHEDULING_H_
 #define BSP_SCHEDULING_H_
 
-#if D0_BSP
+#if D0_BSP || BASELINE
 
 #include "./common.h"
 #include "./update_function.h"

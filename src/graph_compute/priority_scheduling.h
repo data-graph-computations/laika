@@ -1,7 +1,7 @@
 #ifndef PRIORITY_SCHEDULING_H_
 #define PRIORITY_SCHEDULING_H_
 
-#if D1_PRIO || BASELINE
+#if D1_PRIO
 
 #include <vector>
 #include <algorithm>
