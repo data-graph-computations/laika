@@ -24,7 +24,7 @@ static void execute_round(const int numRounds, vertex_t * const nodes,
     })
 
     cilk_for (vid_t i = 0; i < cntNodes; ++i) {
-      update(nodes, i);
+      update(nodes, i, round);
     }
   }
 }

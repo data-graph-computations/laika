@@ -5,7 +5,7 @@ WHEN_TEST(
   static uint64_t roundUpdateCount = 0;
 )
 
-void update(vertex_t * nodes, const vid_t index) {
+void update(vertex_t * nodes, const vid_t index, const int round = 0) {
   // ensuring that the number of updates in total is correct per round
   WHEN_TEST({
     __sync_add_and_fetch(&roundUpdateCount, 1);

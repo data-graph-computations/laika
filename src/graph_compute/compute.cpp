@@ -132,16 +132,13 @@ int main(int argc, char *argv[]) {
   assert(result == 0);
 
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
-  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  for (int i = 0; i < numRounds; ++i) {
-    WHEN_TEST({
-      roundUpdateCount = 0;
-    })
-    execute_round(numRounds, nodes, cntNodes, &scheddata);
-    WHEN_TEST({
-      assert(roundUpdateCount == (uint64_t)cntNodes);
-    })
-  }
+  WHEN_TEST({
+    roundUpdateCount = 0;
+  })
+  execute_round(numRounds, nodes, cntNodes, &scheddata);
+  WHEN_TEST({
+    assert(roundUpdateCount == (uint64_t)cntNodes);
+  })
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
   assert(result == 0);
