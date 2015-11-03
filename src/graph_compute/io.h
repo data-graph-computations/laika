@@ -1,7 +1,6 @@
 #ifndef IO_H_
 #define IO_H_
 
-#include <sys/mman.h>
 #include <pthread.h>
 #include <string>
 #include <cstdio>

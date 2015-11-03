@@ -18,8 +18,7 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
                          vid_t * const outCntNodes,
                          vid_t ** const outEdges,
                          vid_t * const outTotalEdges,
-                         numaInit_t numaInit =
-                          numaInit_t(0, 0, false)) : EdgeListBuilder() {
+                         numaInit_t numaInit) : EdgeListBuilder() {
     this->outNodes = outNodes;
     this->outCntNodes = outCntNodes;
     this->outEdges = outEdges;

@@ -31,10 +31,6 @@ using namespace std;
   #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
 #endif
 
-WHEN_TEST(
-  static uint64_t roundUpdateCount = 0;
-)
-
 // fill in each node with random-looking data
 static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
   for (vid_t i = 0; i < cntNodes; ++i) {
@@ -54,20 +50,31 @@ static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
 //   _asm ret 8
 // }
 
-void update(vertex_t * nodes, const vid_t index) {
-  // ensuring that the number of updates in total is correct per round
-  WHEN_TEST({
-    __sync_add_and_fetch(&roundUpdateCount, 1);
-  })
+void test_queue() {
+  static const vid_t numBits = 20;
+  numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
+  volatile vid_t * tmpData = static_cast<vid_t *>(numaCalloc(numaInit,
+      sizeof(vid_t), (1 << numBits)));
+  volatile vid_t * tmpResult = static_cast<vid_t *>(numaCalloc(numaInit,
+      sizeof(vid_t), (1 << numBits)));
 
-  vertex_t * current = &nodes[index];
-  // recalculate this node's data
-  double data = current->data;
-  for (size_t i = 0; i < current->cntEdges; ++i) {
-    data += nodes[current->edges[i]].data;
+  mrmw_queue_t Q(tmpData, numBits);
+
+  cilk_for (vid_t i = 0; i < (1 << numBits); i++) {
+    Q.push(i);
+    tmpResult[i] = Q.pop();
   }
-  data /= (current->cntEdges + 1);
-  current->data = data;
+
+  vid_t sum = 0;
+  vid_t sum2 = 0;
+  for (vid_t i = 0; i < (1 << numBits); i++) {
+    sum += tmpResult[i];
+    sum2 += i;
+  }
+
+  cout << "numBits = " << numBits << endl;
+  cout << "Sum1 = " << sum << endl;
+  cout << "Sum2 = " << sum2 << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -76,23 +83,9 @@ int main(int argc, char *argv[]) {
   char * inputEdgeFile;
   int numRounds = 0;
 
-  static const vid_t numBits = 20;
-  vid_t tmpData[1 << 20];
-  vid_t result[1 << 20];
-  mrmw_queue_t * Q = static_case<mrmw_queue_t>(new mrmw_queue_t(tmpData, numBits));
-
-  cilk_for (vid_t i = 0; i < (1 << numBits); i++) {
-    Q->push(i);
-    result[i] = Q->pop();
-  }
-
-  vid_t sum = 0;
-  for (vid_t i = 0; i < (1 << numBits); i++) {
-    sum += result[i];
-  }
-
-  cout << "numBits = " << numBits << endl;
-  cout << "Sum = " << sum << endl;
+  WHEN_TEST({
+    test_queue();
+  })
 
   if (argc != 3) {
     cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
@@ -109,15 +102,18 @@ int main(int argc, char *argv[]) {
 
   inputEdgeFile = argv[2];
 
-  bool numaInitFlag;
-#if NUMA_INIT
-  numaInitFlag = true;
-#else
-  numaInitFlag = false;
-#endif
-  numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, numaInitFlag);
+  numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
+
+  cout << "Input edge file: " << inputEdgeFile << '\n';
+  cout << "Graph size: " << cntNodes << '\n';
+
+#if PARALLEL
+  cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
+#else
+  cout << "Cilk workers: 1\n";
+#endif
 
   scheddata_t scheddata;
 
@@ -130,16 +126,6 @@ int main(int argc, char *argv[]) {
   // our nodes don't have any real data associated with them
   // generate some fake data instead
   fillInNodeData(nodes, cntNodes);
-
-  cout << "Input edge file: " << inputEdgeFile << '\n';
-  cout << "Graph size: " << cntNodes << '\n';
-
-#if PARALLEL
-  cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
-#else
-  cout << "Cilk workers: 1\n";
-#endif
-
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);

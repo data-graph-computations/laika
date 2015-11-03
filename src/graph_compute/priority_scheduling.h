@@ -176,6 +176,7 @@ static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
 static void execute_round(const int numRounds, vertex_t * const nodes,
                           const vid_t cntNodes,
                           scheddata_t * const scheddata) {
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int round = 0; round < numRounds; ++round) {
     WHEN_DEBUG({
       cout << "Running d1 prio round " << round << endl;
