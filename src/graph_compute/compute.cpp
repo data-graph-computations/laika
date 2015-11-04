@@ -11,8 +11,6 @@
 #include <vector>
 #include "./common.h"
 #include "./io.h"
-#include "./update_function.h"
-#include "./concurrent_queue.h"
 
 using namespace std;
 
@@ -30,25 +28,9 @@ using namespace std;
   #error "No scheduling type defined!"
   #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
 #endif
+#include "./update_function.h"
+#include "./concurrent_queue.h"
 
-// fill in each node with random-looking data
-static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    nodes[i].data = nodes[i].priority + ((-nodes[i].id) ^ (nodes[i].dependencies * 31));
-  }
-}
-
-//
-// from http://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
-// store dot product of each vertex in vertex struct
-// then turn sqrt((x0-x1)^2 + (y0-y1)^2 + (z0-z1)^2) into:
-// sqrt((x0*x0+y0*y0+z0*z0) + (x1*x1+y1*y1+z1*z1) - 2(x0*x1+y0*y1+z0*z1))
-// double inline __declspec (naked) __fastcall sqrt14(double n)
-// {
-//   _asm fld qword ptr [esp+4]
-//   _asm fsqrt
-//   _asm ret 8
-// }
 
 void test_queue() {
   static const vid_t numBits = 20;

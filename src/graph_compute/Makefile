@@ -1,7 +1,7 @@
 CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall 
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread
+CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
@@ -64,6 +64,14 @@ endif
 
 ifneq ($(PAGERANK),)
 	DEFS += -DPAGERANK=$(PAGERANK)
+endif
+
+ifneq ($(IN_PLACE),)
+	DEFS += -DIN_PLACE=$(IN_PLACE)
+endif
+
+ifneq ($(TEST_CONVERGENCE),)
+	DEFS += -DTEST_CONVERGENCE=$(TEST_CONVERGENCE)
 endif
 
 all: lint compute

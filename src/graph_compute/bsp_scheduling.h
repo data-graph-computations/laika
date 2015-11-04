@@ -9,6 +9,9 @@
 struct scheddata_t { };
 typedef struct scheddata_t scheddata_t;
 
+struct sched_t { };
+typedef struct sched_t sched_t;
+
 static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
                             scheddata_t * const scheddata) {
   // no-op
@@ -38,6 +41,6 @@ static void print_execution_data() {
   // no-op
 }
 
-#endif  // D0_BSP
+#endif  // D0_BSP || BASELINE
 
 #endif  // BSP_SCHEDULING_H_

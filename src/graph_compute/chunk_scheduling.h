@@ -24,6 +24,9 @@ struct scheddata_t {
 };
 typedef struct scheddata_t scheddata_t;
 
+struct sched_t { };
+typedef struct sched_t sched_t;
+
 static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
   if ((v >> CHUNK_BITS) == (w >> CHUNK_BITS)) {
