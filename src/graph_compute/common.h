@@ -83,6 +83,14 @@
   #define DISTANCE 1
 #endif
 
+#ifndef IN_PLACE
+  #define IN_PLACE 1
+#endif
+
+#ifndef TEST_CONVERGENCE
+  #define TEST_CONVERGENCE 0
+#endif
+
 #if PARALLEL
   #include <cilk/cilk.h>
   #include <cilk/cilk_api.h>
