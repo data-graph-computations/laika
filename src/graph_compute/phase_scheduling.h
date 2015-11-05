@@ -9,6 +9,8 @@
 
 #ifndef CHUNK_BITS
   #define CHUNK_BITS 16
+#elif CHUNK_BITS == 0
+  #error "CHUNK_BITS needs to be greater than 0 for D1_PHASE"
 #endif
 
 struct chunkdata_t {
@@ -130,7 +132,7 @@ static inline void createChunkData(vertex_t * const nodes,
   cilk_for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
     chunkdata_t * chunk = &scheddata->chunkdata[i];
     chunk->nextIndex = i << CHUNK_BITS;
-    chunk->phaseEndIndex[0] = std::min(chunk->nextIndex + ((1 << CHUNK_BITS) >> 1),
+    chunk->phaseEndIndex[0] = std::min(chunk->nextIndex + (1 << (CHUNK_BITS - 1)),
       cntNodes);
     chunk->phaseEndIndex[1] = std::min((i + 1) << CHUNK_BITS, cntNodes);
     // put code to greedily move boundaryIndex to minimize cost of
