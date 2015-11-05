@@ -1,13 +1,13 @@
 CC  ?= gcc
 CXX ?= g++
-CFLAGS = -O3 -Wall
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
+CFLAGS = -O3 -Wall 
+CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
 LIBS = ../libgraphio/libgraphio.o
-HEADERS = common.h io.h
-CXXSOURCES = compute.cpp io.cpp
+HEADERS = common.h update_function.h io.h numa_init.h concurrent_queue.h
+CXXSOURCES =  compute.cpp io.cpp numa_init.cpp
 
 TEST ?= 0
 DEBUG ?= 0
@@ -37,6 +37,18 @@ ifneq ($(D1_PHASE),)
 	DEFS += -DD1_PHASE=$(D1_PHASE)
 endif
 
+ifneq ($(D1_NUMA),)
+	DEFS += -DD1_NUMA=$(D1_NUMA)
+endif
+
+ifneq ($(NUMA_INIT),)
+	DEFS += -DNUMA_INIT=$(NUMA_INIT)
+endif
+
+ifneq ($(NUMA_WORKERS),)
+	DEFS += -DNUMA_WORKERS=$(NUMA_WORKERS)
+endif
+
 ifneq ($(CHUNK_BITS),)
 	DEFS += -DCHUNK_BITS=$(CHUNK_BITS)
 endif
@@ -47,6 +59,18 @@ endif
 
 ifneq ($(BASELINE),)
 	DEFS += -DBASELINE=$(BASELINE)
+endif
+
+ifneq ($(PAGERANK),)
+	DEFS += -DPAGERANK=$(PAGERANK)
+endif
+
+ifneq ($(IN_PLACE),)
+	DEFS += -DIN_PLACE=$(IN_PLACE)
+endif
+
+ifneq ($(TEST_CONVERGENCE),)
+	DEFS += -DTEST_CONVERGENCE=$(TEST_CONVERGENCE)
 endif
 
 all: lint compute

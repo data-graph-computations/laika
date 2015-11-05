@@ -6,10 +6,11 @@
 #include <algorithm>
 #include <unordered_set>
 #include "./common.h"
-#include "./update_function.h"
 
 #ifndef CHUNK_BITS
   #define CHUNK_BITS 16
+#elif CHUNK_BITS == 0
+  #error "CHUNK_BITS needs to be greater than 0 for D1_PHASE"
 #endif
 
 struct chunkdata_t {
@@ -19,13 +20,24 @@ struct chunkdata_t {
 typedef struct chunkdata_t chunkdata_t;
 
 struct scheddata_t {
-  vid_t * dependentEdges;
-  vid_t * dependentEdgeIndex;
-  vid_t * cntDependentEdges;
+  //  Holds the dependent edges array, one entry per inter-chunk dependency
+  //  Each vertex has a sched_t, which contains a pointer (also called dependentEdges)
+  //  into this array.
+  vid_t * dependentEdges; 
   chunkdata_t * chunkdata;
   vid_t cntChunks;
 };
 typedef struct scheddata_t scheddata_t;
+
+struct sched_t {
+  vid_t * dependentEdges;  //  pointer into dependentEdges array in scheddata_t
+  vid_t cntDependentEdges;  //  number of dependentEdges for this vertex
+  vid_t dependencies;
+  volatile vid_t satisfied;
+};
+typedef struct sched_t sched_t;
+
+#include "./update_function.h"
 
 static inline bool samePhase(vid_t v, vid_t w, chunkdata_t * const chunkdata) {
   // this assumes that the boundary between phases is the
@@ -40,15 +52,18 @@ static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
   if ((v >> CHUNK_BITS) == (w >> CHUNK_BITS)) {
     return false;
+  } else if ((v & chunkMask) == (w & chunkMask)) {
+    return (v < w);
   } else {
     return ((v & chunkMask) < (w & chunkMask));
   }
 }
 
-static void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
-                                  std::unordered_set<vid_t> * oldNeighbors,
-                                  vid_t v,
-                                  vertex_t * const nodes, vid_t distance) {
+static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
+                                         std::unordered_set<vid_t> * oldNeighbors,
+                                         vid_t v,
+                                         vertex_t * const nodes,
+                                         vid_t distance) {
   neighbors->clear();
   neighbors->insert(v);
   oldNeighbors->clear();
@@ -64,11 +79,10 @@ static void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
   }
 }
 
-static void calculateNodeDependenciesChunk(vertex_t * const nodes,
-                                           const vid_t cntNodes,
-                                           scheddata_t * const sched) {
-  sched->dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes];
-  sched->cntDependentEdges = new (std::nothrow) vid_t[cntNodes];
+static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
+                                                  const vid_t cntNodes,
+                                                  scheddata_t * const sched) {
+  vid_t * dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes];
   vid_t cntDependencies = 0;
   std::unordered_set<vid_t> neighbors;
   neighbors.reserve(1024);
@@ -76,40 +90,41 @@ static void calculateNodeDependenciesChunk(vertex_t * const nodes,
   oldNeighbors.reserve(1024);
   for (vid_t i = 0; i < cntNodes; i++) {
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
-    sched->dependentEdgeIndex[i] = cntDependencies;
-    vertex_t * node = &nodes[i];
+    dependentEdgeIndex[i] = cntDependencies;
+    sched_t * node = &nodes[i].sched;
     node->dependencies = 0;
-    vid_t outDep = 0;
-    for (const auto& nbr : neighbors) {
-      if (samePhase(nbr, i, sched->chunkdata)) {
-        if (interChunkDependency(nbr, i)) {
+    node->cntDependentEdges = 0;
+    for (const auto& neighbor : neighbors) {
+      if (samePhase(neighbor, i, sched->chunkdata)) {
+        if (interChunkDependency(neighbor, i)) {
           ++node->dependencies;
-        } else if (interChunkDependency(i, nbr)) {
+        } else if (interChunkDependency(i, neighbor)) {
           cntDependencies++;
-          outDep++;
+          node->cntDependentEdges++;
         }
       }
     }
     node->satisfied = node->dependencies;
-    sched->cntDependentEdges[i] = outDep;
   }
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
   sched->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1];
   for (vid_t i = 0; i < cntNodes; i++) {
+    nodes->sched.dependentEdges = &sched->dependentEdges[dependentEdgeIndex[i]];
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
-    vid_t curIndex = sched->dependentEdgeIndex[i];
-    for (const auto& nbr : neighbors) {
-      if ((samePhase(nbr, i, sched->chunkdata))
-        && (interChunkDependency(i, nbr))) {
-          sched->dependentEdges[curIndex++] = nbr;
+    vid_t curIndex = dependentEdgeIndex[i];
+    for (const auto& neighbor : neighbors) {
+      if ((samePhase(neighbor, i, sched->chunkdata))
+        && (interChunkDependency(i, neighbor))) {
+          sched->dependentEdges[curIndex++] = neighbor;
       }
     }
   }
 }
 
-static void createChunkData(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline void createChunkData(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
   scheddata->cntChunks = (cntNodes + (1 << CHUNK_BITS) - 1) >> CHUNK_BITS;
   scheddata->chunkdata = new (std::nothrow) chunkdata_t[scheddata->cntChunks];
   assert(scheddata->chunkdata != NULL);
@@ -125,66 +140,71 @@ static void createChunkData(vertex_t * const nodes, const vid_t cntNodes,
   }
 }
 
-static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline void init_scheduling(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
   createChunkData(nodes, cntNodes, scheddata);
   calculateNodeDependenciesChunk(nodes, cntNodes, scheddata);
 }
 
-static void execute_round(const int round, vertex_t * const nodes,
-                          const vid_t cntNodes, scheddata_t * const scheddata) {
-  WHEN_DEBUG({
-    cout << "Running chunk round" << round << endl;
-  })
+static inline void execute_rounds(const int numRounds,
+                                  vertex_t * const nodes,
+                                  const vid_t cntNodes,
+                                  scheddata_t * const scheddata,
+                                  global_t * const globaldata) {
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+  for (int round = 0; round < numRounds; ++round) {
+    WHEN_DEBUG({
+      cout << "Running chunk round" << round << endl;
+    })
 
-  for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-    scheddata->chunkdata[i].nextIndex = i << CHUNK_BITS;
-  }
+    for (vid_t i = 0; i < scheddata->cntChunks; i++) {
+      scheddata->chunkdata[i].nextIndex = i << CHUNK_BITS;
+    }
 
-  const int NUM_PHASES = 2;
-  for (int phase = 0; phase < NUM_PHASES; phase++) {
-    volatile bool doneFlag = false;
-    while (!doneFlag) {
-      doneFlag = true;
-      cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-        chunkdata_t * chunk = &scheddata->chunkdata[i];
-        vid_t j = chunk->nextIndex;
-        bool localDoneFlag = false;
-        while (!localDoneFlag && (j < chunk->phaseEndIndex[phase])) {
-          if (nodes[j].satisfied == 0) {
-            update(nodes, j);
-            if (DISTANCE > 0) {
-              nodes[j].satisfied = nodes[j].dependencies;
-              vid_t edgeIndex = scheddata->dependentEdgeIndex[j];
-              vid_t * edges = &scheddata->dependentEdges[edgeIndex];
-              for (vid_t k = 0; k < scheddata->cntDependentEdges[j]; k++) {
-                __sync_sub_and_fetch(&nodes[edges[k]].satisfied, 1);
+    const int NUM_PHASES = 2;
+    for (int phase = 0; phase < NUM_PHASES; phase++) {
+      volatile bool doneFlag = false;
+      while (!doneFlag) {
+        doneFlag = true;
+        cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
+          chunkdata_t * chunk = &scheddata->chunkdata[i];
+          vid_t j = chunk->nextIndex;
+          bool localDoneFlag = false;
+          while (!localDoneFlag && (j < chunk->phaseEndIndex[phase])) {
+            if (nodes[j].sched.satisfied == 0) {
+              update(nodes, j, globaldata, round);
+              if (DISTANCE > 0) {
+                nodes[j].sched.satisfied = nodes[j].sched.dependencies;
+                vid_t * edges = nodes[j].sched.dependentEdges;
+                for (vid_t k = 0; k < nodes[j].sched.cntDependentEdges; k++) {
+                  __sync_sub_and_fetch(&nodes[edges[k]].sched.satisfied, 1);
+                }
               }
+            } else {
+              scheddata->chunkdata[i].nextIndex = j;
+              localDoneFlag = true;  // we couldn't process one of the nodes, so break
+              doneFlag = false;  // we couldn't process one, so we need another round
             }
-          } else {
-            scheddata->chunkdata[i].nextIndex = j;
-            localDoneFlag = true;  // we couldn't process one of the nodes, so break
-            doneFlag = false;  // we couldn't process one, so we need another round
+            j++;
           }
-          j++;
-        }
-        if (!localDoneFlag) {
-          scheddata->chunkdata[i].nextIndex = j;
+          if (!localDoneFlag) {
+            scheddata->chunkdata[i].nextIndex = j;
+          }
         }
       }
     }
   }
 }
 
-static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                               scheddata_t * const scheddata) {
+static inline void cleanup_scheduling(vertex_t * const nodes,
+                                      const vid_t cntNodes,
+                                      scheddata_t * const scheddata) {
   delete[] scheddata->chunkdata;
   delete[] scheddata->dependentEdges;
-  delete[] scheddata->dependentEdgeIndex;
-  delete[] scheddata->cntDependentEdges;
 }
 
-static void print_execution_data() {
+static inline void print_execution_data() {
   cout << "Chunk size bits: " << CHUNK_BITS << '\n';
 }
 

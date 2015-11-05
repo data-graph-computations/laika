@@ -9,49 +9,37 @@
 #include <iomanip>
 #include <exception>
 #include <vector>
-#include "./common.h"
-#include "./io.h"
-#include "./update_function.h"
 
 using namespace std;
 
-#if BASELINE || D1_PRIO
-  #include "./priority_scheduling.h"
-#elif D1_CHUNK
-  #include "./chunk_scheduling.h"
-#elif D1_PHASE
-  #include "./phase_scheduling.h"
-#elif D0_BSP
-  #include "./bsp_scheduling.h"
-#else
-  #error "No scheduling type defined! Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK."
-#endif
+#include "./common.h"
+#include "./concurrent_queue.h"
 
-WHEN_TEST(
-  static uint64_t roundUpdateCount = 0;
-)
+void test_queue() {
+  static const vid_t numBits = 20;
+  numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
+  volatile vid_t * tmpData = static_cast<vid_t *>(numaCalloc(numaInit,
+      sizeof(vid_t), (1 << numBits)));
+  volatile vid_t * tmpResult = static_cast<vid_t *>(numaCalloc(numaInit,
+      sizeof(vid_t), (1 << numBits)));
 
-// fill in each node with random-looking data
-static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
-  cilk_for (vid_t i = 0; i < cntNodes; ++i) {
-    nodes[i].data = nodes[i].priority + ((-nodes[i].id) ^ (nodes[i].dependencies * 31));
+  mrmw_queue_t Q(tmpData, numBits);
+
+  cilk_for (vid_t i = 0; i < (1 << numBits); i++) {
+    Q.push(i);
+    tmpResult[i] = Q.pop();
   }
-}
 
-void update(vertex_t * nodes, const vid_t index) {
-  // ensuring that the number of updates in total is correct per round
-  WHEN_TEST({
-    __sync_add_and_fetch(&roundUpdateCount, 1);
-  })
-
-  vertex_t * current = &nodes[index];
-  // recalculate this node's data
-  double data = current->data;
-  for (size_t i = 0; i < current->cntEdges; ++i) {
-    data += nodes[current->edges[i]].data;
+  vid_t sum = 0;
+  vid_t sum2 = 0;
+  for (vid_t i = 0; i < (1 << numBits); i++) {
+    sum += tmpResult[i];
+    sum2 += i;
   }
-  data /= (current->cntEdges + 1);
-  current->data = data;
+
+  cout << "numBits = " << numBits << endl;
+  cout << "Sum1 = " << sum << endl;
+  cout << "Sum2 = " << sum2 << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -60,11 +48,23 @@ int main(int argc, char *argv[]) {
   char * inputEdgeFile;
   int numRounds = 0;
 
+  WHEN_TEST({
+    test_queue();
+  })
+
+#if VERTEX_META_DATA
+  if (argc != 4) {
+    cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
+    cerr << "Usage: ./compute <num_rounds> <input_edges> <vertex_meta_data>" << endl;
+    return 1;
+  }
+#else
   if (argc != 3) {
     cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
     cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
     return 1;
   }
+#endif
 
   try {
     numRounds = stoi(argv[1]);
@@ -75,11 +75,11 @@ int main(int argc, char *argv[]) {
 
   inputEdgeFile = argv[2];
 
-  cout << "Input edge file: " << inputEdgeFile << '\n';
-
-  int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes);
+  numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
+  int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
 
+  cout << "Input edge file: " << inputEdgeFile << '\n';
   cout << "Graph size: " << cntNodes << '\n';
 
 #if PARALLEL
@@ -89,28 +89,33 @@ int main(int argc, char *argv[]) {
 #endif
 
   scheddata_t scheddata;
+  global_t globaldata;
+
+#if D1_NUMA
+  scheddata.numaInit = numaInit;
+#endif
 
   init_scheduling(nodes, cntNodes, &scheddata);
 
-  // our nodes don't have any real data associated with them
-  // generate some fake data instead
+#if VERTEX_META_DATA
+  char * vertexMetaDataFile = argv[3];
+  fillInNodeData(nodes, cntNodes, vertexMetaDataFile);
+#else
   fillInNodeData(nodes, cntNodes);
+#endif
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
-  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  for (int i = 0; i < numRounds; ++i) {
-    WHEN_TEST({
-      roundUpdateCount = 0;
-    })
-    execute_round(i, nodes, cntNodes, &scheddata);
-    WHEN_TEST({
-      assert(roundUpdateCount == (uint64_t)cntNodes);
-    })
-  }
+  WHEN_TEST({
+    roundUpdateCount = 0;
+  })
+  execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
+  WHEN_TEST({
+    assert(roundUpdateCount == (uint64_t)cntNodes);
+  })
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
   assert(result == 0);
@@ -129,6 +134,7 @@ int main(int argc, char *argv[]) {
   cout << "D1_PRIO: " << D1_PRIO << '\n';
   cout << "D1_CHUNK: " << D1_CHUNK << '\n';
   cout << "D1_PHASE: " << D1_PHASE << '\n';
+  cout << "D1_NUMA: " << D1_NUMA << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Distance: " << DISTANCE << '\n';
 
@@ -138,11 +144,11 @@ int main(int argc, char *argv[]) {
   cout << "Test flag: " << TEST << '\n';
 
   // so GCC doesn't eliminate the rounds loop as unnecessary work
-  double data = 0.0;
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    data += nodes[i].data;
-  }
-  cout << "Final result (ignore this line): " << data << '\n';
+  // double data = 0.0;
+  // for (vid_t i = 0; i < cntNodes; ++i) {
+  //   data += nodes[i].data;
+  // }
+  // cout << "Final result (ignore this line): " << data << '\n';
 
   return 0;
 }
