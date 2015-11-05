@@ -65,9 +65,9 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
   }
 
   void build() {
-    this->nodes[0].id = 0;
+    //  this->nodes[0].id = 0;
     cilk_for (vid_t i = 1; i < this->cntNodes; ++i) {
-      this->nodes[i].id = i;
+      //  this->nodes[i].id = i;
       this->nodes[i-1].cntEdges =
         this->nodes[i].edges - this->nodes[i-1].edges;
     }

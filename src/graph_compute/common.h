@@ -1,10 +1,6 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <cinttypes>
-#include <cassert>
-#include "../libgraphio/libgraphio.h"
-
 #ifndef TEST
   #define TEST 0
 #endif
@@ -91,6 +87,16 @@
   #define TEST_CONVERGENCE 0
 #endif
 
+#ifndef PAGERANK
+  #define PAGERANK 1
+#endif
+
+#if PAGERANK == 0
+  #define VERTEX_META_DATA 1
+#else
+  #define VERTEX_META_DATA 0
+#endif
+
 #if PARALLEL
   #include <cilk/cilk.h>
   #include <cilk/cilk_api.h>
@@ -100,6 +106,27 @@
   #define cilk_sync
 #endif
 
-//  typedef uint32_t vid_t;  // vertex id type
+#include <cinttypes>
+#include <cassert>
+#include "../libgraphio/libgraphio.h"
+
+WHEN_TEST(extern volatile uint64_t roundUpdateCount = 0;)
+
+#if D0_BSP
+  #include "./bsp_scheduling.h"
+#elif D1_CHUNK
+  #include "./chunk_scheduling.h"
+#elif D1_PHASE
+  #include "./phase_scheduling.h"
+#elif D1_NUMA
+  #include "./numa_scheduling.h"
+#elif BASELINE || D1_PRIO
+  #include "./priority_scheduling.h"
+#else
+  #error "No scheduling type defined!"
+  #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
+#endif
+
+#include "./io.h"
 
 #endif  // COMMON_H_
