@@ -35,9 +35,9 @@ void * writeZeroes(void * param) {
 }
 
 void numaInitWriteZeroes(numaInit_t config,
-                        size_t dataTypeSize,
-                        void *data,
-                        size_t numBytes) {
+                         size_t dataTypeSize,
+                         void *data,
+                         size_t numBytes) {
   pthread_t * workers =
     static_cast<pthread_t *>(malloc(sizeof(pthread_t)*config.numWorkers));
   for (int i = 0; i < config.numWorkers; i++) {

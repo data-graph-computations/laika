@@ -13,15 +13,17 @@ typedef struct sched_t sched_t;
 
 #include "./update_function.h"
 
-static inline void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline void init_scheduling(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
   // no-op
 }
 
-static inline void execute_rounds(const int numRounds, vertex_t * const nodes,
-                          const vid_t cntNodes,
-                          scheddata_t * const scheddata,
-                          global_t * const globaldata) {
+static inline void execute_rounds(const int numRounds,
+                                  vertex_t * const nodes,
+                                  const vid_t cntNodes,
+                                  scheddata_t * const scheddata,
+                                  global_t * const globaldata) {
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int round = 0; round < numRounds; ++round) {
     WHEN_DEBUG({
@@ -35,7 +37,7 @@ static inline void execute_rounds(const int numRounds, vertex_t * const nodes,
 }
 
 static inline void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                               scheddata_t * const scheddata) {
+                                      scheddata_t * const scheddata) {
   // no-op
 }
 
@@ -43,6 +45,6 @@ static inline void print_execution_data() {
   // no-op
 }
 
-#endif  // D0_BSP || BASELINE
+#endif  // D0_BSP
 
 #endif  // BSP_SCHEDULING_H_

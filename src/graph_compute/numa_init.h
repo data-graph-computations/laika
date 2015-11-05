@@ -16,7 +16,8 @@ struct numaInit_t {
   size_t chunkBits;
   bool numaInitFlag;
   numaInit_t(int _numWorkers, size_t _chunkBits, bool _numaInitFlag) :
-    numWorkers(_numWorkers), chunkBits(_chunkBits),
+    numWorkers(_numWorkers),
+    chunkBits(_chunkBits),
     numaInitFlag(_numaInitFlag) {}
   numaInit_t() {
     numWorkers = 1;
@@ -38,8 +39,10 @@ struct chunkInit_t {
 };
 typedef struct chunkInit_t chunkInit_t;
 
-void numaInitWriteZeroes(numaInit_t config, size_t dataTypeSize,
-  void *data, size_t numBytes);
+void numaInitWriteZeroes(numaInit_t config,
+                         size_t dataTypeSize,
+                         void *data, 
+                         size_t numBytes);
 
 void * numaCalloc(numaInit_t config, size_t dataTypeSize, size_t numElements);
 

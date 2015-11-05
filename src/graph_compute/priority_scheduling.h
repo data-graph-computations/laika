@@ -38,10 +38,11 @@ typedef struct sched_t sched_t;
 // we need this processNodeSerial hack to avoid a Cilk bug when trying to do
 // spawn depth limiting (which in turn is necessary because otherwise on large problem
 // sizes worker stacks are overflowed)
-static inline void processNodeSerial(vertex_t * const nodes, const vid_t index,
-                              const vid_t cntNodes,
-                              global_t * const globaldata,
-                              const int round) {
+static inline void processNodeSerial(vertex_t * const nodes,
+                                     const vid_t index,
+                                     const vid_t cntNodes,
+                                     global_t * const globaldata,
+                                     const int round) {
   update(nodes, index, globaldata, round);
   vertex_t * current = &nodes[index];
 
@@ -131,8 +132,9 @@ static inline id_t createPriority(const vid_t id, const int bitsInId) {
   return priority;
 }
 
-static inline void assignNodePriorities(vertex_t * const nodes, const vid_t cntNodes,
-                                 const int bitsInId) {
+static inline void assignNodePriorities(vertex_t * const nodes,
+                                        const vid_t cntNodes,
+                                        const int bitsInId) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     nodes[i].sched.priority = createPriority(nodes[i].sched.id, bitsInId);
 
@@ -163,8 +165,9 @@ static inline void orderEdgesByPriority(vertex_t * const nodes, const vid_t cntN
   }
 }
 
-static inline void findRoots(vertex_t * const nodes, const vid_t cntNodes,
-                      scheddata_t * const scheddata) {
+static inline void findRoots(vertex_t * const nodes,
+                             const vid_t cntNodes,
+                             scheddata_t * const scheddata) {
   scheddata->cntRoots = 0;
   for (vid_t i = 0; i < cntNodes; ++i) {
     if (nodes[i].sched.dependencies == 0) {
@@ -183,8 +186,9 @@ static inline void findRoots(vertex_t * const nodes, const vid_t cntNodes,
   }
 }
 
-static inline void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline void init_scheduling(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
   int bitsInId = calculateIdBitSize(cntNodes);
   WHEN_DEBUG({ cout << "Bits in ID: " << bitsInId << '\n'; })
   assignNodePriorities(nodes, cntNodes, bitsInId);
@@ -209,8 +213,9 @@ static inline void execute_rounds(const int numRounds,
   }
 }
 
-static inline void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                               scheddata_t * const scheddata) {
+static inline void cleanup_scheduling(vertex_t * const nodes,
+                                      const vid_t cntNodes,
+                                      scheddata_t * const scheddata) {
   delete[] scheddata->roots;
 }
 
@@ -218,6 +223,6 @@ static inline void print_execution_data() {
   cout << "Priority group bits: " << PRIORITY_GROUP_BITS << '\n';
 }
 
-#endif  // D1_PRIO
+#endif  // D1_PRIO || BASELINE
 
 #endif  // PRIORITY_SCHEDULING_H_

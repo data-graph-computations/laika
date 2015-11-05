@@ -18,17 +18,18 @@ struct chunkdata_t {
 typedef struct chunkdata_t chunkdata_t;
 
 struct scheddata_t {
-  vid_t * dependentEdges;
-//  vid_t * dependentEdgeIndex;
-//  vid_t * cntDependentEdges;
+  //  Holds the dependent edges array, one entry per inter-chunk dependency
+  //  Each vertex has a sched_t, which contains a pointer (also called dependentEdges)
+  //  into this array.
+  vid_t * dependentEdges; 
   chunkdata_t * chunkdata;
   vid_t cntChunks;
 };
 typedef struct scheddata_t scheddata_t;
 
 struct sched_t {
-  vid_t * dependentEdges;
-  vid_t cntDependentEdges;
+  vid_t * dependentEdges;  //  pointer into dependentEdges array in scheddata_t
+  vid_t cntDependentEdges;  //  number of dependentEdges for this vertex
   vid_t dependencies;
   volatile vid_t satisfied;
 };
@@ -57,9 +58,10 @@ static inline bool interChunkDependency(vid_t v, vid_t w) {
 }
 
 static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
-                                  std::unordered_set<vid_t> * oldNeighbors,
-                                  vid_t v,
-                                  vertex_t * const nodes, vid_t distance) {
+                                         std::unordered_set<vid_t> * oldNeighbors,
+                                         vid_t v,
+                                         vertex_t * const nodes,
+                                         vid_t distance) {
   neighbors->clear();
   neighbors->insert(v);
   oldNeighbors->clear();
@@ -76,8 +78,8 @@ static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
 }
 
 static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
-                                           const vid_t cntNodes,
-                                           scheddata_t * const sched) {
+                                                  const vid_t cntNodes,
+                                                  scheddata_t * const sched) {
   vid_t * dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes];
   vid_t cntDependencies = 0;
   std::unordered_set<vid_t> neighbors;
@@ -89,19 +91,18 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     dependentEdgeIndex[i] = cntDependencies;
     sched_t * node = &nodes[i].sched;
     node->dependencies = 0;
-    vid_t outDep = 0;
+    node->cntDependentEdges = 0;
     for (const auto& neighbor : neighbors) {
       if (samePhase(neighbor, i, sched->chunkdata)) {
         if (interChunkDependency(neighbor, i)) {
           ++node->dependencies;
         } else if (interChunkDependency(i, neighbor)) {
           cntDependencies++;
-          outDep++;
+          node->cntDependentEdges++;
         }
       }
     }
     node->satisfied = node->dependencies;
-    node->cntDependentEdges = outDep;
   }
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
@@ -119,8 +120,9 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
 }
 
-static inline void createChunkData(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline void createChunkData(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
   scheddata->cntChunks = (cntNodes + (1 << CHUNK_BITS) - 1) >> CHUNK_BITS;
   scheddata->chunkdata = new (std::nothrow) chunkdata_t[scheddata->cntChunks];
   assert(scheddata->chunkdata != NULL);
@@ -136,8 +138,9 @@ static inline void createChunkData(vertex_t * const nodes, const vid_t cntNodes,
   }
 }
 
-static inline void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline void init_scheduling(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
   createChunkData(nodes, cntNodes, scheddata);
   calculateNodeDependenciesChunk(nodes, cntNodes, scheddata);
 }
@@ -192,8 +195,9 @@ static inline void execute_rounds(const int numRounds,
   }
 }
 
-static inline void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                               scheddata_t * const scheddata) {
+static inline void cleanup_scheduling(vertex_t * const nodes,
+                                      const vid_t cntNodes,
+                                      scheddata_t * const scheddata) {
   delete[] scheddata->chunkdata;
   delete[] scheddata->dependentEdges;
 }

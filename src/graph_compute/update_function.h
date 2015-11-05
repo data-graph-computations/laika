@@ -67,8 +67,10 @@ typedef struct vertex_t vertex_t;
     }
   }
 
-  inline void update(vertex_t * nodes, const vid_t index,
-              global_t * const globaldata, const int round = 0) {
+  inline void update(vertex_t * nodes,
+                     const vid_t index,
+                     global_t * const globaldata,
+                     const int round = 0) {
     // ensuring that the number of updates in total is correct per round
     WHEN_TEST({
       __sync_add_and_fetch(&roundUpdateCount, 1);
@@ -155,8 +157,10 @@ typedef struct vertex_t vertex_t;
     }
   }
 
-  inline void update(vertex_t * nodes, const vid_t index,
-              global_t * const globaldata, const int round = 0) {
+  inline void update(vertex_t * nodes,
+                     const vid_t index,
+                     global_t * const globaldata,
+                     const int round = 0) {
     // ensuring that the number of updates in total is correct per round
     WHEN_TEST({
       __sync_add_and_fetch(&roundUpdateCount, 1);
