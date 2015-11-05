@@ -2,10 +2,10 @@
 #define UPDATE_FUNCTION_H_
 
 #include <math.h>
+#include <string>
+#include "./common.h"
 
-WHEN_TEST(
-  static uint64_t roundUpdateCount = 0;
-)
+using namespace std;
 
 #if PAGERANK
   typedef double pagerank_t;
@@ -48,21 +48,12 @@ struct vertex_t {
   sched_t sched;
 };
 typedef struct vertex_t vertex_t;
-// struct vertex_t {
-//   vid_t id;
-//   vid_t priority;
-//   vid_t dependencies;
-//   volatile vid_t satisfied;
-//   vid_t cntEdges;
-//   vid_t * edges;
-//   double data;
-// };
 
 //  Every scheduling algorithm is required to define
 //  a sched_t datatype which includes whatever per-vertex data
 //  they need to perform their scheduling (e.g., priority, satisfied, dependencies etc.)
 #if PAGERANK
-  static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
+  inline static void fillInNodeData(vertex_t * nodes, const vid_t cntNodes) {
     for (vid_t i = 0; i < cntNodes; i++) {
     #if IN_PLACE
       nodes[i].data.pagerank = 1.0;
@@ -76,8 +67,8 @@ typedef struct vertex_t vertex_t;
     }
   }
 
-  void update(vertex_t * nodes, const vid_t index,
-              const global_t global, const int round = 0) {
+  inline void update(vertex_t * nodes, const vid_t index,
+              global_t * const globaldata, const int round = 0) {
     // ensuring that the number of updates in total is correct per round
     WHEN_TEST({
       __sync_add_and_fetch(&roundUpdateCount, 1);
@@ -119,6 +110,29 @@ typedef struct vertex_t vertex_t;
 // const inline phys_t sqrt(phys_t a) {
 //   return sqrt(a);
 // }
+  inline static void fillInNodeData(vertex_t * nodes,
+                                    const vid_t cntNodes,
+                                    const string filepath) {
+    for (vid_t i = 0; i < cntNodes; i++) {
+    #if IN_PLACE
+      nodes[i].data.dashpotResistance = 1.0;
+      nodes[i].data.mass = 1.0;
+    #else
+      nodes[i].data[0].dashpotResistance = 1.0;
+      nodes[i].data[0].mass = 1.0;
+      nodes[i].data[1].dashpotResistance = 1.0;
+      nodes[i].data[1].mass = 1.0;
+    #endif
+      for (int d = 0; d < DIMENSIONS; d++) {
+      #if IN_PLACE
+        nodes[i].data.velocity[d] = 0;
+      #else
+        nodes[i].data[0].velocity[d] = 0;
+        nodes[i].data[1].velocity[d] = 0;
+      #endif
+      }
+    }
+  }
 
   const inline phys_t length(phys_t (&a)[DIMENSIONS]) {
     phys_t total = 0;
@@ -131,18 +145,18 @@ typedef struct vertex_t vertex_t;
   const inline void spring_force(phys_t (&a)[DIMENSIONS],
                                  phys_t (&b)[DIMENSIONS],
                                  phys_t (&delta)[DIMENSIONS],
-                                 const global_t global) {
+                                 global_t * const globaldata) {
     for (int i = 0; i < DIMENSIONS; i++) {
       delta[i] = a[i] - b[i];
     }
-    phys_t coefficient = global.restLength - length(delta);
+    phys_t coefficient = globaldata->restLength - length(delta);
     for (int i = 0; i < DIMENSIONS; i++) {
       delta[i] *= coefficient;
     }
   }
 
-  void update(vertex_t * nodes, const vid_t index,
-              const global_t global, const int round = 0) {
+  inline void update(vertex_t * nodes, const vid_t index,
+              global_t * const globaldata, const int round = 0) {
     // ensuring that the number of updates in total is correct per round
     WHEN_TEST({
       __sync_add_and_fetch(&roundUpdateCount, 1);
@@ -150,10 +164,10 @@ typedef struct vertex_t vertex_t;
 
   #if IN_PLACE
     data_t * current = &nodes[index].data;
-    data_t * next = &nodex[index].data;
+    data_t * next = &nodes[index].data;
   #else
     data_t * current = &nodes[index].data[round & 1];
-    data_t * next = &nodex[index].data[(round + 1) & 1];
+    data_t * next = &nodes[index].data[(round + 1) & 1];
   #endif
 
     phys_t acceleration[DIMENSIONS];
@@ -162,25 +176,25 @@ typedef struct vertex_t vertex_t;
     }
     for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
   #if IN_PLACE
-      data_t * neighbor = &node[node[index].edges[i]].data;
+      data_t * neighbor = &nodes[nodes[index].edges[i]].data;
   #else
-      data_t * neighbor = &node[node[index].edges[i]].data[round & 1];
+      data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
   #endif
       phys_t delta[DIMENSIONS];
-      spring_force(current->position, neighbor->position, delta, global);
+      spring_force(current->position, neighbor->position, delta, globaldata);
       for (int d = 0; d < DIMENSIONS; d++) {
         acceleration[d] += delta[d];
       }
     }
     for (int d = 0; d < DIMENSIONS; d++) {
-      acceleration[d] *= global.springStiffness;
+      acceleration[d] *= globaldata->springStiffness;
       acceleration[d] += -current->dashpotResistance*current->velocity[d];
-      next->velocity[d] += global.timeStep*acceleration[d];
-      next->position[d] += global.timeStep*next->velocity[d];
+      next->velocity[d] += globaldata->timeStep*acceleration[d];
+      next->position[d] += globaldata->timeStep*next->velocity[d];
     }
   }
 
-  phys_t average_speed(vertex_t * nodes, const vid_t cntNodes) {
+  const inline phys_t average_speed(vertex_t * nodes, const vid_t cntNodes) {
     phys_t speed = 0.0;
     for (vid_t i = 0; i < cntNodes; i++) {
       speed += length(nodes[i].data.velocity);

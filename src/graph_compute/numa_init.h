@@ -1,18 +1,11 @@
 #ifndef NUMA_INIT_H_
 #define NUMA_INIT_H_
 
-#include <sched.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/mman.h>
-#include <string>
-#include <cstdio>
 #include <cassert>
 #include <cstring>
-#include <algorithm>
-// #include "./io.h"
-// #include "./common.h"
-// #include "../libgraphio/libgraphio.h"
 
 #ifndef _GNU_SOURCE
   #define _GNU_SOURCE

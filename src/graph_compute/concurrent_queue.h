@@ -1,6 +1,8 @@
 #ifndef CONCURRENT_QUEUE_H_
 #define CONCURRENT_QUEUE_H_
 
+#include "../libgraphio/libgraphio.h"
+
 struct mrmw_queue_t {
   volatile vid_t * data;
   vid_t sentinel;

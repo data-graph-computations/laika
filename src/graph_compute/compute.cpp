@@ -9,28 +9,11 @@
 #include <iomanip>
 #include <exception>
 #include <vector>
-#include "./common.h"
-#include "./io.h"
 
 using namespace std;
 
-#if BASELINE || D0_BSP
-  #include "./bsp_scheduling.h"
-#elif D1_CHUNK
-  #include "./chunk_scheduling.h"
-#elif D1_PHASE
-  #include "./phase_scheduling.h"
-#elif D1_NUMA
-  #include "./numa_scheduling.h"
-#elif D1_PRIO
-  #include "./priority_scheduling.h"
-#else
-  #error "No scheduling type defined!"
-  #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
-#endif
-#include "./update_function.h"
+#include "./common.h"
 #include "./concurrent_queue.h"
-
 
 void test_queue() {
   static const vid_t numBits = 20;
@@ -69,11 +52,19 @@ int main(int argc, char *argv[]) {
     test_queue();
   })
 
+#if VERTEX_META_DATA
+  if (argc != 4) {
+    cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
+    cerr << "Usage: ./compute <num_rounds> <input_edges> <vertex_meta_data>" << endl;
+    return 1;
+  }
+#else
   if (argc != 3) {
     cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
     cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
     return 1;
   }
+#endif
 
   try {
     numRounds = stoi(argv[1]);
@@ -98,6 +89,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   scheddata_t scheddata;
+  global_t globaldata;
 
 #if D1_NUMA
   scheddata.numaInit = numaInit;
@@ -105,9 +97,12 @@ int main(int argc, char *argv[]) {
 
   init_scheduling(nodes, cntNodes, &scheddata);
 
-  // our nodes don't have any real data associated with them
-  // generate some fake data instead
+#if VERTEX_META_DATA
+  char * vertexMetaDataFile = argv[3];
+  fillInNodeData(nodes, cntNodes, vertexMetaDataFile);
+#else
   fillInNodeData(nodes, cntNodes);
+#endif
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -117,7 +112,7 @@ int main(int argc, char *argv[]) {
   WHEN_TEST({
     roundUpdateCount = 0;
   })
-  execute_round(numRounds, nodes, cntNodes, &scheddata);
+  execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
   WHEN_TEST({
     assert(roundUpdateCount == (uint64_t)cntNodes);
   })
@@ -149,11 +144,11 @@ int main(int argc, char *argv[]) {
   cout << "Test flag: " << TEST << '\n';
 
   // so GCC doesn't eliminate the rounds loop as unnecessary work
-  double data = 0.0;
-  for (vid_t i = 0; i < cntNodes; ++i) {
-    data += nodes[i].data;
-  }
-  cout << "Final result (ignore this line): " << data << '\n';
+  // double data = 0.0;
+  // for (vid_t i = 0; i < cntNodes; ++i) {
+  //   data += nodes[i].data;
+  // }
+  // cout << "Final result (ignore this line): " << data << '\n';
 
   return 0;
 }

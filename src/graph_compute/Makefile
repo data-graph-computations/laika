@@ -6,12 +6,11 @@ LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
 LIBS = ../libgraphio/libgraphio.o
-HEADERS = common.h io.h numa_init.h
-CXXSOURCES = compute.cpp io.cpp numa_init.cpp
+HEADERS = common.h update_function.h io.h numa_init.h concurrent_queue.h
+CXXSOURCES =  compute.cpp io.cpp numa_init.cpp
 
 TEST ?= 0
 DEBUG ?= 0
-PAGERANK ?= 1
 DEFS = -DTEST=$(TEST) -DDEBUG=$(DEBUG)
 
 ifneq ($(PRIORITY_GROUP_BITS),)
