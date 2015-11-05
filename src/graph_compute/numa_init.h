@@ -41,13 +41,14 @@ typedef struct chunkInit_t chunkInit_t;
 
 void numaInitWriteZeroes(numaInit_t config,
                          size_t dataTypeSize,
-                         void *data, 
+                         void *data,
                          size_t numBytes);
 
 inline int bindThreadToCore(int _coreID) {
   int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-  if (_coreID < 0 || _coreID >= numCores)
+  if (_coreID < 0 || _coreID >= numCores) {
     return EINVAL;
+  }
 
   cpu_set_t cpuset;
   CPU_ZERO(&cpuset);
