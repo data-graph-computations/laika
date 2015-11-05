@@ -38,6 +38,19 @@ struct chunkInit_t {
 };
 typedef struct chunkInit_t chunkInit_t;
 
+inline int bindThreadToCore(int _coreID) {
+  int numCores = sysconf(_SC_NPROCESSORS_ONLN);
+  if (_coreID < 0 || _coreID >= numCores)
+    return EINVAL;
+
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(_coreID, &cpuset);
+
+  pthread_t current_thread = pthread_self();
+  return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
+}
+
 void numaInitWriteZeroes(numaInit_t config, size_t dataTypeSize,
   void *data, size_t numBytes);
 
