@@ -27,6 +27,10 @@ ifneq ($(BFS),)
 	DEFS += -DBFS=$(BFS)
 endif
 
+ifneq ($(RANDOM),)
+	DEFS += -DRANDOM=$(RANDOM)
+endif
+
 all: lint reorder
 
 lint:

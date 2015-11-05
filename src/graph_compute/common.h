@@ -1,15 +1,12 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <cinttypes>
-#include <cassert>
-
 #ifndef TEST
-#define TEST 0
+  #define TEST 0
 #endif
 
 #ifndef DEBUG
-#define DEBUG 0
+  #define DEBUG 0
 #endif
 
 // Use WHEN_TEST to conditionally include expensive sanity-checks,
@@ -58,12 +55,46 @@
   #define D1_PHASE 0
 #endif
 
+#ifndef D1_NUMA
+  #define D1_NUMA 0
+#endif
+
+#ifndef NUMA_INIT
+  #define NUMA_INIT 0
+#endif
+
+#ifndef NUMA_WORKERS
+  #define NUMA_WORKERS 1
+#endif
+
+#ifndef CHUNK_BITS
+  #define CHUNK_BITS 0
+#endif
+
 #ifndef PARALLEL
   #define PARALLEL 0
 #endif
 
 #ifndef DISTANCE
   #define DISTANCE 1
+#endif
+
+#ifndef IN_PLACE
+  #define IN_PLACE 1
+#endif
+
+#ifndef TEST_CONVERGENCE
+  #define TEST_CONVERGENCE 0
+#endif
+
+#ifndef PAGERANK
+  #define PAGERANK 1
+#endif
+
+#if PAGERANK == 0
+  #define VERTEX_META_DATA 1
+#else
+  #define VERTEX_META_DATA 0
 #endif
 
 #if PARALLEL
@@ -75,17 +106,27 @@
   #define cilk_sync
 #endif
 
-typedef uint64_t vid_t;  // vertex id type
+#include <cinttypes>
+#include <cassert>
+#include "../libgraphio/libgraphio.h"
 
-struct vertex_t {
-  vid_t id;
-  vid_t priority;
-  vid_t dependencies;
-  volatile vid_t satisfied;
-  vid_t cntEdges;
-  vid_t * edges;
-  double data;
-};
-typedef struct vertex_t vertex_t;
+WHEN_TEST(extern volatile uint64_t roundUpdateCount = 0;)
+
+#if D0_BSP
+  #include "./bsp_scheduling.h"
+#elif D1_CHUNK
+  #include "./chunk_scheduling.h"
+#elif D1_PHASE
+  #include "./phase_scheduling.h"
+#elif D1_NUMA
+  #include "./numa_scheduling.h"
+#elif BASELINE || D1_PRIO
+  #include "./priority_scheduling.h"
+#else
+  #error "No scheduling type defined!"
+  #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
+#endif
+
+#include "./io.h"
 
 #endif  // COMMON_H_

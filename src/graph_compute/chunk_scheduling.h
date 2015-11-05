@@ -24,10 +24,15 @@ struct scheddata_t {
 };
 typedef struct scheddata_t scheddata_t;
 
+struct sched_t { };
+typedef struct sched_t sched_t;
+
 static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
   if ((v >> CHUNK_BITS) == (w >> CHUNK_BITS)) {
     return false;
+  } else if ((v & chunkMask) == (w & chunkMask)) {
+    return (v < w);
   } else {
     return ((v & chunkMask) < (w & chunkMask));
   }
@@ -101,50 +106,53 @@ static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
   createChunkData(nodes, cntNodes, scheddata);
 }
 
-static void execute_round(const int round, vertex_t * const nodes,
+static void execute_round(const int numRounds, vertex_t * const nodes,
                           const vid_t cntNodes, scheddata_t * const scheddata) {
-  WHEN_DEBUG({
-    cout << "Running chunk round" << round << endl;
-  })
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+  for (int round = 0; round < numRounds; ++round) {
+    WHEN_DEBUG({
+      cout << "Running chunk round" << round << endl;
+    })
 
-  for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-    scheddata->chunkdata[i].nextIndex = i << CHUNK_BITS;
-  }
+    for (vid_t i = 0; i < scheddata->cntChunks; i++) {
+      scheddata->chunkdata[i].nextIndex = i << CHUNK_BITS;
+    }
 
-  volatile bool doneFlag = false;
-  while (!doneFlag) {
-    doneFlag = true;
-    cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-      vid_t j = scheddata->chunkdata[i].nextIndex;
+    volatile bool doneFlag = false;
+    while (!doneFlag) {
+      doneFlag = true;
+      cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
+        vid_t j = scheddata->chunkdata[i].nextIndex;
 
-      // Optimization disabled due to correctness problem
-      // for (; j < scheddata->chunkdata[i].firstInterChunkIndex; j++) {
-      //   update(nodes, j);
-      // }
+        // Optimization disabled due to correctness problem
+        // for (; j < scheddata->chunkdata[i].firstInterChunkIndex; j++) {
+        //   update(nodes, j);
+        // }
 
-      bool localDoneFlag = false;
-      while (!localDoneFlag && (j < scheddata->chunkdata[i].endIndex)) {
-        if (nodes[j].satisfied == 0) {
-          update(nodes, j);
-          nodes[j].satisfied = nodes[j].dependencies;
-          vid_t k = 0;
-          while (k < nodes[j].cntEdges) {
-            if (interChunkDependency(j, nodes[j].edges[k])) {
-              __sync_sub_and_fetch(&nodes[nodes[j].edges[k]].satisfied, 1);
-              k++;
-            } else {
-              break;
+        bool localDoneFlag = false;
+        while (!localDoneFlag && (j < scheddata->chunkdata[i].endIndex)) {
+          if (nodes[j].satisfied == 0) {
+            update(nodes, j);
+            nodes[j].satisfied = nodes[j].dependencies;
+            vid_t k = 0;
+            while (k < nodes[j].cntEdges) {
+              if (interChunkDependency(j, nodes[j].edges[k])) {
+                __sync_sub_and_fetch(&nodes[nodes[j].edges[k]].satisfied, 1);
+                k++;
+              } else {
+                break;
+              }
             }
+          } else {
+            scheddata->chunkdata[i].nextIndex = j;
+            localDoneFlag = true;  // we couldn't process one of the nodes, so break
+            doneFlag = false;  // we couldn't process one, so we need another round
           }
-        } else {
-          scheddata->chunkdata[i].nextIndex = j;
-          localDoneFlag = true;  // we couldn't process one of the nodes, so break
-          doneFlag = false;  // we couldn't process one, so we need another round
+          j++;
         }
-        j++;
-      }
-      if (!localDoneFlag) {
-        scheddata->chunkdata[i].nextIndex = j;
+        if (!localDoneFlag) {
+          scheddata->chunkdata[i].nextIndex = j;
+        }
       }
     }
   }
