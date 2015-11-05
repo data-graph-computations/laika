@@ -36,7 +36,8 @@ static inline void execute_rounds(const int numRounds,
   }
 }
 
-static inline void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+static inline void cleanup_scheduling(vertex_t * const nodes,
+                                      const vid_t cntNodes,
                                       scheddata_t * const scheddata) {
   // no-op
 }
