@@ -20,9 +20,10 @@ struct chunkdata_t {
 typedef struct chunkdata_t chunkdata_t;
 
 struct scheddata_t {
-  //  Holds the dependent edges array, one entry per inter-chunk dependency
-  //  Each vertex has a sched_t, which contains a pointer (also called dependentEdges)
-  //  into this array.
+  //  dependentEdges holds the dependent edges array, 
+  //  one entry per inter-chunk dependency
+  //  Each vertex has a sched_t, which contains a pointer 
+  //  (also called dependentEdges) into this array.
   vid_t * dependentEdges; 
   chunkdata_t * chunkdata;
   vid_t cntChunks;
@@ -132,7 +133,7 @@ static inline void createChunkData(vertex_t * const nodes,
   cilk_for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
     chunkdata_t * chunk = &scheddata->chunkdata[i];
     chunk->nextIndex = i << CHUNK_BITS;
-    chunk->phaseEndIndex[0] = std::min(chunk->nextIndex + ((1 << CHUNK_BITS) >> 1),
+    chunk->phaseEndIndex[0] = std::min(chunk->nextIndex + (1 << (CHUNK_BITS - 1)),
       cntNodes);
     chunk->phaseEndIndex[1] = std::min((i + 1) << CHUNK_BITS, cntNodes);
     // put code to greedily move boundaryIndex to minimize cost of
