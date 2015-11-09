@@ -31,7 +31,9 @@ typedef struct sched_t sched_t;
 
 // there is one of these per chunk
 struct chunkdata_t {
-  vid_t phaseEndIndex[NUM_PHASES];   // the index of the first vertex beyond this chunk
+  //  the index of the first vertex beyond this chunk
+  //  this could be generalized to an arbitrary number of phases, but is not currently
+  vid_t phaseEndIndex[2];
   vid_t nextIndex;  // the next vertex in this chunk to be processed
   vid_t workQueue;
 };
@@ -44,12 +46,21 @@ struct scheddata_t {
   //  Each vertex has a sched_t, which contains a pointer 
   //  (also called dependentEdges) into this array.
   vid_t * dependentEdges;
+  numaSchedInit_t * numaSchedInit;
   chunkdata_t * chunkdata;
   vid_t cntChunks;
 };
 typedef struct scheddata_t scheddata_t;
 
 #include "./update_function.h"
+
+inline vid_t logBaseTwoRoundUp(vid_t x) {
+  vid_t power = 0;
+  while ((1 << power) < x) {
+    power++;
+  }
+  return power;
+}
 
 static inline bool samePhase(vid_t v, vid_t w, chunkdata_t * const chunkdata) {
   // this assumes that the boundary between phases is the
@@ -93,7 +104,7 @@ static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
 
 static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
                                                   const vid_t cntNodes,
-                                                  scheddata_t * const sched) {
+                                                  scheddata_t * const scheddata) {
   vid_t * dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes];
   vid_t cntDependencies = 0;
   std::unordered_set<vid_t> neighbors;
@@ -107,7 +118,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     node->dependencies = 0;
     vid_t outDep = 0;
     for (const auto& neighbor : neighbors) {
-      if (samePhase(neighbor, i, sched->chunkdata)) {
+      if (samePhase(neighbor, i, scheddata->chunkdata)) {
         if (interChunkDependency(neighbor, i)) {
           ++node->dependencies;
         } else if (interChunkDependency(i, neighbor)) {
@@ -121,15 +132,15 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
-  sched->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1];
+  scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1];
   for (vid_t i = 0; i < cntNodes; i++) {
-    nodes->sched.dependentEdges = &sched->dependentEdges[dependentEdgeIndex[i]];
+    nodes->sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
     vid_t curIndex = dependentEdgeIndex[i];
     for (const auto& neighbor : neighbors) {
-      if ((samePhase(neighbor, i, sched->chunkdata))
+      if ((samePhase(neighbor, i, scheddata->chunkdata))
         && (interChunkDependency(i, neighbor))) {
-          sched->dependentEdges[curIndex++] = neighbor;
+          scheddata->dependentEdges[curIndex++] = neighbor;
       }
     }
   }
@@ -142,7 +153,7 @@ static inline void createChunkData(vertex_t * const nodes,
   scheddata->chunkdata = new (std::nothrow) chunkdata_t[scheddata->cntChunks];
   assert(scheddata->chunkdata != NULL);
 
-  cilk_for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
+  for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
     chunkdata_t * chunk = &scheddata->chunkdata[i];
     chunk->nextIndex = i << CHUNK_BITS;
     chunk->phaseEndIndex[0] = std::min(chunk->nextIndex + ((1 << CHUNK_BITS) >> 1),
@@ -153,18 +164,10 @@ static inline void createChunkData(vertex_t * const nodes,
   }
 }
 
-static inline void init_scheduling(vertex_t * const nodes,
-                                   const vid_t cntNodes,
-                                   scheddata_t * const scheddata) {
-  createChunkData(nodes, cntNodes, scheddata);
-  calculateNodeDependenciesChunk(nodes, cntNodes, scheddata);
-}
-
 struct numaSchedInit_t {
   int coreID;  //  this worker needs to know which core she is
   int numRounds;  //  total number of rounds to perform
   int numPhases;  //  number of phases per round
-  int pseudoRandomNumber;  //  a number in range (0,numCores)
   vid_t numChunksPerWorker;
   vid_t cntNodes;
   vertex_t * nodes;
@@ -175,6 +178,44 @@ struct numaSchedInit_t {
   volatile int * phase;
 };
 typedef struct numaSchedInit_t numaSchedInit_t;
+
+static inline void populateWorkerParameters(vertex_t * const nodes,
+                                            const vid_t cntNodes,
+                                            scheddata_t * const scheddata) {
+  const int NUM_PHASES = 2;
+  scheddata->numaSchedInit =
+    static_cast<numaSchedInit_t *>(malloc(sizeof(numaSchedInit_t)*NUMA_WORKERS));
+  int pseudoRandomNumber = 1;
+  //  a set of NUMA_WORKERS work queues for manages chunks
+  mrmw_queue_t * workQueue =
+    static_cast<mrmw_queue_t *>(malloc(sizeof(mrmw_queue_t)*NUMA_WORKERS));
+  vid_t numChunksPerWorker = scheddata->cntChunks / NUMA_WORKERS;
+  vid_t numChunksPerWorkerRoundUp = logBaseTwoRoundUp(numChunksPerWorker);
+  //  the data array used internally by the work queues
+  volatile vid_t * queueData =
+    static_cast<vid_t *>(malloc(sizeof(vid_t)*numChunksPerWorkerRoundUp*NUMA_WORKERS));
+  vid_t * tmpData = queueData;
+  for (int i = 0; i < NUMA_WORKERS; i++) {
+    numaSchedInit[i].coreID = i;
+    numaSchedInit[i].numRounds = numRounds;
+    numaSchedInit[i].numPhases = NUM_PHASES;
+    numaSchedInit[i].numChunksPerWorker = numChunksPerWorker;
+    numaSchedInit[i].cntNodes = cntNodes;
+    numaSchedInit[i].nodes = nodes;
+    numaSchedInit[i].scheddata = scheddata;
+    numaSchedInit[i].globaldata = globaldata;
+    numaSchedInit[i].mrmw_queue_t = &workQueue[i](tmpData, CHUNK_BITS);
+    tmpData += numChunksPerWorkerRoundUp;
+  }
+}
+
+static inline void init_scheduling(vertex_t * const nodes,
+                                   const vid_t cntNodes,
+                                   scheddata_t * const scheddata) {
+  createChunkData(nodes, cntNodes, scheddata);
+  calculateNodeDependenciesChunk(nodes, cntNodes, scheddata);
+  populateWorkerParameters(nodes, cntNodes, scheddata);
+}
 
 void * processChunks(void * param) {
   numaSchedInit_t * config = static_cast<numaSchedInit_t *>(param);
@@ -199,9 +240,9 @@ void * processChunks(void * param) {
         while ((chunk == -1) && (phase == &config->phase)) {
           //  randomly steal
           chunk = config->workQueue[queueNumber].pop();
-          queueNumber += config->pseudoRandomNumber;
+          queueNumber++;
           //  finding queueNumber % numCores
-          while (queueNumber >= NUMA_WORKERS) {
+          if (queueNumber >= NUMA_WORKERS) {
             queueNumber -= NUMA_WORKERS;
           }
         }
@@ -268,115 +309,40 @@ void * processChunks(void * param) {
   return NULL;
 }
 
-void numaInitWriteZeroes(numaInit_t config,
-                         size_t dataTypeSize,
-                         void *data,
-                         size_t numBytes) {
-  pthread_t * workers =
-    static_cast<pthread_t *>(malloc(sizeof(pthread_t)*config.numWorkers));
-  for (int i = 0; i < config.numWorkers; i++) {
-    chunkInit_t chunk(config, i, dataTypeSize, data, numBytes);
-    assert(pthread_create(&workers[i], NULL, writeZeroes, &chunk) == 0);
-  }
-  for (int i = 0; i < config.numWorkers; i++) {
-    assert(pthread_join(workers[i], NULL) == 0);
-  }
-}
-
-
 static inline void execute_rounds(const int numRounds,
                                   vertex_t * const nodes,
                                   const vid_t cntNodes,
                                   scheddata_t * const scheddata,
                                   global_t * const globaldata) {
-  const int NUM_PHASES = 2;
-  numaSchedInit_t * numaSchedInit =
-    static_cast<numaSchedInit_t *>(malloc(sizeof(numaSchedInit_t)*NUMA_WORKERS));
-  int pseudoRandomNumber = 1;
-  mrmw_queue_t * workQueue =
+  //  the shared variable for tracking remaining chunks during a phase
+  volatile int remainingChunks = scheddata->cntChunks;
+  //  the shared variable for tracking the phase of the round
+  volatile int phase = 0;
   for (int i = 0; i < NUMA_WORKERS; i++) {
-    numaSchedInit[i].coreID = i;
-    numaSchedInit[i].numRounds = numRounds;
-    numaSchedInit[i].numPhases = NUM_PHASES;
-    pseudoRandomNumber += 3;
-    if (pseudoRandomNumber > NUMA_WORKERS) {
-      pseudoRandomNumber -=  NUMA_WORKERS;
-    }
-    numaSchedInit[i].pseudoRandomNumber = pseudoRandomNumber;
-    numaSchedInit[i].numChunksPerWorker = 
-    numaSchedInit[i].cntNodes = cntNodes;
-    numaSchedInit[i].nodes = nodes;
-    numaSchedInit[i].scheddata = scheddata;
-    numaSchedInit[i].globaldata = globaldata;
-    numaSchedInit[i].mrmw_queue_t = 
+    scheddata->numaSchedInit[i].remainingChunks = &remainingChunks;
+    scheddata->numaSchedInit[i].phase = &phase;
   }
-  int coreID;  //  this worker needs to know which core she is
-  int numRounds;  //  total number of rounds to perform
-  int numPhases;  //  number of phases per round
-  int pseudoRandomNumber;  //  a number in range (0,numCores)
-  vid_t numChunksPerWorker;
-  vid_t cntNodes;
-  vertex_t * nodes;
-  scheddata_t * scheddata;
-  global_t * globaldata;
-  mrmw_queue_t * workQueue;
-  volatile int * remainingChunks;
-  volatile int * phase;
-};
-
-
-  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  for (int round = 0; round < numRounds; ++round) {
-    WHEN_DEBUG({
-      cout << "Running chunk round" << round << endl;
-    })
-
-    for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-      scheddata->chunkdata[i].nextIndex = i << CHUNK_BITS;
-    }
-
-    for (int phase = 0; phase < NUM_PHASES; phase++) {
-      volatile bool doneFlag = false;
-      while (!doneFlag) {
-        doneFlag = true;
-        cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-          chunkdata_t * chunk = &scheddata->chunkdata[i];
-          vid_t j = chunk->nextIndex;
-          bool localDoneFlag = false;
-          while (!localDoneFlag && (j < chunk->phaseEndIndex[phase])) {
-            if (nodes[j].sched.satisfied == 0) {
-              update(nodes, j, globaldata, round);
-              if (DISTANCE > 0) {
-                nodes[j].sched.satisfied = nodes[j].sched.dependencies;
-                vid_t * edges = nodes[j].sched.dependentEdges;
-                for (vid_t k = 0; k < nodes[j].sched.cntDependentEdges; k++) {
-                  __sync_sub_and_fetch(&nodes[edges[k]].sched.satisfied, 1);
-                }
-              }
-            } else {
-              scheddata->chunkdata[i].nextIndex = j;
-              localDoneFlag = true;  // we couldn't process one of the nodes, so break
-              doneFlag = false;  // we couldn't process one, so we need another round
-            }
-            j++;
-          }
-          if (!localDoneFlag) {
-            scheddata->chunkdata[i].nextIndex = j;
-          }
-        }
-      }
-    }
+  pthread_t * workers =
+    static_cast<pthread_t *>(malloc(sizeof(pthread_t)*NUMA_WORKERS));
+  for (int i = 0; i < NUMA_WORKERS; i++) {
+    numaSchedInit_t * config = &scheddata->numaSchedInit[i];
+    assert(pthread_create(&workers[i], NULL, processChunks, &config) == 0);
+  }
+  for (int i = 0; i < NUMA_WORKERS; i++) {
+    assert(pthread_join(workers[i], NULL) == 0);
   }
 }
 
-static inline void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                               scheddata_t * const scheddata) {
+static inline void cleanup_scheduling(vertex_t * const nodes,
+                                      const vid_t cntNodes,
+                                      scheddata_t * const scheddata) {
   delete[] scheddata->chunkdata;
   delete[] scheddata->dependentEdges;
 }
 
 static inline void print_execution_data() {
   cout << "Chunk size bits: " << CHUNK_BITS << '\n';
+  cout << "Number of workers: " << NUMA_WORKERS << '\n';
 }
 
 #endif  // D1_NUMA

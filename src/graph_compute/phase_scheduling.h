@@ -82,7 +82,7 @@ static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
 
 static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
                                                   const vid_t cntNodes,
-                                                  scheddata_t * const sched) {
+                                                  scheddata_t * const scheddata) {
   vid_t * dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes];
   vid_t cntDependencies = 0;
   std::unordered_set<vid_t> neighbors;
@@ -96,7 +96,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     node->dependencies = 0;
     node->cntDependentEdges = 0;
     for (const auto& neighbor : neighbors) {
-      if (samePhase(neighbor, i, sched->chunkdata)) {
+      if (samePhase(neighbor, i, scheddata->chunkdata)) {
         if (interChunkDependency(neighbor, i)) {
           ++node->dependencies;
         } else if (interChunkDependency(i, neighbor)) {
@@ -109,15 +109,15 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
-  sched->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1];
+  scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1];
   for (vid_t i = 0; i < cntNodes; i++) {
-    nodes->sched.dependentEdges = &sched->dependentEdges[dependentEdgeIndex[i]];
+    nodes->sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
     vid_t curIndex = dependentEdgeIndex[i];
     for (const auto& neighbor : neighbors) {
-      if ((samePhase(neighbor, i, sched->chunkdata))
+      if ((samePhase(neighbor, i, scheddata->chunkdata))
         && (interChunkDependency(i, neighbor))) {
-          sched->dependentEdges[curIndex++] = neighbor;
+          scheddata->dependentEdges[curIndex++] = neighbor;
       }
     }
   }
