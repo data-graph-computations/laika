@@ -9,15 +9,11 @@
 #include "./concurrent_queue.h"
 #include "./numa_init.h"
 
-#ifndef CHUNK_BITS
-  #define CHUNK_BITS 16
-#elif CHUNK_BITS == 0
+#if CHUNK_BITS < 1
   #error "CHUNK_BITS needs to be greater than 0 for D1_NUMA"
 #endif
 
-#ifndef NUMA_WORKERS
-  #define NUMA_WORKERS 12
-#elif NUMA_WORKERS == 0
+#if NUMA_WORKERS < 1
   #error "NUMA_WORKERS needs to be greater than 0 for D1_NUMA"
 #endif
 
@@ -151,7 +147,8 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
   WHEN_TEST({
   printf("InterChunkDependencies: %lu\n",
-    static_cast<uint64_t>(cntDependencies)); })
+    static_cast<uint64_t>(cntDependencies)); 
+  })
   scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1]();
   for (vid_t i = 0; i < cntNodes; i++) {
     nodes[i].sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];

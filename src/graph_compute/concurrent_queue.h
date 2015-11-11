@@ -13,15 +13,10 @@ struct mrmw_queue_t {
   volatile size_t head;
   volatile size_t tail;
   volatile int lock;
-  mrmw_queue_t(volatile vid_t * const _data,
-               size_t _numBits,
+  mrmw_queue_t(volatile vid_t * const _data, size_t _numBits,
                const size_t _sentinel = static_cast<size_t>(-1)) :
-               data(_data),
-               sentinel(_sentinel),
-               mask((1 << _numBits) - 1),
-               head(0),
-               tail(0),
-               lock(0) { }
+               data(_data), sentinel(_sentinel), mask((1 << _numBits) - 1),
+               head(0), tail(0), lock(0) { }
   // assumes that it is not possible to overflow
   void push(const vid_t value);  //  So, push always succeeds
   vid_t pop();  //  pop can return sentinel, if it is full
@@ -29,7 +24,9 @@ struct mrmw_queue_t {
 typedef struct mrmw_queue_t mrmw_queue_t;
 
 inline void mrmw_queue_t::push(const vid_t value) {
-  while (__sync_lock_test_and_set(&lock, 1) == 1) {}
+  while (__sync_lock_test_and_set(&lock, 1) == 1) {
+    while (lock == 1) {}
+  }
   data[tail & mask] = value;
   tail++;
   __sync_lock_release(&lock);
@@ -39,7 +36,9 @@ inline vid_t mrmw_queue_t::pop() {
   if ((lock == 1) || (tail == head)) {
     return sentinel;
   }
-  while (__sync_lock_test_and_set(&lock, 1) == 1) {}
+  while (__sync_lock_test_and_set(&lock, 1) == 1) {
+    while (lock == 1) {}
+  }
   if (tail == head) {
     __sync_lock_release(&lock);
     return sentinel;

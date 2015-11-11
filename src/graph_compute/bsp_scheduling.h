@@ -46,6 +46,6 @@ static inline void print_execution_data() {
   // no-op
 }
 
-#endif  // D0_BSP || BASELINE
+#endif  // D0_BSP
 
 #endif  // BSP_SCHEDULING_H_

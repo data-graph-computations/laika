@@ -76,6 +76,8 @@
   #ifndef NUMA_WORKERS
     #ifndef PARALLEL
       #define NUMA_WORKERS 1
+    #elif PARALLEL == 0
+      #define NUMA_WORKERS 1
     #elif PARALLEL == 1
       #define NUMA_WORKERS 12
     #endif

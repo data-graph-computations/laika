@@ -1,8 +1,6 @@
 #include "./numa_init.h"
 #include <iostream>
 
-// core_id = 0, 1, ... n-1, where n is the system's number of cores
-
 void * writeZeroes(void * param) {
   chunkInit_t * config = static_cast<chunkInit_t *>(param);
   // Initialize the chunk

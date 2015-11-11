@@ -224,6 +224,6 @@ static inline void print_execution_data() {
   cout << "Priority group bits: " << PRIORITY_GROUP_BITS << '\n';
 }
 
-#endif  // D1_PRIO
+#endif  // D1_PRIO || BASELINE
 
 #endif  // PRIORITY_SCHEDULING_H_

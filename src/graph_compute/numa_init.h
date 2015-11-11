@@ -45,6 +45,7 @@ void numaInitWriteZeroes(numaInit_t config,
                          void *data,
                          size_t numBytes);
 
+// _coreID = 0, 1, ... n-1, where n is the system's number of cores
 inline int bindThreadToCore(int _coreID) {
   int numCores = sysconf(_SC_NPROCESSORS_ONLN);
   if (_coreID < 0 || _coreID >= numCores) {

@@ -16,7 +16,7 @@ using namespace std;
 #include "./concurrent_queue.h"
 
 WHEN_TEST(
-  volatile uint64_t roundUpdateCount;
+  volatile uint64_t roundUpdateCount = 0;
 )
 
 void test_queue() {
@@ -123,13 +123,10 @@ WHEN_TEST({
   assert(result == 0);
 
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
-  WHEN_TEST({
-    roundUpdateCount = 0;
-  })
   execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
   WHEN_TEST({
     cout << "roundUpdateCount: " << roundUpdateCount << endl;
-    cout << "cntNodes: " << cntNodes << endl;
+    cout << "cntNodes: " << cntNodes*numRounds << endl;
     assert(roundUpdateCount == static_cast<uint64_t>(cntNodes)*numRounds);
   })
 
