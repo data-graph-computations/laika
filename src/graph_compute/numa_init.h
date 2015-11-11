@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/mman.h>
+#include <errno.h>
 #include <cassert>
 #include <cstring>
 

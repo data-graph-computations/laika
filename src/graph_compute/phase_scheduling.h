@@ -13,23 +13,7 @@
   #error "CHUNK_BITS needs to be greater than 0 for D1_PHASE"
 #endif
 
-struct chunkdata_t {
-  vid_t nextIndex;  // the next vertex in this chunk to be processed
-  vid_t phaseEndIndex[2];   // the index of the first vertex beyond this chunk
-};
-typedef struct chunkdata_t chunkdata_t;
-
-struct scheddata_t {
-  //  dependentEdges holds the dependent edges array, 
-  //  one entry per inter-chunk dependency
-  //  Each vertex has a sched_t, which contains a pointer 
-  //  (also called dependentEdges) into this array.
-  vid_t * dependentEdges; 
-  chunkdata_t * chunkdata;
-  vid_t cntChunks;
-};
-typedef struct scheddata_t scheddata_t;
-
+//  there is one of these per vertex
 struct sched_t {
   vid_t * dependentEdges;  //  pointer into dependentEdges array in scheddata_t
   vid_t cntDependentEdges;  //  number of dependentEdges for this vertex
@@ -39,6 +23,24 @@ struct sched_t {
 typedef struct sched_t sched_t;
 
 #include "./update_function.h"
+
+// there is one of these per chunk
+struct chunkdata_t {
+  vid_t phaseEndIndex[2];  // the index of the first vertex beyond this chunk
+  vid_t nextIndex;  // the next vertex in this chunk to be processed
+};
+typedef struct chunkdata_t chunkdata_t;
+
+struct scheddata_t {
+  //  dependentEdges holds the dependent edges array,
+  //  one entry per inter-chunk dependency
+  //  Each vertex has a sched_t, which contains a pointer
+  //  (also called dependentEdges) into this array.
+  vid_t * dependentEdges;
+  chunkdata_t * chunkdata;
+  vid_t cntChunks;
+};
+typedef struct scheddata_t scheddata_t;
 
 static inline bool samePhase(vid_t v, vid_t w, chunkdata_t * const chunkdata) {
   // this assumes that the boundary between phases is the
@@ -83,7 +85,7 @@ static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
 static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
                                                   const vid_t cntNodes,
                                                   scheddata_t * const scheddata) {
-  vid_t * dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes];
+  vid_t * dependentEdgeIndex = new (std::nothrow) vid_t[cntNodes]();
   vid_t cntDependencies = 0;
   std::unordered_set<vid_t> neighbors;
   neighbors.reserve(1024);
@@ -98,7 +100,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     for (const auto& neighbor : neighbors) {
       if (samePhase(neighbor, i, scheddata->chunkdata)) {
         if (interChunkDependency(neighbor, i)) {
-          ++node->dependencies;
+          node->dependencies++;
         } else if (interChunkDependency(i, neighbor)) {
           cntDependencies++;
           node->cntDependentEdges++;
@@ -107,11 +109,12 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     }
     node->satisfied = node->dependencies;
   }
+  WHEN_TEST({
   printf("InterChunkDependencies: %lu\n",
-    static_cast<uint64_t>(cntDependencies));
-  scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1];
+    static_cast<uint64_t>(cntDependencies)); })
+  scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1]();
   for (vid_t i = 0; i < cntNodes; i++) {
-    nodes->sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
+    nodes[i].sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
     vid_t curIndex = dependentEdgeIndex[i];
     for (const auto& neighbor : neighbors) {
@@ -127,7 +130,7 @@ static inline void createChunkData(vertex_t * const nodes,
                                    const vid_t cntNodes,
                                    scheddata_t * const scheddata) {
   scheddata->cntChunks = (cntNodes + (1 << CHUNK_BITS) - 1) >> CHUNK_BITS;
-  scheddata->chunkdata = new (std::nothrow) chunkdata_t[scheddata->cntChunks];
+  scheddata->chunkdata = new (std::nothrow) chunkdata_t[scheddata->cntChunks]();
   assert(scheddata->chunkdata != NULL);
 
   cilk_for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
@@ -153,10 +156,20 @@ static inline void execute_rounds(const int numRounds,
                                   const vid_t cntNodes,
                                   scheddata_t * const scheddata,
                                   global_t * const globaldata) {
+WHEN_DEBUG({
+  for (vid_t i = 0; i < scheddata->cntChunks; i++) {
+    for (int phase = 0; phase < 2; phase++) {
+      cout << scheddata->chunkdata[i].phaseEndIndex[phase] << " ";
+    }
+    cout << endl;
+  }
+  int progress = 0;
+  int progressOld = -1;
+})
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int round = 0; round < numRounds; ++round) {
     WHEN_DEBUG({
-      cout << "Running chunk round" << round << endl;
+      cout << "Running chunk round " << round << endl;
     })
 
     for (vid_t i = 0; i < scheddata->cntChunks; i++) {
@@ -168,6 +181,17 @@ static inline void execute_rounds(const int numRounds,
       volatile bool doneFlag = false;
       while (!doneFlag) {
         doneFlag = true;
+WHEN_DEBUG({
+  if (progress > progressOld) {
+    progressOld = progress;
+    cout << phase << " " << progress << endl;
+    for (vid_t i = 0; i < scheddata->cntChunks; i++) {
+      vid_t tmpIndex = scheddata->chunkdata[i].nextIndex;
+      cout << "<" << tmpIndex << "," << nodes[tmpIndex].sched.satisfied << ">" << " ";
+    }
+    cout << endl;
+  }
+})
         cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
           chunkdata_t * chunk = &scheddata->chunkdata[i];
           vid_t j = chunk->nextIndex;
@@ -182,10 +206,16 @@ static inline void execute_rounds(const int numRounds,
                   __sync_sub_and_fetch(&nodes[edges[k]].sched.satisfied, 1);
                 }
               }
+WHEN_DEBUG({
+  progress++;
+})
             } else {
               scheddata->chunkdata[i].nextIndex = j;
               localDoneFlag = true;  // we couldn't process one of the nodes, so break
-              doneFlag = false;  // we couldn't process one, so we need another round
+              if (doneFlag) {
+                doneFlag = false;  // we couldn't process one, so we need another round
+                __sync_synchronize();
+              }
             }
             j++;
           }

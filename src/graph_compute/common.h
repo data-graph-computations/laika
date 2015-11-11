@@ -35,12 +35,20 @@
   #define WHEN_DEBUG(ex)
 #endif
 
+#ifndef VERBOSE
+  #define VERBOSE 0
+#endif
+
 #ifndef BASELINE
   #define BASELINE 0
 #endif
 
 #ifndef D0_BSP
   #define D0_BSP 0
+#elif D0_BSP == 1
+  #ifndef DISTANCE
+    #define DISTANCE 0
+  #endif
 #endif
 
 #ifndef D1_PRIO
@@ -53,10 +61,28 @@
 
 #ifndef D1_PHASE
   #define D1_PHASE 0
+#elif D1_PHASE == 1
+  #ifndef CHUNK_BITS
+    #define CHUNK_BITS 16
+  #endif
 #endif
 
 #ifndef D1_NUMA
   #define D1_NUMA 0
+#elif D1_NUMA == 1
+  #ifndef CHUNK_BITS
+    #define CHUNK_BITS 16
+  #endif
+  #ifndef NUMA_WORKERS
+    #ifndef PARALLEL
+      #define NUMA_WORKERS 1
+    #elif PARALLEL == 1
+      #define NUMA_WORKERS 12
+    #endif
+  #endif
+  #ifndef NUMA_INIT
+    #define NUMA_INIT 1
+  #endif
 #endif
 
 #ifndef NUMA_INIT
@@ -64,7 +90,7 @@
 #endif
 
 #ifndef NUMA_WORKERS
-  #define NUMA_WORKERS 1
+  #define NUMA_WORKERS 0
 #endif
 
 #ifndef CHUNK_BITS
@@ -77,6 +103,14 @@
 
 #ifndef DISTANCE
   #define DISTANCE 1
+#elif DISTANCE == 0
+  #ifndef IN_PLACE
+    #define IN_PLACE 0
+  #endif
+#elif DISTANCE == 1
+  #ifndef IN_PLACE
+    #define IN_PLACE 1
+  #endif
 #endif
 
 #ifndef IN_PLACE
@@ -109,8 +143,11 @@
 #include <cinttypes>
 #include <cassert>
 #include "../libgraphio/libgraphio.h"
+#include "./concurrent_queue.h"
 
-WHEN_TEST(extern volatile uint64_t roundUpdateCount = 0;)
+WHEN_TEST(
+  extern volatile uint64_t roundUpdateCount;
+)
 
 #if D0_BSP
   #include "./bsp_scheduling.h"

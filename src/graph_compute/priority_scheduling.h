@@ -136,11 +136,12 @@ static inline void assignNodePriorities(vertex_t * const nodes,
                                         const vid_t cntNodes,
                                         const int bitsInId) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
+    nodes[i].sched.id = i;
     nodes[i].sched.priority = createPriority(nodes[i].sched.id, bitsInId);
 
     WHEN_DEBUG({
-      cout << "Node ID " << nodes[i].id
-           << " got priority " << nodes[i].priority << '\n';
+      cout << "Node ID " << nodes[i].sched.id
+           << " got priority " << nodes[i].sched.priority << '\n';
     })
   }
 
@@ -148,8 +149,8 @@ static inline void assignNodePriorities(vertex_t * const nodes,
     // ensure no two nodes have the same ID or priority
     for (vid_t i = 0; i < cntNodes; ++i) {
       for (vid_t j = i + 1; j < cntNodes; ++j) {
-        assert(nodes[i].id != nodes[j].id);
-        assert(nodes[i].priority != nodes[j].priority);
+        assert(nodes[i].sched.id != nodes[j].sched.id);
+        assert(nodes[i].sched.priority != nodes[j].sched.priority);
       }
     }
   })

@@ -73,6 +73,10 @@ ifneq ($(TEST_CONVERGENCE),)
 	DEFS += -DTEST_CONVERGENCE=$(TEST_CONVERGENCE)
 endif
 
+ifneq ($(VERBOSE),)
+	DEFS += -DVERBOSE=$(VERBOSE)
+endif
+
 all: lint compute
 
 lint:
