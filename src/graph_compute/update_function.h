@@ -2,6 +2,7 @@
 #define UPDATE_FUNCTION_H_
 
 #include <math.h>
+#include <stdint.h>
 #include <string>
 #include "./common.h"
 
@@ -105,6 +106,12 @@ typedef struct vertex_t vertex_t;
   inline static void fillInNodeData(vertex_t * nodes,
                                     const vid_t cntNodes,
                                     const string filepath) {
+    FILE * nodeInputFile = fopen(filepath.c_str(), "r");
+    uint64_t tmpCntNodes, g0, g1, g2;
+    int cntItems = fscanf(nodeInputFile, "%" SCNu64 "%" SCNu64 "%" SCNu64 "%" SCNu64 "\n",
+      &tmpCntNodes, &g0, &g1, &g2);
+    assert(cntItems == 4);
+    assert(static_cast<vid_t>(tmpCntNodes) == cntNodes);
     for (vid_t i = 0; i < cntNodes; i++) {
     #if IN_PLACE
       nodes[i].data.dashpotResistance = 1.0;
@@ -115,16 +122,29 @@ typedef struct vertex_t vertex_t;
       nodes[i].data[1].dashpotResistance = 1.0;
       nodes[i].data[1].mass = 1.0;
     #endif
+      uint64_t nodeID;
+      cntItems = fscanf(nodeInputFile, "%" SCNu64, &nodeID);
+      assert(cntItems == 1);
+      assert(static_cast<vid_t>(nodeID) == i);
       for (int d = 0; d < DIMENSIONS; d++) {
+        double position;
+        cntItems = fscanf(nodeInputFile, "%lf ", &position);
+        assert(cntItems == 1);
       #if IN_PLACE
         nodes[i].data.velocity[d] = 0;
+        nodes[i].data.position[d] = static_cast<phys_t>(position);
       #else
         nodes[i].data[0].velocity[d] = 0;
         nodes[i].data[1].velocity[d] = 0;
+        nodes[i].data[0].position[d] = static_cast<phys_t>(position);
+        nodes[i].data[1].position[d] = static_cast<phys_t>(position);
       #endif
       }
     }
+    fclose(nodeInputFile);
   }
+
+
 
   const inline phys_t length(phys_t (&a)[DIMENSIONS]) {
     phys_t total = 0;

@@ -147,7 +147,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
   WHEN_TEST({
   printf("InterChunkDependencies: %lu\n",
-    static_cast<uint64_t>(cntDependencies)); 
+    static_cast<uint64_t>(cntDependencies));
   })
   scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1]();
   for (vid_t i = 0; i < cntNodes; i++) {
@@ -225,7 +225,7 @@ inline void * processChunks(void * param) {
   numaSchedInit_t * numaSchedInit = scheddata->numaSchedInit;
   // Initialize the chunk
   bindThreadToCore(config->coreID);
-  static const vid_t sentinel = static_cast<vid_t>(-1);
+  static const vid_t SENTINEL = static_cast<vid_t>(-1);
 
   for (int round = 0; round < config->numRounds; round++) {
     for (int phase = 0; phase < config->numPhases; phase++) {
@@ -240,9 +240,9 @@ inline void * processChunks(void * param) {
       //  the config->phase variable.
       while (phase == *config->phase) {
         //  try to get a chunk from my own queue
-        vid_t chunk = sentinel;
+        vid_t chunk = SENTINEL;
         vid_t tmpQueueNumber = config->coreID;
-        while ((chunk == sentinel) && (phase == (*config->phase))) {
+        while ((chunk == SENTINEL) && (phase == (*config->phase))) {
           //  randomly steal
           chunk = numaSchedInit[tmpQueueNumber].workQueue->pop();
           tmpQueueNumber++;
@@ -251,7 +251,7 @@ inline void * processChunks(void * param) {
             tmpQueueNumber -= NUMA_WORKERS;
           }
         }
-        if (chunk != sentinel) {
+        if (chunk != SENTINEL) {
           bool doneFlag = false;
           //  keep processing vertices from this chunk until it
           //  gets shelved or is done for this phase
@@ -260,9 +260,9 @@ inline void * processChunks(void * param) {
             if (chunkdata->nextIndex < chunkdata->phaseEndIndex[phase]) {
               sched_t * node = &config->nodes[chunkdata->nextIndex].sched;
               if ((DISTANCE > 0)
-                  && (node->satisfied != sentinel)
+                  && (node->satisfied != SENTINEL)
                   && (node->satisfied > 0)
-                  && (__sync_sub_and_fetch(&node->satisfied, 1) != sentinel)) {
+                  && (__sync_sub_and_fetch(&node->satisfied, 1) != SENTINEL)) {
                 //  If we need to shelve vertex, we're done with the chunk
                 doneFlag = true;
               } else if (chunkdata->nextIndex < chunkdata->phaseEndIndex[phase]) {
@@ -275,7 +275,7 @@ inline void * processChunks(void * param) {
                     //  if we discover a dependent vertex that we enable, we
                     //  push it on the appropriate work queue
                     sched_t * neighbor = &config->nodes[node->dependentEdges[edge]].sched;
-                    if (__sync_sub_and_fetch(&neighbor->satisfied, 1) == sentinel) {
+                    if (__sync_sub_and_fetch(&neighbor->satisfied, 1) == SENTINEL) {
                       //  Released this chunk, so push it on its home work queue
                       vid_t enabledChunk = node->dependentEdges[edge] >> CHUNK_BITS;
                       vid_t queueNumber =
@@ -336,11 +336,13 @@ static inline void execute_rounds(const int numRounds,
     static_cast<pthread_t *>(malloc(sizeof(pthread_t)*NUMA_WORKERS));
   for (int i = 0; i < NUMA_WORKERS; i++) {
     numaSchedInit_t * config = &scheddata->numaSchedInit[i];
-    assert(pthread_create(&workers[i], NULL, processChunks,
-                          reinterpret_cast<void *>(config)) == 0);
+    int result = pthread_create(&workers[i], NULL, processChunks,
+      reinterpret_cast<void *>(config));
+    assert(result == 0);
   }
   for (int i = 0; i < NUMA_WORKERS; i++) {
-    assert(pthread_join(workers[i], NULL) == 0);
+    int result = pthread_join(workers[i], NULL);
+    assert(result == 0);
   }
 }
 

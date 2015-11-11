@@ -111,7 +111,8 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
   WHEN_TEST({
   printf("InterChunkDependencies: %lu\n",
-    static_cast<uint64_t>(cntDependencies)); })
+    static_cast<uint64_t>(cntDependencies));
+  })
   scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1]();
   for (vid_t i = 0; i < cntNodes; i++) {
     nodes[i].sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
@@ -156,16 +157,6 @@ static inline void execute_rounds(const int numRounds,
                                   const vid_t cntNodes,
                                   scheddata_t * const scheddata,
                                   global_t * const globaldata) {
-WHEN_DEBUG({
-  for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-    for (int phase = 0; phase < 2; phase++) {
-      cout << scheddata->chunkdata[i].phaseEndIndex[phase] << " ";
-    }
-    cout << endl;
-  }
-  int progress = 0;
-  int progressOld = -1;
-})
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int round = 0; round < numRounds; ++round) {
     WHEN_DEBUG({
@@ -181,17 +172,6 @@ WHEN_DEBUG({
       volatile bool doneFlag = false;
       while (!doneFlag) {
         doneFlag = true;
-WHEN_DEBUG({
-  if (progress > progressOld) {
-    progressOld = progress;
-    cout << phase << " " << progress << endl;
-    for (vid_t i = 0; i < scheddata->cntChunks; i++) {
-      vid_t tmpIndex = scheddata->chunkdata[i].nextIndex;
-      cout << "<" << tmpIndex << "," << nodes[tmpIndex].sched.satisfied << ">" << " ";
-    }
-    cout << endl;
-  }
-})
         cilk_for (vid_t i = 0; i < scheddata->cntChunks; i++) {
           chunkdata_t * chunk = &scheddata->chunkdata[i];
           vid_t j = chunk->nextIndex;
@@ -206,9 +186,6 @@ WHEN_DEBUG({
                   __sync_sub_and_fetch(&nodes[edges[k]].sched.satisfied, 1);
                 }
               }
-WHEN_DEBUG({
-  progress++;
-})
             } else {
               scheddata->chunkdata[i].nextIndex = j;
               localDoneFlag = true;  // we couldn't process one of the nodes, so break
