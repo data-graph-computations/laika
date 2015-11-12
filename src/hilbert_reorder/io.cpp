@@ -152,7 +152,7 @@ int outputEdges(const vertex_t * const reorderedNodes, const vid_t cntNodes,
                 const string& filepath) {
   EdgeListBuilder * builder = NULL;
   try {
-    builder = adjlistfile_write(filepath);
+    builder = binadjlistfile_write(filepath);
     if (builder == NULL) {
       std::cerr << "Received null builder when writing to file " << filepath << std::endl;
       return -1;

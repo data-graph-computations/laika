@@ -49,10 +49,11 @@ void rewriteEdges(int numVertices, FILE * eleInputFile, FILE * eleOutputFile) {
 }
 
 int main(int argc, char *argv[]) {
-  string baseName = argv[1];
-  string nodeInputName = baseName + ".node.simple";
-  string eleInputName = baseName + ".ele.simple";
-  string eleOutputName = baseName + ".adjlist";
+  string inputBaseName = argv[1];
+  string outputBaseName = argv[2];
+  string nodeInputName = inputBaseName + ".node.simple";
+  string eleInputName = inputBaseName + ".ele.simple";
+  string eleOutputName = outputBaseName + ".adjlist";
 
   FILE * eleInputFile = fopen(eleInputName.c_str(), "r");
   FILE * eleOutputFile = fopen(eleOutputName.c_str(), "w");
