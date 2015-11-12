@@ -87,7 +87,11 @@ WHEN_TEST({
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
-  makeSimpleAndUndirected(nodes, cntNodes, numaInit);
+  //  This function asserts that there are
+  //  no self-edges and that every edge is
+  //  reciprocated (i.e., if (v,w) exists, then
+  //  so does (w,v))
+  testSimpleAndUndirected(nodes, cntNodes);
 
 #if VERBOSE
   cout << "Input edge file: " << inputEdgeFile << '\n';
@@ -106,10 +110,6 @@ WHEN_TEST({
   global_t globaldata;
 
   init_scheduling(nodes, cntNodes, &scheddata);
-
-WHEN_TEST({
-  testSimpleAndUndirected(nodes, cntNodes);
-})
 
 #if VERTEX_META_DATA
   char * vertexMetaDataFile = argv[3];
@@ -161,6 +161,7 @@ WHEN_TEST({
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << numRounds << ", ";
   cout << inputEdgeFile << ", ";
+  cout << cntNodes << ", ";
   cout << setprecision(8) << seconds << ", ";
   cout << PARALLEL << ", ";
   cout << NUMA_INIT << ", ";

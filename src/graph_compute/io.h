@@ -25,17 +25,17 @@ static inline bool reverseEdgeExists(vertex_t * const node, vid_t v) {
   return false;
 }
 
-WHEN_TEST(
-  static inline void testSimpleAndUndirected(vertex_t * const nodes,
-                                          const vid_t cntNodes) {
-    for (vid_t v = 0; v < cntNodes; v++) {
-      for (vid_t edge = 0; edge < nodes[v].cntEdges; edge++) {
-        assert(nodes[v].edges[edge] != v);  //  Test for no self edges
-        assert(reverseEdgeExists(&nodes[nodes[v].edges[edge]], v));  //  test return edge
-      }
+static inline void testSimpleAndUndirected(vertex_t * const nodes,
+                                        const vid_t cntNodes) {
+  for (vid_t v = 0; v < cntNodes; v++) {
+    for (vid_t edge = 0; edge < nodes[v].cntEdges; edge++) {
+      vid_t neighbor = nodes[v].edges[edge];
+      assert(neighbor != v);  //  Test for no self edges
+      bool resultFlag = reverseEdgeExists(&nodes[nodes[v].edges[edge]], v);
+      assert(resultFlag);  //  test return edge
     }
   }
-)
+}
 
 void makeSimpleAndUndirected(vertex_t * nodes,
                              vid_t cntNodes, numaInit_t numaInit);
