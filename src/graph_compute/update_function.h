@@ -2,8 +2,13 @@
 #define UPDATE_FUNCTION_H_
 
 #include <math.h>
+#include <stdint.h>
 #include <string>
 #include "./common.h"
+
+WHEN_TEST(
+  extern volatile uint64_t roundUpdateCount;
+)
 
 using namespace std;
 
@@ -75,11 +80,10 @@ typedef struct vertex_t vertex_t;
     WHEN_TEST({
       __sync_add_and_fetch(&roundUpdateCount, 1);
     })
-
     vertex_t * current = &nodes[index];
     // recalculate this node's data
     pagerank_t pagerank = 0;
-    for (size_t i = 0; i < current->cntEdges; ++i) {
+    for (vid_t i = 0; i < current->cntEdges; ++i) {
     #if IN_PLACE
       pagerank += nodes[current->edges[i]].data.contrib;
     #else
@@ -99,22 +103,15 @@ typedef struct vertex_t vertex_t;
   #endif
   }
 #else  // MASS_SPRING_DASHPOT
-//
-// from http://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
-// store dot product of each vertex in vertex struct
-// then turn sqrt((x0-x1)^2 + (y0-y1)^2 + (z0-z1)^2) into:
-// sqrt((x0*x0+y0*y0+z0*z0) + (x1*x1+y1*y1+z1*z1) - 2(x0*x1+y0*y1+z0*z1))
-// double inline __declspec (naked) __fastcall sqrt14(double n) {
-//     _asm fld qword ptr [esp+4]  // load parameter n into a FP register
-//     _asm fsqrt // do sqrt() on that register, and store the result back there
-//     _asm ret 8 // return, and pop an extra 8 bytes (the n parameter) off the stack
-// }
-// const inline phys_t sqrt(phys_t a) {
-//   return sqrt(a);
-// }
   inline static void fillInNodeData(vertex_t * nodes,
                                     const vid_t cntNodes,
                                     const string filepath) {
+    FILE * nodeInputFile = fopen(filepath.c_str(), "r");
+    uint64_t tmpCntNodes, g0, g1, g2;
+    int cntItems = fscanf(nodeInputFile, "%" SCNu64 "%" SCNu64 "%" SCNu64 "%" SCNu64 "\n",
+      &tmpCntNodes, &g0, &g1, &g2);
+    assert(cntItems == 4);
+    assert(static_cast<vid_t>(tmpCntNodes) == cntNodes);
     for (vid_t i = 0; i < cntNodes; i++) {
     #if IN_PLACE
       nodes[i].data.dashpotResistance = 1.0;
@@ -125,16 +122,29 @@ typedef struct vertex_t vertex_t;
       nodes[i].data[1].dashpotResistance = 1.0;
       nodes[i].data[1].mass = 1.0;
     #endif
+      uint64_t nodeID;
+      cntItems = fscanf(nodeInputFile, "%" SCNu64, &nodeID);
+      assert(cntItems == 1);
+      assert(static_cast<vid_t>(nodeID) == i);
       for (int d = 0; d < DIMENSIONS; d++) {
+        double position;
+        cntItems = fscanf(nodeInputFile, "%lf ", &position);
+        assert(cntItems == 1);
       #if IN_PLACE
         nodes[i].data.velocity[d] = 0;
+        nodes[i].data.position[d] = static_cast<phys_t>(position);
       #else
         nodes[i].data[0].velocity[d] = 0;
         nodes[i].data[1].velocity[d] = 0;
+        nodes[i].data[0].position[d] = static_cast<phys_t>(position);
+        nodes[i].data[1].position[d] = static_cast<phys_t>(position);
       #endif
       }
     }
+    fclose(nodeInputFile);
   }
+
+
 
   const inline phys_t length(phys_t (&a)[DIMENSIONS]) {
     phys_t total = 0;

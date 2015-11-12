@@ -15,7 +15,12 @@ using namespace std;
 #include "./common.h"
 #include "./concurrent_queue.h"
 
+WHEN_TEST(
+  volatile uint64_t roundUpdateCount = 0;
+)
+
 void test_queue() {
+  cout << "Testing Concurrent Queue" << endl;
   static const vid_t numBits = 20;
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   volatile vid_t * tmpData = static_cast<vid_t *>(numaCalloc(numaInit,
@@ -27,13 +32,17 @@ void test_queue() {
 
   cilk_for (vid_t i = 0; i < (1 << numBits); i++) {
     Q.push(i);
-    tmpResult[i] = Q.pop();
+    tmpResult[i] = static_cast<vid_t>(-1);
+    while (tmpResult[i] == static_cast<vid_t>(-1)) {
+      tmpResult[i] = Q.pop();
+    }
   }
 
   vid_t sum = 0;
   vid_t sum2 = 0;
   for (vid_t i = 0; i < (1 << numBits); i++) {
     sum += tmpResult[i];
+    assert(tmpResult[i] != static_cast<vid_t>(-1));
     sum2 += i;
   }
 
@@ -48,9 +57,9 @@ int main(int argc, char *argv[]) {
   char * inputEdgeFile;
   int numRounds = 0;
 
-  WHEN_TEST({
-    test_queue();
-  })
+WHEN_TEST({
+  test_queue();
+})
 
 #if VERTEX_META_DATA
   if (argc != 4) {
@@ -78,22 +87,27 @@ int main(int argc, char *argv[]) {
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
+  //  This function asserts that there are
+  //  no self-edges and that every edge is
+  //  reciprocated (i.e., if (v,w) exists, then
+  //  so does (w,v))
+  testSimpleAndUndirected(nodes, cntNodes);
 
+#if VERBOSE
   cout << "Input edge file: " << inputEdgeFile << '\n';
   cout << "Graph size: " << cntNodes << '\n';
 
-#if PARALLEL
-  cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
-#else
-  cout << "Cilk workers: 1\n";
+  #if NUMA_WORKERS
+    cout << "pthread workers: " << NUMA_WORKERS << '\n';
+  #elif PARALLEL
+    cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
+  #else
+    cout << "Cilk workers: 1\n";
+  #endif
 #endif
 
   scheddata_t scheddata;
   global_t globaldata;
-
-#if D1_NUMA
-  scheddata.numaInit = numaInit;
-#endif
 
   init_scheduling(nodes, cntNodes, &scheddata);
 
@@ -109,12 +123,11 @@ int main(int argc, char *argv[]) {
   assert(result == 0);
 
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
-  WHEN_TEST({
-    roundUpdateCount = 0;
-  })
   execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
   WHEN_TEST({
-    assert(roundUpdateCount == (uint64_t)cntNodes);
+    cout << "roundUpdateCount: " << roundUpdateCount << endl;
+    cout << "cntNodes: " << cntNodes*numRounds << endl;
+    assert(roundUpdateCount == static_cast<uint64_t>(cntNodes)*numRounds);
   })
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
@@ -126,6 +139,8 @@ int main(int argc, char *argv[]) {
 
   cleanup_scheduling(nodes, cntNodes, &scheddata);
 
+#if VERBOSE
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
   cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
@@ -142,7 +157,17 @@ int main(int argc, char *argv[]) {
 
   cout << "Debug flag: " << DEBUG << '\n';
   cout << "Test flag: " << TEST << '\n';
-
+#else
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+  cout << numRounds << ", ";
+  cout << inputEdgeFile << ", ";
+  cout << cntNodes << ", ";
+  cout << setprecision(8) << seconds << ", ";
+  cout << PARALLEL << ", ";
+  cout << NUMA_INIT << ", ";
+  cout << DISTANCE << ", ";
+  cout << endl;
+#endif
   // so GCC doesn't eliminate the rounds loop as unnecessary work
   // double data = 0.0;
   // for (vid_t i = 0; i < cntNodes; ++i) {

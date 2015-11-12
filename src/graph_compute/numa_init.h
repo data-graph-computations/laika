@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/mman.h>
+#include <errno.h>
 #include <cassert>
 #include <cstring>
 
@@ -41,8 +42,23 @@ typedef struct chunkInit_t chunkInit_t;
 
 void numaInitWriteZeroes(numaInit_t config,
                          size_t dataTypeSize,
-                         void *data, 
+                         void *data,
                          size_t numBytes);
+
+// _coreID = 0, 1, ... n-1, where n is the system's number of cores
+inline int bindThreadToCore(int _coreID) {
+  int numCores = sysconf(_SC_NPROCESSORS_ONLN);
+  if (_coreID < 0 || _coreID >= numCores) {
+    return EINVAL;
+  }
+
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(_coreID, &cpuset);
+
+  pthread_t current_thread = pthread_self();
+  return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
+}
 
 void * numaCalloc(numaInit_t config, size_t dataTypeSize, size_t numElements);
 

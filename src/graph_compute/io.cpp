@@ -1,5 +1,6 @@
 #include "./io.h"
 #include <string>
+#include <algorithm>
 
 class ComputeEdgeListBuilder : public EdgeListBuilder {
  private:
@@ -38,7 +39,7 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
       this->nodes = *(this->outNodes) =
         static_cast<vertex_t *>(numaCalloc(numaInit, sizeof(vertex_t), cntNodes));
     } else {
-      this->nodes = *(this->outNodes) = new vertex_t[cntNodes];
+      this->nodes = *(this->outNodes) = new vertex_t[cntNodes]();
     }
   }
 
@@ -50,7 +51,7 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
       this->edges = *(this->outEdges) =
         static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), totalEdges));
     } else {
-      this->edges = *(this->outEdges) = new vid_t[totalEdges];
+      this->edges = *(this->outEdges) = new vid_t[totalEdges]();
     }
   }
 
@@ -94,3 +95,73 @@ int readEdgesFromFile(const string filepath,
 
   return edgelistfile_read(filepath, &builder);
 }
+
+void makeSimpleAndUndirected(vertex_t * nodes,
+                             vid_t cntNodes, numaInit_t numaInit) {
+  for (vid_t v = 0; v < cntNodes; v++) {
+    std::sort(nodes[v].edges, nodes[v].edges + nodes[v].cntEdges);
+    for (vid_t edge = 0; edge < nodes[v].cntEdges - 1; edge++) {
+      if (nodes[v].edges[edge] == nodes[v].edges[edge + 1]) {
+        //  this edge is a duplicate (i.e., not simple)
+        //  and will now be deleted w/ self-loops
+        nodes[v].edges[edge] = v;
+      }
+    }
+  }
+  vid_t origEdges = 0;
+  vid_t cntEdges = 0;
+  vid_t selfEdges = 0;
+  vid_t * count = new (std::nothrow) vid_t[cntNodes]();
+  for (vid_t v = 0; v < cntNodes; v++) {
+    for (vid_t edge = 0; edge < nodes[v].cntEdges; edge++) {
+      origEdges++;
+      if (nodes[v].edges[edge] != v) {
+        count[v]++;
+        cntEdges++;
+        if (!reverseEdgeExists(&nodes[nodes[v].edges[edge]], v)) {
+          count[nodes[v].edges[edge]]++;
+          cntEdges++;
+        }
+      } else {
+        selfEdges++;
+      }
+    }
+  }
+  vid_t * index = new (std::nothrow) vid_t[cntNodes]();
+  index[0] = 0;
+  for (vid_t v = 1; v < cntNodes; v++) {
+    //  Initially, point index to beginning of edge list
+    index[v] = index[v-1] + count[v-1];
+  }
+  vid_t * edges;
+  vid_t * oldEdges = nodes[0].edges;
+  if (numaInit.numaInitFlag) {
+    edges = static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), cntEdges));
+  } else {
+    edges = new (std::nothrow) vid_t[cntEdges]();
+  }
+  for (vid_t v = 0; v < cntNodes; v++) {
+    for (vid_t edge = 0; edge < nodes[v].cntEdges; edge++) {
+      if (nodes[v].edges[edge] != v) {
+        edges[index[v]++] = nodes[v].edges[edge];
+        if (!reverseEdgeExists(&nodes[nodes[v].edges[edge]], v)) {
+          //  I'm pointing to someone who isn't pointing back
+          //  So, we'll add a return edge for him
+          edges[index[nodes[v].edges[edge]]++] = v;
+        }
+      }
+    }
+  }
+  for (vid_t v = 0; v < cntNodes; v++) {
+    nodes[v].edges = &edges[index[v] - count[v]];
+    nodes[v].cntEdges = count[v];
+  }
+WHEN_TEST({
+  testSimpleAndUndirected(nodes, cntNodes);
+})
+
+  delete [] oldEdges;
+  delete [] count;
+  delete [] index;
+}
+

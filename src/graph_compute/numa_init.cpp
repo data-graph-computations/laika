@@ -1,21 +1,6 @@
 #include "./numa_init.h"
 #include <iostream>
 
-// core_id = 0, 1, ... n-1, where n is the system's number of cores
-
-int bindThreadToCore(int _coreID) {
-  int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-  if (_coreID < 0 || _coreID >= numCores)
-    return EINVAL;
-
-  cpu_set_t cpuset;
-  CPU_ZERO(&cpuset);
-  CPU_SET(_coreID, &cpuset);
-
-  pthread_t current_thread = pthread_self();
-  return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
-}
-
 void * writeZeroes(void * param) {
   chunkInit_t * config = static_cast<chunkInit_t *>(param);
   // Initialize the chunk
