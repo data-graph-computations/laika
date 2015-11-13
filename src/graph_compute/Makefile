@@ -37,6 +37,10 @@ ifneq ($(D1_PHASE),)
 	DEFS += -DD1_PHASE=$(D1_PHASE)
 endif
 
+ifneq ($(D1_CHROM),)
+	DEFS += -DD1_CHROM=$(D1_CHROM)
+endif
+
 ifneq ($(D1_NUMA),)
 	DEFS += -DD1_NUMA=$(D1_NUMA)
 endif

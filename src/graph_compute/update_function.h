@@ -105,10 +105,12 @@ typedef struct vertex_t vertex_t;
                                           const vid_t cntNodes,
                                           global_t * const globaldata,
                                           int numRounds) {
+  #if TEST_CONVERGENCE
     pagerank_t normalizer = 1/globaldata->averageDiff[0];
     for (int i = 0; i < numRounds; i++) {
       cout << (globaldata->averageDiff[i]*normalizer) << endl;
     }
+  #endif
   }
 
   inline void update(vertex_t * const nodes,
@@ -291,11 +293,13 @@ typedef struct vertex_t vertex_t;
                                           const vid_t cntNodes,
                                           global_t * const globaldata,
                                           int numRounds) {
+  #if TEST_CONVERGENCE
     phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes) / globaldata->averageSpeed[0]);
     for (int i = 0; i < numRounds; i++) {
       cout << (normalizer*sqrt(globaldata->averageSpeed[i]
         / static_cast<phys_t>(cntNodes))) << endl;
     }
+  #endif
   }
 
   const inline void springForce(phys_t (&a)[DIMENSIONS],

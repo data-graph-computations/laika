@@ -59,6 +59,10 @@
   #define D1_CHUNK 0
 #endif
 
+#ifndef D1_CHROM
+  #define D1_CHROM 0
+#endif
+
 #ifndef D1_PHASE
   #define D1_PHASE 0
 #elif D1_PHASE == 1
@@ -88,6 +92,10 @@
   #ifndef NUMA_STEAL
     #define NUMA_STEAL 1
   #endif
+#endif
+
+#ifndef NUMA_STEAL
+  #define NUMA_STEAL 0
 #endif
 
 #ifndef NUMA_INIT
@@ -169,6 +177,9 @@ WHEN_TEST(
 #elif D1_PHASE
   #include "./phase_scheduling.h"
   #define SCHEDULER_NAME "PHASE"
+#elif D1_CHROM
+  #include "./chromatic_scheduling.h"
+  #define SCHEDULER_NAME "CHROM"
 #elif D1_NUMA
   #include "./numa_scheduling.h"
   #define SCHEDULER_NAME "NUMA"
