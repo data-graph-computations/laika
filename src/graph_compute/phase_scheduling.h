@@ -115,8 +115,8 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     static_cast<uint64_t>(cntDependencies));
   })
   //  9 bits -> 4KB page granularity
-  numaInit_t numaInit(NUM_CORES,
-                      std::min(9, CHUNK_BITS), static_cast<bool>(NUMA_INIT));
+  numaInit_t numaInit(NUMA_WORKERS,
+                      CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   scheddata->dependentEdges =
     static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), cntDependencies+1));
   for (vid_t i = 0; i < cntNodes; i++) {

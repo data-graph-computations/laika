@@ -35,10 +35,6 @@
   #define WHEN_DEBUG(ex)
 #endif
 
-#ifndef NUM_CORES
-  #define NUM_CORES 12
-#endif
-
 #ifndef VERBOSE
   #define VERBOSE 0
 #endif
@@ -83,7 +79,7 @@
     #elif PARALLEL == 0
       #define NUMA_WORKERS 1
     #elif PARALLEL == 1
-      #define NUMA_WORKERS NUM_CORES
+      #define NUMA_WORKERS 12
     #endif
   #endif
   #ifndef NUMA_INIT
@@ -136,8 +132,10 @@
 
 #if PAGERANK == 0
   #define VERTEX_META_DATA 1
+  #define APP_NAME "MASS_SPRING_DASHPOT"
 #else
   #define VERTEX_META_DATA 0
+  #define APP_NAME "PAGERANK"
 #endif
 
 #if PARALLEL
@@ -153,6 +151,10 @@
 #include <cassert>
 #include "../libgraphio/libgraphio.h"
 #include "./concurrent_queue.h"
+
+#if TEST_SIMPLE_AND_UNDIRECTED
+  #define TEST_SIMPLE_AND_UNDIRECTED 0
+#endif
 
 WHEN_TEST(
   extern volatile uint64_t roundUpdateCount;

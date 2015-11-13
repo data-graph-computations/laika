@@ -5,6 +5,7 @@
 //  #include <stdint.h>
 #include <string.h>
 #include <string>
+#include <algorithm>
 #include "./common.h"
 
 WHEN_TEST(
@@ -33,12 +34,13 @@ using namespace std;
   struct data_t {
     phys_t position[DIMENSIONS];
     phys_t velocity[DIMENSIONS];
-    phys_t dashpotResistance;
-    phys_t mass;
+    phys_t acceleration[DIMENSIONS];
+    phys_t restLength;
     bool fixed;
   };
   struct global_t {
-    phys_t restLength;
+    phys_t dashpotResistance;
+    phys_t inverseMass;
     phys_t springStiffness;
     phys_t timeStep;
   #if TEST_CONVERGENCE
@@ -102,11 +104,10 @@ typedef struct vertex_t vertex_t;
                                           const vid_t cntNodes,
                                           global_t * const globaldata,
                                           int numRounds) {
-  #if TEST_CONVERGENCE
+    pagerank_t normalizer = 1/globaldata->averageDiff[0];
     for (int i = 0; i < numRounds; i++) {
-      cout << globaldata->averageDiff[i] << endl;
+      cout << (globaldata->averageDiff[i]*normalizer) << endl;
     }
-  #endif
   }
 
   inline void update(vertex_t * const nodes,
@@ -148,6 +149,7 @@ typedef struct vertex_t vertex_t;
     next->contrib = pagerank / static_cast<pagerank_t>(nodes[index].cntEdges);
   }
 #else  // MASS_SPRING_DASHPOT
+
   inline static uint64_t hashOfVertexData(data_t * vertex) {
     uint64_t result = 0;
     for (int i = 0; i < DIMENSIONS; i++) {
@@ -216,19 +218,11 @@ typedef struct vertex_t vertex_t;
       &tmpCntNodes, &g0, &g1, &g2);
     assert(cntItems == 4);
     assert(static_cast<vid_t>(tmpCntNodes) == cntNodes);
-    phys_t mass = 1.0;
-    phys_t dashpotResistance = 0.5;
     for (vid_t i = 0; i < cntNodes; i++) {
     #if IN_PLACE
-      nodes[i].data.dashpotResistance = dashpotResistance;
-      nodes[i].data.mass = mass;
       nodes[i].data.fixed = false;
     #else
-      nodes[i].data[0].dashpotResistance = dashpotResistance;
-      nodes[i].data[0].mass = mass;
       nodes[i].data[0].fixed = false;
-      nodes[i].data[1].dashpotResistance = dashpotResistance;
-      nodes[i].data[1].mass = mass;
       nodes[i].data[1].fixed = false;
     #endif
       uint64_t nodeID;
@@ -241,16 +235,37 @@ typedef struct vertex_t vertex_t;
         assert(cntItems == 1);
       #if IN_PLACE
         nodes[i].data.velocity[d] = 0;
+        nodes[i].data.acceleration[d] = 0;
         nodes[i].data.position[d] = static_cast<phys_t>(position);
       #else
         nodes[i].data[0].velocity[d] = 0;
         nodes[i].data[1].velocity[d] = 0;
+        nodes[i].data[0].acceleration[d] = 0;
+        nodes[i].data[1].acceleration[d] = 0;
         nodes[i].data[0].position[d] = static_cast<phys_t>(position);
         nodes[i].data[1].position[d] = static_cast<phys_t>(position);
       #endif
       }
     }
     fclose(nodeInputFile);
+    for (vid_t i = 0; i < cntNodes; i++) {
+      phys_t restLength = 0.0;
+      vid_t cntEdges = 0;
+      for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
+        cntEdges++;
+      #if IN_PLACE
+        restLength += distance(nodes[i].data.position, nodes[edge].data.position);
+      #else
+        restLength += distance(nodes[i].data[0].position, nodes[edge].data[0].position);
+      #endif
+      }
+    #if IN_PLACE
+      nodes[i].data.restLength = restLength / static_cast<phys_t>(cntEdges);
+    #else
+      nodes[i].data[0].restLength = restLength / static_cast<phys_t>(cntEdges);
+      nodes[i].data[1].restLength = restLength / static_cast<phys_t>(cntEdges);
+    #endif
+    }
     fixExtremalPoints(nodes, cntNodes);
   }
 
@@ -270,52 +285,41 @@ typedef struct vertex_t vertex_t;
     return length(delta);
   }
 
-  inline static void fillInGlobalData(vertex_t * const nodes,
-                                      const vid_t cntNodes,
-                                      global_t * const globaldata,
-                                      int numRounds) {
-    phys_t totalLength = 0;
-    vid_t cntEdges = 0;
-    for (vid_t i = 0; i < cntNodes; i++) {
-      for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
-        cntEdges++;
-      #if IN_PLACE
-        totalLength += distance(nodes[i].data.position, nodes[edge].data.position);
-      #else
-        totalLength += distance(nodes[i].data[0].position, nodes[edge].data[0].position);
-      #endif
-      }
-    }
-    globaldata->restLength = totalLength / static_cast<phys_t>(cntEdges);
-    globaldata->springStiffness = 1;
-    globaldata->timeStep = 0.01;
-  #if TEST_CONVERGENCE
-    globaldata->averageSpeed = new (std::nothrow) phys_t[numRounds]();
-  #endif
-  }
-
   inline static void printConvergenceData(vertex_t * const nodes,
                                           const vid_t cntNodes,
                                           global_t * const globaldata,
                                           int numRounds) {
-  #if TEST_CONVERGENCE
+    phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes) / globaldata->averageSpeed[0]);
     for (int i = 0; i < numRounds; i++) {
-      cout << sqrt(globaldata->averageSpeed[i] / static_cast<phys_t>(cntNodes)) << endl;
+      cout << (normalizer*sqrt(globaldata->averageSpeed[i]
+        / static_cast<phys_t>(cntNodes))) << endl;
     }
-  #endif
   }
 
   const inline void springForce(phys_t (&a)[DIMENSIONS],
-                                 phys_t (&b)[DIMENSIONS],
-                                 phys_t (&delta)[DIMENSIONS],
-                                 global_t * const globaldata) {
-    for (int i = 0; i < DIMENSIONS; i++) {
-      delta[i] = a[i] - b[i];
+                                phys_t (&b)[DIMENSIONS],
+                                phys_t (&delta)[DIMENSIONS],
+                                const phys_t restLength) {
+    for (int d = 0; d < DIMENSIONS; d++) {
+      delta[d] = -(a[d] - b[d]);
     }
-    phys_t coefficient = globaldata->restLength - length(delta);
+    phys_t coefficient = (restLength - length(delta)) / restLength;
     for (int i = 0; i < DIMENSIONS; i++) {
       delta[i] *= coefficient;
     }
+  }
+
+  inline static void fillInGlobalData(vertex_t * const nodes,
+                                      const vid_t cntNodes,
+                                      global_t * const globaldata,
+                                      int numRounds) {
+    globaldata->timeStep = 0.3;
+    globaldata->springStiffness = 1;
+    globaldata->dashpotResistance = 0.1;
+    globaldata->inverseMass = 1.0;
+  #if TEST_CONVERGENCE
+    globaldata->averageSpeed = new (std::nothrow) phys_t[numRounds]();
+  #endif
   }
 
   inline void update(vertex_t * const nodes,
@@ -353,17 +357,31 @@ typedef struct vertex_t vertex_t;
       data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
   #endif
       phys_t delta[DIMENSIONS];
-      springForce(current->position, neighbor->position, delta, globaldata);
+      springForce(current->position, neighbor->position, delta, current->restLength);
       for (int d = 0; d < DIMENSIONS; d++) {
-        acceleration[d] += delta[d] / current->mass;
+        acceleration[d] += (delta[d] * globaldata->inverseMass);
       }
     }
+    const phys_t rootAcceleration = 1;  //   /sqrt(length(acceleration));
+    //  beta is the fraction we weight the current instantaneous acceleration
+    //  1-beta is the fraction we weight the previous acceleration
+    static const phys_t beta = 0.5;
+    static const phys_t decay = 1;
     for (int d = 0; d < DIMENSIONS; d++) {
+      phys_t currentVelocity = current->velocity[d];
       acceleration[d] *= globaldata->springStiffness;
-      //  acceleration[d] -= current->dashpotResistance*current->velocity[d];
-      next->velocity[d] += globaldata->timeStep*acceleration[d];
-      next->velocity[d] *= (1 - current->dashpotResistance);
-      next->position[d] += globaldata->timeStep*next->velocity[d];
+      acceleration[d] *= rootAcceleration;
+      //  acceleration[d] -= globaldata->dashpotResistance*currentVelocity;
+      acceleration[d] *= beta;
+      acceleration[d] += (1 - beta)*current->acceleration[d];
+      next->acceleration[d] = acceleration[d]*decay;
+      next->velocity[d] = acceleration[d];
+      next->velocity[d] *= globaldata->timeStep;
+      next->velocity[d] *= beta;
+      next->velocity[d] += (1 - beta)*currentVelocity;
+      next->velocity[d] *= (1 - globaldata->dashpotResistance);
+      next->velocity[d] *= decay;
+      next->position[d] = current->position[d] + globaldata->timeStep*next->velocity[d];
     }
   #if TEST_CONVERGENCE
     phys_t averageSpeed = length(next->velocity);
