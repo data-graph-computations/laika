@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include "./common.h"
+#include "./numa_init.h"
 
 #ifndef CHUNK_BITS
   #define CHUNK_BITS 16
@@ -113,7 +114,11 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
   })
-  scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1]();
+  //  9 bits -> 4KB page granularity
+  numaInit_t numaInit(NUM_CORES,
+                      std::min(9, CHUNK_BITS), static_cast<bool>(NUMA_INIT));
+  scheddata->dependentEdges =
+    static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), cntDependencies+1));
   for (vid_t i = 0; i < cntNodes; i++) {
     nodes[i].sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
@@ -125,6 +130,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
       }
     }
   }
+  delete[] dependentEdgeIndex;
 }
 
 static inline void createChunkData(vertex_t * const nodes,

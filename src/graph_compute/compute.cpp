@@ -15,6 +15,19 @@ using namespace std;
 #include "./common.h"
 #include "./concurrent_queue.h"
 
+uint64_t hashOfGraphData(vertex_t * const nodes,
+                                       const vid_t cntNodes) {
+  uint64_t result = 0;
+  for (vid_t i = 0; i < cntNodes; i++) {
+  #if IN_PLACE
+    result ^= hashOfVertexData(&nodes[i].data);
+  #else
+    result ^= hashOfVertexData(&nodes[i].data[0]);
+  #endif
+  }
+  return result;
+}
+
 WHEN_TEST(
   volatile uint64_t roundUpdateCount = 0;
 )
@@ -117,6 +130,7 @@ WHEN_TEST({
 #else
   fillInNodeData(nodes, cntNodes);
 #endif
+  fillInGlobalData(nodes, cntNodes, &globaldata, numRounds);
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -139,17 +153,14 @@ WHEN_TEST({
 
   cleanup_scheduling(nodes, cntNodes, &scheddata);
 
-#if VERBOSE
+#if TEST_CONVERGENCE
+  printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
+#elif VERBOSE
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
   cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
-  cout << "Baseline: " << BASELINE << '\n';
-  cout << "D0_BSP: " << D0_BSP << '\n';
-  cout << "D1_PRIO: " << D1_PRIO << '\n';
-  cout << "D1_CHUNK: " << D1_CHUNK << '\n';
-  cout << "D1_PHASE: " << D1_PHASE << '\n';
-  cout << "D1_NUMA: " << D1_NUMA << '\n';
+  cout << "Scheduler name: " << SCHEDULER_NAME << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Distance: " << DISTANCE << '\n';
 
@@ -159,13 +170,18 @@ WHEN_TEST({
   cout << "Test flag: " << TEST << '\n';
 #else
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+  cout << sizeof(vertex_t) << ", ";
+  cout << sizeof(sched_t) << ", ";
+  cout << sizeof(data_t) << ", ";
+  cout << hashOfGraphData(nodes, cntNodes) << ", ";
   cout << numRounds << ", ";
   cout << inputEdgeFile << ", ";
   cout << cntNodes << ", ";
   cout << setprecision(8) << seconds << ", ";
+  cout << SCHEDULER_NAME << ", ";
   cout << PARALLEL << ", ";
   cout << NUMA_INIT << ", ";
-  cout << DISTANCE << ", ";
+  cout << DISTANCE;
   cout << endl;
 #endif
   // so GCC doesn't eliminate the rounds loop as unnecessary work

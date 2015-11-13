@@ -49,6 +49,10 @@ ifneq ($(NUMA_WORKERS),)
 	DEFS += -DNUMA_WORKERS=$(NUMA_WORKERS)
 endif
 
+ifneq ($(NUMA_STEAL),)
+	DEFS += -DNUMA_STEAL=$(NUMA_STEAL)
+endif
+
 ifneq ($(CHUNK_BITS),)
 	DEFS += -DCHUNK_BITS=$(CHUNK_BITS)
 endif
