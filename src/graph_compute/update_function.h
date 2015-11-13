@@ -69,8 +69,9 @@ typedef struct vertex_t vertex_t;
 #if PAGERANK
   inline static uint64_t hashOfVertexData(data_t * vertex) {
     uint64_t result = 0;
-    memcpy(static_cast<void *>(&result),
-           static_cast<void *>(&vertex->pagerank),
+    assert(sizeof(pagerank_t) <= sizeof(uint64_t));
+    memcpy(&result,
+           &vertex->pagerank,
            sizeof(pagerank_t));
     return result;
   }
@@ -154,8 +155,9 @@ typedef struct vertex_t vertex_t;
     uint64_t result = 0;
     for (int i = 0; i < DIMENSIONS; i++) {
       uint64_t tmpResult = 0;
-      memcpy(static_cast<void *>(&tmpResult),
-             static_cast<void *>(&vertex->position[i]),
+      assert(sizeof(phys_t) <= sizeof(uint64_t));
+      memcpy(&tmpResult,
+             &vertex->position[i],
              sizeof(phys_t));
       result ^= tmpResult;
     }
