@@ -149,7 +149,6 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
   })
-  //  9 bits -> 4KB page granularity
   numaInit_t numaInit(NUMA_WORKERS,
                       CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   scheddata->dependentEdges =

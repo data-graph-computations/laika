@@ -2,7 +2,6 @@
 #define UPDATE_FUNCTION_H_
 
 #include <math.h>
-//  #include <stdint.h>
 #include <string.h>
 #include <string>
 #include <algorithm>
@@ -34,7 +33,6 @@ using namespace std;
   struct data_t {
     phys_t position[DIMENSIONS];
     phys_t velocity[DIMENSIONS];
-    phys_t acceleration[DIMENSIONS];
     phys_t restLength;
     bool fixed;
   };
@@ -43,8 +41,14 @@ using namespace std;
     phys_t inverseMass;
     phys_t springStiffness;
     phys_t timeStep;
+    phys_t restLength;
   #if TEST_CONVERGENCE
     phys_t * averageSpeed;
+  #endif
+  #if PRINT_EDGE_LENGTH_HISTOGRAM
+    phys_t * edgeLengthsBefore;
+    phys_t * edgeLengthsAfter;
+    phys_t inverseBucketSize;
   #endif
   };
 #endif
@@ -105,10 +109,12 @@ typedef struct vertex_t vertex_t;
                                           const vid_t cntNodes,
                                           global_t * const globaldata,
                                           int numRounds) {
+  #if TEST_CONVERGENCE
     pagerank_t normalizer = 1/globaldata->averageDiff[0];
     for (int i = 0; i < numRounds; i++) {
       cout << (globaldata->averageDiff[i]*normalizer) << endl;
     }
+  #endif
   }
 
   inline void update(vertex_t * const nodes,
@@ -144,6 +150,10 @@ typedef struct vertex_t vertex_t;
   #endif
     pagerank_t averageDiff = std::abs(pagerank - current->pagerank);
     globaldata->averageDiff[round] += averageDiff;
+    //  Serial access to globaldata->averageSpeed is essential to
+    //  avoid data races.  Access to this variable is serialized
+    //  in any case, so parallel computation wouldn't gain much,
+    //  if anything.
     assert(PARALLEL == 0);
   #endif
     next->pagerank = pagerank;
@@ -162,6 +172,14 @@ typedef struct vertex_t vertex_t;
       result ^= tmpResult;
     }
     return result;
+  }
+
+  inline static void printPosition(phys_t (&a)[DIMENSIONS]) {
+    cout << a[0];
+    for (int i = 1; i < DIMENSIONS; i++) {
+      cout << ", " << a[i];
+    }
+    cout << endl;
   }
 
   inline static void fixExtremalPoints(vertex_t * const nodes,
@@ -183,9 +201,9 @@ typedef struct vertex_t vertex_t;
     }
     for (vid_t v = 0; v < cntNodes; v++) {
     #if IN_PLACE
-      data_t * node = &nodes[v].data;
+      node = &nodes[v].data;
     #else
-      data_t * node = &nodes[v].data[0];
+      node = &nodes[v].data[0];
     #endif
       for (int i = 0; i < DIMENSIONS; i++) {
         if (node->position[i] > maxPoint[i]) {
@@ -197,18 +215,38 @@ typedef struct vertex_t vertex_t;
           minOwner[i] = v;
         }
       }
-      for (int i = 0; i < DIMENSIONS; i++) {
+    }
+    phys_t maxScale = 0.0;
+    for (int i = 0; i < DIMENSIONS; i++) {
+    #if IN_PLACE
+      nodes[maxOwner[i]].data.fixed = true;
+      nodes[minOwner[i]].data.fixed = true;
+    #else
+      nodes[maxOwner[i]].data[0].fixed = true;
+      nodes[minOwner[i]].data[0].fixed = true;
+      nodes[maxOwner[i]].data[1].fixed = true;
+      nodes[minOwner[i]].data[1].fixed = true;
+    #endif
+      if ((maxPoint[i] - minPoint[i]) > maxScale) {
+        maxScale = maxPoint[i] - minPoint[i];
+      }
+    }
+  #if NORMALIZE_TO_UNIT_CUBE
+    phys_t inverseScale = 1 / maxScale;
+    for (vid_t i = 0; i < cntNodes; i++) {
+      for (int d = 0; d < DIMENSIONS; d++) {
       #if IN_PLACE
-        nodes[maxOwner[i]].data.fixed = true;
-        nodes[minOwner[i]].data.fixed = true;
+        nodes[i].data.position[d]
+          = (nodes[i].data.position[d] - minPoint[d])*inverseScale;
       #else
-        nodes[maxOwner[i]].data[0].fixed = true;
-        nodes[minOwner[i]].data[0].fixed = true;
-        nodes[maxOwner[i]].data[1].fixed = true;
-        nodes[minOwner[i]].data[1].fixed = true;
+        nodes[i].data[0].position[d]
+          = (nodes[i].data[0].position[d] - minPoint[d])*inverseScale;
+        nodes[i].data[1].position[d]
+          = (nodes[i].data[1].position[d] - minPoint[d])*inverseScale;
       #endif
       }
     }
+  #endif
   }
 
   inline static void fillInNodeData(vertex_t * const nodes,
@@ -237,37 +275,16 @@ typedef struct vertex_t vertex_t;
         assert(cntItems == 1);
       #if IN_PLACE
         nodes[i].data.velocity[d] = 0;
-        nodes[i].data.acceleration[d] = 0;
         nodes[i].data.position[d] = static_cast<phys_t>(position);
       #else
         nodes[i].data[0].velocity[d] = 0;
         nodes[i].data[1].velocity[d] = 0;
-        nodes[i].data[0].acceleration[d] = 0;
-        nodes[i].data[1].acceleration[d] = 0;
         nodes[i].data[0].position[d] = static_cast<phys_t>(position);
         nodes[i].data[1].position[d] = static_cast<phys_t>(position);
       #endif
       }
     }
     fclose(nodeInputFile);
-    for (vid_t i = 0; i < cntNodes; i++) {
-      phys_t restLength = 0.0;
-      vid_t cntEdges = 0;
-      for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
-        cntEdges++;
-      #if IN_PLACE
-        restLength += distance(nodes[i].data.position, nodes[edge].data.position);
-      #else
-        restLength += distance(nodes[i].data[0].position, nodes[edge].data[0].position);
-      #endif
-      }
-    #if IN_PLACE
-      nodes[i].data.restLength = restLength / static_cast<phys_t>(cntEdges);
-    #else
-      nodes[i].data[0].restLength = restLength / static_cast<phys_t>(cntEdges);
-      nodes[i].data[1].restLength = restLength / static_cast<phys_t>(cntEdges);
-    #endif
-    }
     fixExtremalPoints(nodes, cntNodes);
   }
 
@@ -291,11 +308,75 @@ typedef struct vertex_t vertex_t;
                                           const vid_t cntNodes,
                                           global_t * const globaldata,
                                           int numRounds) {
+  #if TEST_CONVERGENCE
     phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes) / globaldata->averageSpeed[0]);
     for (int i = 0; i < numRounds; i++) {
       cout << (normalizer*sqrt(globaldata->averageSpeed[i]
         / static_cast<phys_t>(cntNodes))) << endl;
     }
+  #endif
+  }
+
+  inline static void findEdgeLengthHistogram(vertex_t * const nodes,
+                                             const vid_t cntNodes,
+                                             phys_t * const histogram,
+                                             global_t * const globaldata) {
+  #if PRINT_EDGE_LENGTH_HISTOGRAM
+    const phys_t inverseBucketSize = globaldata->inverseBucketSize;
+    for (int i = 0; i < NUM_BUCKETS; i++) {
+      histogram[i] = 0.0;
+    }
+    vid_t cntEdges = 0;
+    for (vid_t i = 0; i < cntNodes; i++) {
+      for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
+        cntEdges++;
+        vid_t neighbor = nodes[i].edges[edge];
+      #if IN_PLACE
+        phys_t edgeLength = distance(nodes[i].data.position,
+                                     nodes[neighbor].data.position);
+      #else
+        phys_t edgeLength = distance(nodes[i].data[0].position,
+                                     nodes[neighbor].data[0].position);
+      #endif
+        phys_t normalized = std::max(static_cast<phys_t>(0.0),
+                                     edgeLength*inverseBucketSize);
+        int index = std::min(static_cast<int>(normalized), NUM_BUCKETS - 1);
+        histogram[index] += 1.0;
+      }
+    }
+    for (int i = 0; i < NUM_BUCKETS; i++) {
+      histogram[i] /= static_cast<phys_t>(cntEdges);
+    }
+  #endif
+  }
+
+#if PRINT_EDGE_LENGTH_HISTOGRAM
+  inline static void initialEdgeLengthHistogram(vertex_t * const nodes,
+                                                const vid_t cntNodes,
+                                                global_t * const globaldata) {
+    findEdgeLengthHistogram(nodes, cntNodes, globaldata->edgeLengthsBefore, globaldata);
+  }
+
+  inline static void finalEdgeLengthHistogram(vertex_t * const nodes,
+                                              const vid_t cntNodes,
+                                              global_t * const globaldata) {
+    findEdgeLengthHistogram(nodes, cntNodes, globaldata->edgeLengthsAfter, globaldata);
+  }
+#endif
+
+  inline static void printEdgeLengthHistograms(vertex_t * const nodes,
+                                              const vid_t cntNodes,
+                                              global_t * const globaldata) {
+  #if PRINT_EDGE_LENGTH_HISTOGRAM
+    phys_t bucketSize = 1 / globaldata->inverseBucketSize;
+    phys_t currentBucket = bucketSize / 2.0;
+    for (int i = 0; i < NUM_BUCKETS; i++) {
+      cout << currentBucket << ", ";
+      currentBucket += bucketSize;
+      cout << globaldata->edgeLengthsBefore[i] << ", ";
+      cout << globaldata->edgeLengthsAfter[i] << endl;
+    }
+  #endif
   }
 
   const inline void springForce(phys_t (&a)[DIMENSIONS],
@@ -303,7 +384,7 @@ typedef struct vertex_t vertex_t;
                                 phys_t (&delta)[DIMENSIONS],
                                 const phys_t restLength) {
     for (int d = 0; d < DIMENSIONS; d++) {
-      delta[d] = -(a[d] - b[d]);
+      delta[d] = a[d] - b[d];
     }
     phys_t coefficient = (restLength - length(delta)) / restLength;
     for (int i = 0; i < DIMENSIONS; i++) {
@@ -315,12 +396,53 @@ typedef struct vertex_t vertex_t;
                                       const vid_t cntNodes,
                                       global_t * const globaldata,
                                       int numRounds) {
-    globaldata->timeStep = 0.3;
-    globaldata->springStiffness = 1;
-    globaldata->dashpotResistance = 0.1;
+    globaldata->timeStep = 0.2;
+    globaldata->springStiffness = 1.0;
+    globaldata->dashpotResistance = 1.0;
     globaldata->inverseMass = 1.0;
   #if TEST_CONVERGENCE
     globaldata->averageSpeed = new (std::nothrow) phys_t[numRounds]();
+  #endif
+    phys_t globalRestLength = 0.0;
+    vid_t globalCntEdges = 0;
+    for (vid_t i = 0; i < cntNodes; i++) {
+      phys_t restLength = 0.0;
+      vid_t cntEdges = 0;
+      for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
+        cntEdges++;
+        vid_t neighbor = nodes[i].edges[edge];
+      #if IN_PLACE
+        restLength += distance(nodes[i].data.position,
+                               nodes[neighbor].data.position);
+      #else
+        restLength += distance(nodes[i].data[0].position,
+                               nodes[neighbor].data[0].position);
+      #endif
+      }
+      globalRestLength += restLength;
+      globalCntEdges += cntEdges;
+    #if IN_PLACE
+      nodes[i].data.restLength = restLength / static_cast<phys_t>(cntEdges);
+    #else
+      nodes[i].data[0].restLength = restLength / static_cast<phys_t>(cntEdges);
+      nodes[i].data[1].restLength = restLength / static_cast<phys_t>(cntEdges);
+    #endif
+    }
+    globaldata->restLength = globalRestLength / static_cast<phys_t>(globalCntEdges);
+  #if USE_GLOBAL_REST_LENGTH
+    for (vid_t i = 0; i < cntNodes; i++) {
+    #if IN_PLACE
+      nodes[i].data.restLength = globaldata->restLength;
+    #else
+      nodes[i].data[0].restLength = globaldata->restLength;
+      nodes[i].data[1].restLength = globaldata->restLength;
+    #endif
+    }
+  #endif
+  #if PRINT_EDGE_LENGTH_HISTOGRAM
+    globaldata->edgeLengthsBefore = new (std::nothrow) phys_t[NUM_BUCKETS];
+    globaldata->edgeLengthsAfter = new (std::nothrow) phys_t[NUM_BUCKETS];
+    globaldata->inverseBucketSize = NUM_BUCKETS / (2*globaldata->restLength);
   #endif
   }
 
@@ -364,30 +486,19 @@ typedef struct vertex_t vertex_t;
         acceleration[d] += (delta[d] * globaldata->inverseMass);
       }
     }
-    const phys_t rootAcceleration = 1;  //   /sqrt(length(acceleration));
-    //  beta is the fraction we weight the current instantaneous acceleration
-    //  1-beta is the fraction we weight the previous acceleration
-    static const phys_t beta = 0.5;
-    static const phys_t decay = 1;
     for (int d = 0; d < DIMENSIONS; d++) {
-      phys_t currentVelocity = current->velocity[d];
       acceleration[d] *= globaldata->springStiffness;
-      acceleration[d] *= rootAcceleration;
-      //  acceleration[d] -= globaldata->dashpotResistance*currentVelocity;
-      acceleration[d] *= beta;
-      acceleration[d] += (1 - beta)*current->acceleration[d];
-      next->acceleration[d] = acceleration[d]*decay;
-      next->velocity[d] = acceleration[d];
-      next->velocity[d] *= globaldata->timeStep;
-      next->velocity[d] *= beta;
-      next->velocity[d] += (1 - beta)*currentVelocity;
-      next->velocity[d] *= (1 - globaldata->dashpotResistance);
-      next->velocity[d] *= decay;
-      next->position[d] = current->position[d] + globaldata->timeStep*next->velocity[d];
+      acceleration[d] -= globaldata->dashpotResistance*current->velocity[d];
+      next->velocity[d] = acceleration[d]*globaldata->timeStep + current->velocity[d];
+      next->position[d] = current->position[d] + next->velocity[d]*globaldata->timeStep;
     }
   #if TEST_CONVERGENCE
     phys_t averageSpeed = length(next->velocity);
     globaldata->averageSpeed[round] += averageSpeed*averageSpeed;
+    //  Serial access to globaldata->averageSpeed is essential to
+    //  avoid data races.  Access to this variable is serialized
+    //  in any case, so parallel computation wouldn't gain much,
+    //  if anything.
     assert(PARALLEL == 0);
   #endif
   }

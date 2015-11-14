@@ -1,7 +1,7 @@
 CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall 
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math
+CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
@@ -35,6 +35,10 @@ endif
 
 ifneq ($(D1_PHASE),)
 	DEFS += -DD1_PHASE=$(D1_PHASE)
+endif
+
+ifneq ($(D1_CHROM),)
+	DEFS += -DD1_CHROM=$(D1_CHROM)
 endif
 
 ifneq ($(D1_NUMA),)
@@ -75,6 +79,14 @@ endif
 
 ifneq ($(TEST_CONVERGENCE),)
 	DEFS += -DTEST_CONVERGENCE=$(TEST_CONVERGENCE)
+endif
+
+ifneq ($(PRINT_EDGE_LENGTH_HISTOGRAM),)
+	DEFS += -DPRINT_EDGE_LENGTH_HISTOGRAM=$(PRINT_EDGE_LENGTH_HISTOGRAM)
+endif
+
+ifneq ($(USE_GLOBAL_REST_LENGTH),)
+	DEFS += -DUSE_GLOBAL_REST_LENGTH=$(USE_GLOBAL_REST_LENGTH)
 endif
 
 ifneq ($(TEST_SIMPLE_AND_UNDIRECTED),)
