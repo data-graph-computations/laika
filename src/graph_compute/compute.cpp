@@ -127,9 +127,6 @@ WHEN_TEST({
     cout << "pthread workers: " << NUMA_WORKERS << '\n';
   #elif PARALLEL
     cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
-    #ifndef NUMA_WORKERS
-      #define NUMA_WORKERS (__cilkrts_get_nworkers())
-    #endif
   #else
     cout << "Cilk workers: 1\n";
   #endif
@@ -149,6 +146,9 @@ WHEN_TEST({
   fillInNodeData(nodes, cntNodes);
 #endif
   fillInGlobalData(nodes, cntNodes, &globaldata, numRounds);
+#if PRINT_EDGE_LENGTH_HISTOGRAM
+  initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
+#endif
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -176,6 +176,11 @@ WHEN_TEST({
 
 #if TEST_CONVERGENCE
   printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
+#elif PRINT_EDGE_LENGTH_HISTOGRAM
+  //  pagerank does not consume the nodes file containing positions
+  assert(PAGERANK == 0);
+  finalEdgeLengthHistogram(nodes, cntNodes, &globaldata);
+  printEdgeLengthHistograms(nodes, cntNodes, &globaldata);
 #elif VERBOSE
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << "Done computing " << numRounds << " rounds!\n";
@@ -195,7 +200,13 @@ WHEN_TEST({
   cout << APP_NAME << ", ";
   cout << SCHEDULER_NAME << ", ";
   cout << PARALLEL << ", ";
+#if D1_NUMA
   cout << NUMA_WORKERS << ", ";
+#elif PARALLEL
+  cout << (__cilkrts_get_nworkers()) << ", ";
+#else
+  cout << "1, ";
+#endif
   cout << setprecision(8) << seconds << ", ";
   cout << setprecision(8) << timePerMillionEdges << ", ";
   cout << sizeof(vertex_t) << ", ";
@@ -206,6 +217,7 @@ WHEN_TEST({
   cout << inputEdgeFile << ", ";
   cout << cntNodes << ", ";
   cout << cntEdges << ", ";
+  cout << CHUNK_BITS << ", ";
   cout << NUMA_INIT << ", ";
   cout << NUMA_STEAL << ", ";
   cout << DISTANCE;

@@ -89,9 +89,6 @@
   #ifndef NUMA_INIT
     #define NUMA_INIT 1
   #endif
-  #ifndef NUMA_STEAL
-    #define NUMA_STEAL 1
-  #endif
 #endif
 
 #ifndef NUMA_STEAL
@@ -134,8 +131,29 @@
   #define TEST_CONVERGENCE 0
 #endif
 
+#ifndef USE_GLOBAL_REST_LENGTH
+  #define USE_GLOBAL_REST_LENGTH 1
+#endif
+
+//  this switch allows you to print the histogram
+//  of the edge lengths in the graph, centered
+//  on the average edge length at T=0
+#ifndef PRINT_EDGE_LENGTH_HISTOGRAM
+  #define PRINT_EDGE_LENGTH_HISTOGRAM 0
+#endif
+
+//  this is the number of evenly spaced
+//  buckets used by the edge length histogram
+#ifndef NUM_BUCKETS
+  #define NUM_BUCKETS 63
+#endif
+
 #ifndef PAGERANK
-  #define PAGERANK 1
+  #define PAGERANK 0
+#endif
+
+#ifndef NORMALIZE_TO_UNIT_CUBE
+  #define NORMALIZE_TO_UNIT_CUBE 1
 #endif
 
 #if PAGERANK == 0
