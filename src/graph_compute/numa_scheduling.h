@@ -149,7 +149,11 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
   })
-  scheddata->dependentEdges = new (std::nothrow) vid_t[cntDependencies+1]();
+  //  9 bits -> 4KB page granularity
+  numaInit_t numaInit(NUMA_WORKERS,
+                      CHUNK_BITS, static_cast<bool>(NUMA_INIT));
+  scheddata->dependentEdges =
+    static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), cntDependencies+1));
   for (vid_t i = 0; i < cntNodes; i++) {
     nodes[i].sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
     calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE);
@@ -161,6 +165,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
       }
     }
   }
+  delete[] dependentEdgeIndex;
 }
 
 static inline void createChunkData(vertex_t * const nodes,
@@ -223,6 +228,7 @@ inline void * processChunks(void * param) {
   numaSchedInit_t * config = static_cast<numaSchedInit_t *>(param);
   scheddata_t * scheddata = config->scheddata;
   numaSchedInit_t * numaSchedInit = scheddata->numaSchedInit;
+  vid_t stealQueueNumber = config->coreID;
   // Initialize the chunk
   bindThreadToCore(config->coreID);
   static const vid_t SENTINEL = static_cast<vid_t>(-1);
@@ -240,15 +246,21 @@ inline void * processChunks(void * param) {
       //  the config->phase variable.
       while (phase == *config->phase) {
         //  try to get a chunk from my own queue
-        vid_t chunk = SENTINEL;
-        vid_t tmpQueueNumber = config->coreID;
+        vid_t chunk = numaSchedInit[stealQueueNumber].workQueue->pop();
+      #if NUMA_STEAL
+        if (chunk == SENTINEL) {
+          stealQueueNumber = config->coreID;
+        }
+      #endif
         while ((chunk == SENTINEL) && (phase == (*config->phase))) {
           //  randomly steal
-          chunk = numaSchedInit[tmpQueueNumber].workQueue->pop();
-          tmpQueueNumber++;
-          //  finding queueNumber % numCores
-          if (tmpQueueNumber >= NUMA_WORKERS) {
-            tmpQueueNumber -= NUMA_WORKERS;
+          chunk = numaSchedInit[stealQueueNumber].workQueue->pop();
+          if (chunk != SENTINEL) {
+            stealQueueNumber++;
+            //  finding queueNumber % numCores
+            if (stealQueueNumber >= NUMA_WORKERS) {
+              stealQueueNumber -= NUMA_WORKERS;
+            }
           }
         }
         if (chunk != SENTINEL) {

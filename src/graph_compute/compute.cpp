@@ -15,6 +15,28 @@ using namespace std;
 #include "./common.h"
 #include "./concurrent_queue.h"
 
+uint64_t hashOfGraphData(vertex_t * const nodes,
+                         const vid_t cntNodes) {
+  uint64_t result = 0;
+  for (vid_t i = 0; i < cntNodes; i++) {
+  #if IN_PLACE
+    result ^= hashOfVertexData(&nodes[i].data);
+  #else
+    result ^= hashOfVertexData(&nodes[i].data[0]);
+  #endif
+  }
+  return result;
+}
+
+vid_t getEdgeCount(vertex_t * const nodes,
+                   const vid_t cntNodes) {
+  vid_t result = 0;
+  for (vid_t i = 0; i < cntNodes; i++) {
+    result += nodes[i].cntEdges;
+  }
+  return result;
+}
+
 WHEN_TEST(
   volatile uint64_t roundUpdateCount = 0;
 )
@@ -54,6 +76,7 @@ void test_queue() {
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
   vid_t cntNodes;
+  vid_t cntEdges;
   char * inputEdgeFile;
   int numRounds = 0;
 
@@ -87,11 +110,14 @@ WHEN_TEST({
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
+  cntEdges = getEdgeCount(nodes, cntNodes);
   //  This function asserts that there are
   //  no self-edges and that every edge is
   //  reciprocated (i.e., if (v,w) exists, then
   //  so does (w,v))
+#if TEST_SIMPLE_AND_UNDIRECTED
   testSimpleAndUndirected(nodes, cntNodes);
+#endif
 
 #if VERBOSE
   cout << "Input edge file: " << inputEdgeFile << '\n';
@@ -101,6 +127,9 @@ WHEN_TEST({
     cout << "pthread workers: " << NUMA_WORKERS << '\n';
   #elif PARALLEL
     cout << "Cilk workers: " << __cilkrts_get_nworkers() << '\n';
+    #ifndef NUMA_WORKERS
+      #define NUMA_WORKERS (__cilkrts_get_nworkers())
+    #endif
   #else
     cout << "Cilk workers: 1\n";
   #endif
@@ -111,12 +140,15 @@ WHEN_TEST({
 
   init_scheduling(nodes, cntNodes, &scheddata);
 
+//  This switch indicates whether the app needs an auxiliary
+//  file to initialize node data
 #if VERTEX_META_DATA
   char * vertexMetaDataFile = argv[3];
   fillInNodeData(nodes, cntNodes, vertexMetaDataFile);
 #else
   fillInNodeData(nodes, cntNodes);
 #endif
+  fillInGlobalData(nodes, cntNodes, &globaldata, numRounds);
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -137,19 +169,20 @@ WHEN_TEST({
   double seconds = static_cast<double>(ns) * 1e-9;
   seconds += endtime.tv_sec - starttime.tv_sec;
 
+  double timePerMillionEdges = seconds * static_cast<double>(1000000);
+  timePerMillionEdges /= static_cast<double>(cntEdges) * static_cast<double>(numRounds);
+
   cleanup_scheduling(nodes, cntNodes, &scheddata);
 
-#if VERBOSE
+#if TEST_CONVERGENCE
+  printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
+#elif VERBOSE
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
   cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
-  cout << "Baseline: " << BASELINE << '\n';
-  cout << "D0_BSP: " << D0_BSP << '\n';
-  cout << "D1_PRIO: " << D1_PRIO << '\n';
-  cout << "D1_CHUNK: " << D1_CHUNK << '\n';
-  cout << "D1_PHASE: " << D1_PHASE << '\n';
-  cout << "D1_NUMA: " << D1_NUMA << '\n';
+  cout << "Time per million edges: " << setprecision(8) << timePerMillionEdges << "s\n";
+  cout << "Scheduler name: " << SCHEDULER_NAME << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Distance: " << DISTANCE << '\n';
 
@@ -159,13 +192,23 @@ WHEN_TEST({
   cout << "Test flag: " << TEST << '\n';
 #else
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+  cout << APP_NAME << ", ";
+  cout << SCHEDULER_NAME << ", ";
+  cout << PARALLEL << ", ";
+  cout << NUMA_WORKERS << ", ";
+  cout << setprecision(8) << seconds << ", ";
+  cout << setprecision(8) << timePerMillionEdges << ", ";
+  cout << sizeof(vertex_t) << ", ";
+  cout << sizeof(sched_t) << ", ";
+  cout << sizeof(data_t) << ", ";
+  cout << hashOfGraphData(nodes, cntNodes) << ", ";
   cout << numRounds << ", ";
   cout << inputEdgeFile << ", ";
   cout << cntNodes << ", ";
-  cout << setprecision(8) << seconds << ", ";
-  cout << PARALLEL << ", ";
+  cout << cntEdges << ", ";
   cout << NUMA_INIT << ", ";
-  cout << DISTANCE << ", ";
+  cout << NUMA_STEAL << ", ";
+  cout << DISTANCE;
   cout << endl;
 #endif
   // so GCC doesn't eliminate the rounds loop as unnecessary work

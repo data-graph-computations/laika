@@ -1,4 +1,5 @@
 #include "./numa_init.h"
+#include <algorithm>
 #include <iostream>
 
 void * writeZeroes(void * param) {
@@ -6,6 +7,10 @@ void * writeZeroes(void * param) {
   // Initialize the chunk
   bindThreadToCore(config->coreID);
   size_t chunkSize = config->dataTypeSize << config->numaInit.chunkBits;
+  static const size_t PAGE_SIZE = 4096;
+  if (config->numBytes > PAGE_SIZE) {
+    chunkSize = std::max(chunkSize, PAGE_SIZE);
+  }
   size_t numChunks = (config->numBytes + chunkSize - 1) / chunkSize;
   size_t chunksPerThread = (numChunks + config->numaInit.numWorkers - 1)
     / config->numaInit.numWorkers;

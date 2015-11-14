@@ -85,6 +85,9 @@
   #ifndef NUMA_INIT
     #define NUMA_INIT 1
   #endif
+  #ifndef NUMA_STEAL
+    #define NUMA_STEAL 1
+  #endif
 #endif
 
 #ifndef NUMA_INIT
@@ -129,8 +132,10 @@
 
 #if PAGERANK == 0
   #define VERTEX_META_DATA 1
+  #define APP_NAME "MASS_SPRING_DASHPOT"
 #else
   #define VERTEX_META_DATA 0
+  #define APP_NAME "PAGERANK"
 #endif
 
 #if PARALLEL
@@ -147,20 +152,29 @@
 #include "../libgraphio/libgraphio.h"
 #include "./concurrent_queue.h"
 
+#if TEST_SIMPLE_AND_UNDIRECTED
+  #define TEST_SIMPLE_AND_UNDIRECTED 0
+#endif
+
 WHEN_TEST(
   extern volatile uint64_t roundUpdateCount;
 )
 
 #if D0_BSP
   #include "./bsp_scheduling.h"
+  #define SCHEDULER_NAME "BSP"
 #elif D1_CHUNK
   #include "./chunk_scheduling.h"
+  #define SCHEDULER_NAME "CHUNK"
 #elif D1_PHASE
   #include "./phase_scheduling.h"
+  #define SCHEDULER_NAME "PHASE"
 #elif D1_NUMA
   #include "./numa_scheduling.h"
+  #define SCHEDULER_NAME "NUMA"
 #elif BASELINE || D1_PRIO
   #include "./priority_scheduling.h"
+  #define SCHEDULER_NAME "PRIORITY"
 #else
   #error "No scheduling type defined!"
   #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
