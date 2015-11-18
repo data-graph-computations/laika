@@ -1,7 +1,7 @@
 CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall 
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las
+CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las -msse4.2
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
@@ -71,6 +71,10 @@ endif
 
 ifneq ($(PAGERANK),)
 	DEFS += -DPAGERANK=$(PAGERANK)
+endif
+
+ifneq ($(MASS_SPRING_DASHPOT),)
+	DEFS += -DMASS_SPRING_DASHPOT=$(MASS_SPRING_DASHPOT)
 endif
 
 ifneq ($(IN_PLACE),)

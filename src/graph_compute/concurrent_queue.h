@@ -9,7 +9,7 @@ using namespace std;
 struct mrmw_queue_t {
   volatile vid_t * const data;
   const vid_t sentinel;
-  size_t mask;
+  const size_t mask;
   volatile size_t head;
   volatile size_t tail;
   volatile int lock;
@@ -19,7 +19,7 @@ struct mrmw_queue_t {
                head(0), tail(0), lock(0) { }
   // assumes that it is not possible to overflow
   void push(const vid_t value);  //  So, push always succeeds
-  vid_t pop();  //  pop can return sentinel, if it is full
+  vid_t pop();  //  pop can return sentinel, if it is full or contended
 };
 typedef struct mrmw_queue_t mrmw_queue_t;
 
@@ -27,8 +27,10 @@ inline void mrmw_queue_t::push(const vid_t value) {
   while (__sync_lock_test_and_set(&lock, 1) == 1) {
     while (lock == 1) {}
   }
+  COMPILER_BARRIER();
   data[tail & mask] = value;
   tail++;
+  COMPILER_BARRIER();
   __sync_lock_release(&lock);
 }
 
@@ -37,7 +39,7 @@ inline vid_t mrmw_queue_t::pop() {
     return sentinel;
   }
   while (__sync_lock_test_and_set(&lock, 1) == 1) {
-    while (lock == 1) {}
+    return sentinel;
   }
   if (tail == head) {
     __sync_lock_release(&lock);

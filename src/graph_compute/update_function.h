@@ -25,7 +25,7 @@ using namespace std;
     pagerank_t * averageDiff;
   #endif
   };
-#else  //  MASS_SPRING_DASHPOT - will be initialized in fillInNodeData
+#elif MASS_SPRING_DASHPOT  //  will be initialized in fillInNodeData
   #ifndef DIMENSIONS
     #define DIMENSIONS 3
   #endif
@@ -43,7 +43,7 @@ using namespace std;
     phys_t timeStep;
     phys_t restLength;
   #if TEST_CONVERGENCE
-    phys_t * averageSpeed;
+    phys_t * meanSquareNetForce;
   #endif
   #if PRINT_EDGE_LENGTH_HISTOGRAM
     phys_t * edgeLengthsBefore;
@@ -159,7 +159,7 @@ typedef struct vertex_t vertex_t;
     next->pagerank = pagerank;
     next->contrib = pagerank / static_cast<pagerank_t>(nodes[index].cntEdges);
   }
-#else  // MASS_SPRING_DASHPOT
+#elif MASS_SPRING_DASHPOT
 
   inline static uint64_t hashOfVertexData(data_t * vertex) {
     uint64_t result = 0;
@@ -309,9 +309,11 @@ typedef struct vertex_t vertex_t;
                                           global_t * const globaldata,
                                           int numRounds) {
   #if TEST_CONVERGENCE
-    phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes) / globaldata->averageSpeed[0]);
-    for (int i = 0; i < numRounds; i++) {
-      cout << (normalizer*sqrt(globaldata->averageSpeed[i]
+    phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes)
+      / globaldata->meanSquareNetForce[0]);
+    cout << 1.0 << endl;
+    for (int i = 1; i < numRounds; i++) {
+      cout << (normalizer*sqrt(globaldata->meanSquareNetForce[i]
         / static_cast<phys_t>(cntNodes))) << endl;
     }
   #endif
@@ -392,16 +394,69 @@ typedef struct vertex_t vertex_t;
     }
   }
 
+  inline static void getNetForce(vertex_t * const nodes,
+                                 const vid_t index,
+                                 phys_t (&acceleration)[DIMENSIONS],
+                                 global_t * const globaldata,
+                                 const int round = 0,
+                                 const bool leapfrog = false) {
+  #if IN_PLACE
+    data_t * current = &nodes[index].data;
+  #else
+    data_t * current = &nodes[index].data[round & 1];
+  #endif
+    phys_t myPosition[DIMENSIONS];
+    for (int d = 0; d < DIMENSIONS; d++) {
+      myPosition[d] = current->position[d];
+      if (leapfrog) {
+        myPosition[d] += current->velocity[d]*globaldata->timeStep*0.5;
+      }
+      acceleration[d] = 0;
+    }
+    for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
+  #if IN_PLACE
+      data_t * neighbor = &nodes[nodes[index].edges[i]].data;
+  #else
+      data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
+  #endif
+      phys_t position[DIMENSIONS];
+      for (int d = 0; d < DIMENSIONS; d++) {
+        position[d] = neighbor->position[d];
+        if (leapfrog) {
+          position[d] += neighbor->velocity[d]*globaldata->timeStep*0.5;
+        }
+      }
+      phys_t delta[DIMENSIONS];
+      springForce(myPosition, position, delta, current->restLength);
+      for (int d = 0; d < DIMENSIONS; d++) {
+        acceleration[d] += (delta[d] * globaldata->inverseMass);
+      }
+    }
+  }
+
+  inline static double getConvergenceData(vertex_t * const nodes,
+                                          const vid_t cntNodes,
+                                          global_t * const globaldata) {
+    phys_t meanSquare = 0.0;
+    for (vid_t v = 0; v < cntNodes; v++) {
+      phys_t acceleration[DIMENSIONS];
+      getNetForce(nodes, v, acceleration, globaldata);
+      phys_t tmpMeanSquare = length(acceleration);
+      meanSquare += tmpMeanSquare*tmpMeanSquare;
+    }
+    return static_cast<double>(sqrt(meanSquare / static_cast<phys_t>(cntNodes)));
+  }
+
   inline static void fillInGlobalData(vertex_t * const nodes,
                                       const vid_t cntNodes,
                                       global_t * const globaldata,
                                       int numRounds) {
-    globaldata->timeStep = 0.2;
+    globaldata->timeStep = 0.1;
     globaldata->springStiffness = 1.0;
     globaldata->dashpotResistance = 1.0;
     globaldata->inverseMass = 1.0;
   #if TEST_CONVERGENCE
-    globaldata->averageSpeed = new (std::nothrow) phys_t[numRounds]();
+    globaldata->meanSquareNetForce = new (std::nothrow) phys_t[numRounds]();
   #endif
     phys_t globalRestLength = 0.0;
     vid_t globalCntEdges = 0;
@@ -471,36 +526,23 @@ typedef struct vertex_t vertex_t;
   #endif
 
     phys_t acceleration[DIMENSIONS];
-    for (int d = 0; d < DIMENSIONS; d++) {
-      acceleration[d] = 0;
-    }
-    for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
-  #if IN_PLACE
-      data_t * neighbor = &nodes[nodes[index].edges[i]].data;
-  #else
-      data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
-  #endif
-      phys_t delta[DIMENSIONS];
-      springForce(current->position, neighbor->position, delta, current->restLength);
-      for (int d = 0; d < DIMENSIONS; d++) {
-        acceleration[d] += (delta[d] * globaldata->inverseMass);
-      }
-    }
-    for (int d = 0; d < DIMENSIONS; d++) {
-      acceleration[d] *= globaldata->springStiffness;
-      acceleration[d] -= globaldata->dashpotResistance*current->velocity[d];
-      next->velocity[d] = acceleration[d]*globaldata->timeStep + current->velocity[d];
-      next->position[d] = current->position[d] + next->velocity[d]*globaldata->timeStep;
-    }
+    static const bool useLeapFrogMethod = true;
+    getNetForce(nodes, index, acceleration, globaldata, round, useLeapFrogMethod);
   #if TEST_CONVERGENCE
-    phys_t averageSpeed = length(next->velocity);
-    globaldata->averageSpeed[round] += averageSpeed*averageSpeed;
+    phys_t tmpNetForce = length(acceleration);
+    globaldata->meanSquareNetForce[round] += tmpNetForce*tmpNetForce;
     //  Serial access to globaldata->averageSpeed is essential to
     //  avoid data races.  Access to this variable is serialized
     //  in any case, so parallel computation wouldn't gain much,
     //  if anything.
     assert(PARALLEL == 0);
   #endif
+    for (int d = 0; d < DIMENSIONS; d++) {
+      acceleration[d] *= globaldata->springStiffness;
+      acceleration[d] -= globaldata->dashpotResistance*current->velocity[d];
+      next->velocity[d] = acceleration[d]*globaldata->timeStep + current->velocity[d];
+      next->position[d] = current->position[d] + next->velocity[d]*globaldata->timeStep;
+    }
   }
 #endif
 

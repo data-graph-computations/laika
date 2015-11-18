@@ -3,8 +3,10 @@
 
 #if D1_NUMA
 
+#include <sstream>
 #include <algorithm>
 #include <unordered_set>
+#include <list>
 #include "./common.h"
 #include "./concurrent_queue.h"
 #include "./numa_init.h"
@@ -33,8 +35,8 @@ struct chunkdata_t {
   //  the index of the first vertex beyond this chunk
   //  this could be generalized to an arbitrary number of phases, but is not currently
   vid_t phaseEndIndex[2];
-  vid_t nextIndex;  // the next vertex in this chunk to be processed
   vid_t workQueueNumber;
+  volatile vid_t nextIndex;  // the next vertex in this chunk to be processed
 };
 typedef struct chunkdata_t chunkdata_t;
 
@@ -50,7 +52,8 @@ struct numaSchedInit_t {
   global_t * globaldata;
   mrmw_queue_t * workQueue;
   volatile int * remainingChunks;
-  volatile int * phase;
+  volatile int * remainingPushes;
+  volatile int * remainingStragglers;
 };
 typedef struct numaSchedInit_t numaSchedInit_t;
 
@@ -69,13 +72,20 @@ struct scheddata_t {
 };
 typedef struct scheddata_t scheddata_t;
 
-inline vid_t logBaseTwoRoundUp(vid_t x) {
-  vid_t power = 0;
-  static const vid_t one = 1;
+template<typename T>
+inline T logBaseTwoRoundUp(T x) {
+  T power = 0;
+  static const T one = 1;
   while ((one << power) < x) {
     power++;
   }
   return power;
+}
+
+__attribute__((target("sse4.2")))
+inline uint32_t randomValue(const uint32_t seed,
+                            const unsigned int randVal = 0xF1807D63) {
+  return _mm_crc32_u32(randVal, seed);
 }
 
 static inline bool samePhase(vid_t v, vid_t w, chunkdata_t * const chunkdata) {
@@ -149,7 +159,6 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
   })
-  //  9 bits -> 4KB page granularity
   numaInit_t numaInit(NUMA_WORKERS,
                       CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   scheddata->dependentEdges =
@@ -198,7 +207,7 @@ static inline void populateWorkerParameters(vertex_t * const nodes,
     static_cast<numaSchedInit_t *>(malloc(sizeof(numaSchedInit_t)*NUMA_WORKERS));
   numaSchedInit_t * numaSchedInit = scheddata->numaSchedInit;
   //  a set of NUMA_WORKERS work queues for manages chunks
-  vid_t logChunksPerWorker = logBaseTwoRoundUp(scheddata->numChunksPerWorker + 1);
+  vid_t logChunksPerWorker = logBaseTwoRoundUp<vid_t>((cntNodes >> CHUNK_BITS) + 1);
   //  the data array used internally by the work queues
   numaInit_t numaInit(NUMA_WORKERS, 1, static_cast<bool>(NUMA_INIT));
   scheddata->queueData =
@@ -228,35 +237,49 @@ inline void * processChunks(void * param) {
   numaSchedInit_t * config = static_cast<numaSchedInit_t *>(param);
   scheddata_t * scheddata = config->scheddata;
   numaSchedInit_t * numaSchedInit = scheddata->numaSchedInit;
-  vid_t stealQueueNumber = config->coreID;
+
   // Initialize the chunk
   bindThreadToCore(config->coreID);
   static const vid_t SENTINEL = static_cast<vid_t>(-1);
 
+  vid_t stealQueueNumber = config->coreID;
+  uint32_t seed = static_cast<uint32_t>(config->coreID) + 1;
+  seed *= static_cast<uint32_t>(numaSchedInit->cntNodes);
+  static const uint32_t queueNumberMask
+    = (1 << logBaseTwoRoundUp<uint32_t>(NUMA_WORKERS)) - 1;
+
   for (int round = 0; round < config->numRounds; round++) {
     for (int phase = 0; phase < config->numPhases; phase++) {
       //  load up chunks that belong to me
+      __sync_sub_and_fetch(config->remainingStragglers, 1);
+      //  wait until all workers have reached the barrier
+      while (static_cast<int>(*config->remainingStragglers) > 0) {}
       vid_t start = config->coreID*scheddata->numChunksPerWorker;
       vid_t end = (config->coreID + 1)*scheddata->numChunksPerWorker;
-      end = std::min(end, config->scheddata->cntChunks);
+      end = std::min(end, scheddata->cntChunks);
       for (vid_t chunk = start; chunk < end; chunk++) {
         config->workQueue->push(chunk);
       }
-      //  When somebody completes the last chunk, they'll forward
-      //  the config->phase variable.
-      while (phase == *config->phase) {
-        //  try to get a chunk from my own queue
-        vid_t chunk = numaSchedInit[stealQueueNumber].workQueue->pop();
+      __sync_sub_and_fetch(config->remainingPushes, 1);
+      //  wait until all workers have finished pushing their chunks
+      while (static_cast<int>(*config->remainingPushes) > 0) {}
+      //  When somebody completes the last chunk, they'll reset
+      //  the config->remainingStragglers variable.
+      while (static_cast<int>(*config->remainingStragglers) == 0) {
+        vid_t chunk;
       #if NUMA_STEAL
-        if (chunk == SENTINEL) {
-          stealQueueNumber = config->coreID;
-        }
+        //  try to get a chunk from my own queue
+        chunk = numaSchedInit[config->coreID].workQueue->pop();
+      #else
+        chunk = SENTINEL;
       #endif
-        while ((chunk == SENTINEL) && (phase == (*config->phase))) {
+        while ((chunk == SENTINEL)
+               && (static_cast<int>(*config->remainingStragglers) == 0)) {
           //  randomly steal
           chunk = numaSchedInit[stealQueueNumber].workQueue->pop();
-          if (chunk != SENTINEL) {
-            stealQueueNumber++;
+          if (chunk == SENTINEL) {
+            seed = randomValue(seed) + 1;
+            stealQueueNumber = seed & queueNumberMask;
             //  finding queueNumber % numCores
             if (stealQueueNumber >= NUMA_WORKERS) {
               stealQueueNumber -= NUMA_WORKERS;
@@ -268,16 +291,16 @@ inline void * processChunks(void * param) {
           //  keep processing vertices from this chunk until it
           //  gets shelved or is done for this phase
           while (!doneFlag) {
-            chunkdata_t * chunkdata = &config->scheddata->chunkdata[chunk];
+            chunkdata_t * chunkdata = &scheddata->chunkdata[chunk];
             if (chunkdata->nextIndex < chunkdata->phaseEndIndex[phase]) {
-              sched_t * node = &config->nodes[chunkdata->nextIndex].sched;
+              sched_t * const node = &config->nodes[chunkdata->nextIndex].sched;
               if ((DISTANCE > 0)
-                  && (node->satisfied != SENTINEL)
-                  && (node->satisfied > 0)
+                  && (static_cast<vid_t>(node->satisfied) != SENTINEL)
+                  && (static_cast<vid_t>(node->satisfied) > 0)
                   && (__sync_sub_and_fetch(&node->satisfied, 1) != SENTINEL)) {
                 //  If we need to shelve vertex, we're done with the chunk
                 doneFlag = true;
-              } else if (chunkdata->nextIndex < chunkdata->phaseEndIndex[phase]) {
+              } else {
                 //  otherwise we process the vertex and decrement those
                 //  vertices dependent on it
                 update(config->nodes, chunkdata->nextIndex, config->globaldata, round);
@@ -309,13 +332,11 @@ inline void * processChunks(void * param) {
               }
               if (__sync_sub_and_fetch(config->remainingChunks, 1) == 0) {
                 //  this was the last chunk for this phase
-                //  so, reset the remainingChunks counter and
-                //  advance phase counter (mod numPhases)
-                *config->remainingChunks = config->scheddata->cntChunks;
-                (*config->phase)++;
-                if (*config->phase == config->numPhases) {
-                  *config->phase = 0;
-                }
+                //  so, reset the remainingChunks, remainingStragglers, and
+                //  remainingPushes counters
+                *config->remainingPushes = NUMA_WORKERS;
+                *config->remainingStragglers = NUMA_WORKERS;
+                *config->remainingChunks = scheddata->cntChunks;
                 //  make sure writes to these shared variables are visible
                 __sync_synchronize();
               }
@@ -335,14 +356,19 @@ static inline void execute_rounds(const int numRounds,
                                   global_t * const globaldata) {
   //  the shared variable for tracking remaining chunks during a phase
   volatile int remainingChunks = scheddata->cntChunks;
-  //  the shared variable for tracking the phase of the round
-  volatile int phase = 0;
+  //  the counter that tells workers how many other workers are still pushing their chunks
+  volatile int remainingPushes = NUMA_WORKERS;
+  //  the counter that tells workers how many remaining
+  //  workers need to report before pushing
+  volatile int remainingStragglers = NUMA_WORKERS;
+
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int i = 0; i < NUMA_WORKERS; i++) {
     scheddata->numaSchedInit[i].globaldata = globaldata;
     scheddata->numaSchedInit[i].numRounds = numRounds;
     scheddata->numaSchedInit[i].remainingChunks = &remainingChunks;
-    scheddata->numaSchedInit[i].phase = &phase;
+    scheddata->numaSchedInit[i].remainingPushes = &remainingPushes;
+    scheddata->numaSchedInit[i].remainingStragglers = &remainingStragglers;
   }
   pthread_t * workers =
     static_cast<pthread_t *>(malloc(sizeof(pthread_t)*NUMA_WORKERS));
