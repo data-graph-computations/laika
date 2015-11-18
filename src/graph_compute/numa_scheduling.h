@@ -3,10 +3,8 @@
 
 #if D1_NUMA
 
-#include <sstream>
 #include <algorithm>
 #include <unordered_set>
-#include <list>
 #include "./common.h"
 #include "./concurrent_queue.h"
 #include "./numa_init.h"
