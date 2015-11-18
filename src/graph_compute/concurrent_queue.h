@@ -27,10 +27,8 @@ inline void mrmw_queue_t::push(const vid_t value) {
   while (__sync_lock_test_and_set(&lock, 1) == 1) {
     while (lock == 1) {}
   }
-  COMPILER_BARRIER();
   data[tail & mask] = value;
   tail++;
-  COMPILER_BARRIER();
   __sync_lock_release(&lock);
 }
 
