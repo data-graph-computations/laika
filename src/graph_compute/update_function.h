@@ -112,11 +112,43 @@ typedef struct vertex_t vertex_t;
                                           global_t * const globaldata,
                                           int numRounds) {
   #if TEST_CONVERGENCE
-    pagerank_t normalizer = 1/globaldata->averageDiff[0];
+    pagerank_t normalizer = 1/globaldata->sumSquareDelta[0];
     for (int i = 0; i < numRounds; i++) {
-      cout << (globaldata->averageDiff[i]*normalizer) << endl;
+      cout << sqrt(globaldata->sumSquareDelta[i]*normalizer) << endl;
     }
   #endif
+  }
+
+  inline pagerank_t getDelta(vertex_t * const nodes,
+                             const vid_t index,
+                             global_t * const globaldata) {
+    // recalculate this node's pagerank
+    pagerank_t pagerank = 0;
+    for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
+    #if IN_PLACE
+      pagerank += nodes[nodes[index].edges[i]].data.contrib;
+    #else
+      pagerank += nodes[nodes[index].edges[i]].data[0].contrib;
+    #endif
+    }
+    pagerank *= globaldata->d;
+    pagerank += (1 - globaldata->d);
+  #if IN_PLACE
+    return pagerank - nodes[index].data.pagerank;
+  #else
+    return pagerank - nodes[index].data[0].pagerank;
+  #endif
+  }
+
+  inline static double getConvergenceData(vertex_t * const nodes,
+                                          const vid_t cntNodes,
+                                          global_t * const globaldata) {
+    pagerank_t sumSquareDelta = 0.0;
+    for (vid_t v = 0; v < cntNodes; v++) {
+      pagerank_t delta = getDelta(nodes, v, globaldata);
+      sumSquareDelta += delta * delta;
+    }
+    return static_cast<double>(sqrt(sumSquareDelta / static_cast<pagerank_t>(cntNodes)));
   }
 
   inline void update(vertex_t * const nodes,
@@ -150,8 +182,8 @@ typedef struct vertex_t vertex_t;
   #else
     data_t * current = &nodes[index].data[round & 1];
   #endif
-    pagerank_t averageDiff = std::abs(pagerank - current->pagerank);
-    globaldata->averageDiff[round] += averageDiff;
+    pagerank_t delta = pagerank - current->pagerank;
+    globaldata->sumSquareDelta[round] += (delta * delta);
     //  Serial access to globaldata->averageSpeed is essential to
     //  avoid data races.  Access to this variable is serialized
     //  in any case, so parallel computation wouldn't gain much,
