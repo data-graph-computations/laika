@@ -95,6 +95,8 @@ static inline void init_scheduling(vertex_t * const nodes,
     scheddata->nodesByColor[index[color]] = v;
     index[color]++;
   }
+  delete[] colorAssignments;
+  delete[] index;
 }
 
 static inline void execute_rounds(const int numRounds,

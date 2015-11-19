@@ -43,7 +43,7 @@ using namespace std;
     phys_t timeStep;
     phys_t restLength;
   #if TEST_CONVERGENCE
-    phys_t * meanSquareNetForce;
+    phys_t * sumSquareNetForce;
   #endif
   #if PRINT_EDGE_LENGTH_HISTOGRAM
     phys_t * edgeLengthsBefore;
@@ -312,10 +312,10 @@ typedef struct vertex_t vertex_t;
                                           int numRounds) {
   #if TEST_CONVERGENCE
     phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes)
-      / globaldata->meanSquareNetForce[0]);
+      / globaldata->sumSquareNetForce[0]);
     cout << 1.0 << endl;
     for (int i = 1; i < numRounds; i++) {
-      cout << (normalizer*sqrt(globaldata->meanSquareNetForce[i]
+      cout << (normalizer*sqrt(globaldata->sumSquareNetForce[i]
         / static_cast<phys_t>(cntNodes))) << endl;
     }
   #endif
@@ -458,7 +458,7 @@ typedef struct vertex_t vertex_t;
     globaldata->dashpotResistance = 1.0;
     globaldata->inverseMass = 1.0;
   #if TEST_CONVERGENCE
-    globaldata->meanSquareNetForce = new (std::nothrow) phys_t[numRounds]();
+    globaldata->sumSquareNetForce = new (std::nothrow) phys_t[numRounds]();
   #endif
     phys_t globalRestLength = 0.0;
     vid_t globalCntEdges = 0;
@@ -532,7 +532,7 @@ typedef struct vertex_t vertex_t;
     getNetForce(nodes, index, acceleration, globaldata, round, useLeapFrogMethod);
   #if TEST_CONVERGENCE
     phys_t tmpNetForce = length(acceleration);
-    globaldata->meanSquareNetForce[round] += tmpNetForce*tmpNetForce;
+    globaldata->sumSquareNetForce[round] += tmpNetForce*tmpNetForce;
     //  Serial access to globaldata->averageSpeed is essential to
     //  avoid data races.  Access to this variable is serialized
     //  in any case, so parallel computation wouldn't gain much,
