@@ -4,7 +4,7 @@
 #include <string>
 #include <cinttypes>
 
-typedef int64_t vid_t;  // vertex id type
+typedef int32_t vid_t;  // vertex id type
 
 class EdgeListBuilder {
  public:

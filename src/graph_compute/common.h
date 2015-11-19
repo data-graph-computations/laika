@@ -200,21 +200,27 @@ WHEN_TEST(
 )
 
 #if D0_BSP
+  #define NEEDS_SCHEDULER_DATA 0
   #include "./bsp_scheduling.h"
   #define SCHEDULER_NAME "BSP"
 #elif D1_CHUNK
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./chunk_scheduling.h"
   #define SCHEDULER_NAME "CHUNK"
 #elif D1_PHASE
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./phase_scheduling.h"
   #define SCHEDULER_NAME "PHASE"
 #elif D1_CHROM
+  #define NEEDS_SCHEDULER_DATA 0
   #include "./chromatic_scheduling.h"
-  #define SCHEDULER_NAME "CHROM"
+  #define SCHEDULER_NAME "CHROMATIC"
 #elif D1_NUMA
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./numa_scheduling.h"
   #define SCHEDULER_NAME "NUMA"
 #elif BASELINE || D1_PRIO
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./priority_scheduling.h"
   #define SCHEDULER_NAME "PRIORITY"
 #else

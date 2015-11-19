@@ -56,14 +56,16 @@ typedef struct data_t data_t;
 typedef struct global_t global_t;
 
 struct vertex_t {
-  vid_t *edges;
+  vid_t * edges;
   vid_t cntEdges;
 #if IN_PLACE
   data_t data;
 #else
   data_t data[2];
 #endif
+#if NEEDS_SCHEDULER_DATA
   sched_t sched;
+#endif
 };
 typedef struct vertex_t vertex_t;
 

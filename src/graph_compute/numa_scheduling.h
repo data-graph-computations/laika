@@ -50,7 +50,6 @@ struct numaSchedInit_t {
   global_t * globaldata;
   mrmw_queue_t * workQueue;
   volatile int * remainingChunks;
-  volatile int * remainingPushes;
   volatile int * remainingStragglers;
 };
 typedef struct numaSchedInit_t numaSchedInit_t;
@@ -255,12 +254,9 @@ inline void * processChunks(void * param) {
       vid_t start = config->coreID*scheddata->numChunksPerWorker;
       vid_t end = (config->coreID + 1)*scheddata->numChunksPerWorker;
       end = std::min(end, scheddata->cntChunks);
-      for (vid_t chunk = start; chunk < end; chunk++) {
-        config->workQueue->push(chunk);
-      }
-      __sync_sub_and_fetch(config->remainingPushes, 1);
-      //  wait until all workers have finished pushing their chunks
-      while (static_cast<int>(*config->remainingPushes) > 0) {}
+      config->workQueue->push(start, end);
+      //  start with your own queue - you just put stuff in it
+      stealQueueNumber = config->coreID;
       //  When somebody completes the last chunk, they'll reset
       //  the config->remainingStragglers variable.
       while (static_cast<int>(*config->remainingStragglers) == 0) {
@@ -332,7 +328,6 @@ inline void * processChunks(void * param) {
                 //  this was the last chunk for this phase
                 //  so, reset the remainingChunks, remainingStragglers, and
                 //  remainingPushes counters
-                *config->remainingPushes = NUMA_WORKERS;
                 *config->remainingStragglers = NUMA_WORKERS;
                 *config->remainingChunks = scheddata->cntChunks;
                 //  make sure writes to these shared variables are visible
@@ -354,8 +349,6 @@ static inline void execute_rounds(const int numRounds,
                                   global_t * const globaldata) {
   //  the shared variable for tracking remaining chunks during a phase
   volatile int remainingChunks = scheddata->cntChunks;
-  //  the counter that tells workers how many other workers are still pushing their chunks
-  volatile int remainingPushes = NUMA_WORKERS;
   //  the counter that tells workers how many remaining
   //  workers need to report before pushing
   volatile int remainingStragglers = NUMA_WORKERS;
@@ -365,7 +358,6 @@ static inline void execute_rounds(const int numRounds,
     scheddata->numaSchedInit[i].globaldata = globaldata;
     scheddata->numaSchedInit[i].numRounds = numRounds;
     scheddata->numaSchedInit[i].remainingChunks = &remainingChunks;
-    scheddata->numaSchedInit[i].remainingPushes = &remainingPushes;
     scheddata->numaSchedInit[i].remainingStragglers = &remainingStragglers;
   }
   pthread_t * workers =
