@@ -145,9 +145,15 @@ WHEN_TEST({
 #else
   fillInNodeData(nodes, cntNodes);
 #endif
+
   fillInGlobalData(nodes, cntNodes, &globaldata, numRounds);
+
 #if PRINT_EDGE_LENGTH_HISTOGRAM
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
+#endif
+
+#if (MASS_SPRING_DASHPOT) && (TEST_CONVERGENCE == 0)
+  const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
 #endif
 
   struct timespec starttime, endtime;
@@ -172,15 +178,15 @@ WHEN_TEST({
   double timePerMillionEdges = seconds * static_cast<double>(1000000);
   timePerMillionEdges /= static_cast<double>(cntEdges) * static_cast<double>(numRounds);
 
-  cleanup_scheduling(nodes, cntNodes, &scheddata);
+#if PRINT_EDGE_LENGTH_HISTOGRAM
+  //  pagerank does not consume the nodes file containing positions
+  assert(MASS_SPRING_DASHPOT == 1);
+  finalEdgeLengthHistogram(nodes, cntNodes, &globaldata);
+  printEdgeLengthHistograms(nodes, cntNodes, &globaldata);
+#endif
 
 #if TEST_CONVERGENCE
   printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
-#elif PRINT_EDGE_LENGTH_HISTOGRAM
-  //  pagerank does not consume the nodes file containing positions
-  assert(PAGERANK == 0);
-  finalEdgeLengthHistogram(nodes, cntNodes, &globaldata);
-  printEdgeLengthHistograms(nodes, cntNodes, &globaldata);
 #elif VERBOSE
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << "Done computing " << numRounds << " rounds!\n";
@@ -199,6 +205,13 @@ WHEN_TEST({
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << APP_NAME << ", ";
   cout << SCHEDULER_NAME << ", ";
+  cout << IN_PLACE << ", ";
+#if PAGERANK
+  cout << 0 << ", ";
+#else  //  MASS_SPRING_DASHPOT
+  cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
+       << ", ";
+#endif
   cout << PARALLEL << ", ";
 #if D1_NUMA
   cout << NUMA_WORKERS << ", ";
@@ -220,15 +233,12 @@ WHEN_TEST({
   cout << CHUNK_BITS << ", ";
   cout << NUMA_INIT << ", ";
   cout << NUMA_STEAL << ", ";
-  cout << DISTANCE;
-  cout << endl;
+  cout << DISTANCE << ", ";
+  cout << __DATE__ << ", ";
+  cout << __TIME__ << endl;
 #endif
-  // so GCC doesn't eliminate the rounds loop as unnecessary work
-  // double data = 0.0;
-  // for (vid_t i = 0; i < cntNodes; ++i) {
-  //   data += nodes[i].data;
-  // }
-  // cout << "Final result (ignore this line): " << data << '\n';
+
+  cleanup_scheduling(nodes, cntNodes, &scheddata);
 
   return 0;
 }

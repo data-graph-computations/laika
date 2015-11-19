@@ -73,6 +73,10 @@ ifneq ($(PAGERANK),)
 	DEFS += -DPAGERANK=$(PAGERANK)
 endif
 
+ifneq ($(MASS_SPRING_DASHPOT),)
+	DEFS += -DMASS_SPRING_DASHPOT=$(MASS_SPRING_DASHPOT)
+endif
+
 ifneq ($(IN_PLACE),)
 	DEFS += -DIN_PLACE=$(IN_PLACE)
 endif
@@ -95,6 +99,10 @@ endif
 
 ifneq ($(VERBOSE),)
 	DEFS += -DVERBOSE=$(VERBOSE)
+endif
+
+ifneq ($(HUGE_GRAPH_SUPPORT),)
+	DEFS += -DHUGE_GRAPH_SUPPORT=$(HUGE_GRAPH_SUPPORT)
 endif
 
 all: lint compute

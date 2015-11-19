@@ -92,7 +92,7 @@
 #endif
 
 #ifndef NUMA_STEAL
-  #define NUMA_STEAL 0
+  #define NUMA_STEAL 1
 #endif
 
 #ifndef NUMA_INIT
@@ -135,9 +135,12 @@
   #define USE_GLOBAL_REST_LENGTH 1
 #endif
 
+#ifndef USE_RANDOM_PRIORITY_HASH
+  #define USE_RANDOM_PRIORITY_HASH 0
+#endif
 //  this switch allows you to print the histogram
 //  of the edge lengths in the graph, centered
-//  on the average edge length at T=0
+//  on the average edge length as measured at T=0
 #ifndef PRINT_EDGE_LENGTH_HISTOGRAM
   #define PRINT_EDGE_LENGTH_HISTOGRAM 0
 #endif
@@ -148,29 +151,39 @@
   #define NUM_BUCKETS 63
 #endif
 
-#ifndef PAGERANK
-  #define PAGERANK 0
+#ifndef APPLICATION
+  #define APPLICATION 0
 #endif
 
 #ifndef NORMALIZE_TO_UNIT_CUBE
   #define NORMALIZE_TO_UNIT_CUBE 1
 #endif
 
-#if PAGERANK == 0
-  #define VERTEX_META_DATA 1
-  #define APP_NAME "MASS_SPRING_DASHPOT"
-#else
-  #define VERTEX_META_DATA 0
-  #define APP_NAME "PAGERANK"
+#ifndef PAGERANK
+  #define PAGERANK 0
 #endif
 
-#if PARALLEL
-  #include <cilk/cilk.h>
-  #include <cilk/cilk_api.h>
+#ifndef MASS_SPRING_DASHPOT
+  #define MASS_SPRING_DASHPOT 0
+#endif
+
+#if MASS_SPRING_DASHPOT
+  #define VERTEX_META_DATA 1
+  #define APP_NAME "MASS_SPRING_DASHPOT"
+#elif PAGERANK
+  #define VERTEX_META_DATA 0
+  #define APP_NAME "PAGERANK"
 #else
+  #error "No application selected"
+#endif
+
+#if D1_NUMA || (PARALLEL == 0)
   #define cilk_for for
   #define cilk_spawn
   #define cilk_sync
+#elif PARALLEL
+  #include <cilk/cilk.h>
+  #include <cilk/cilk_api.h>
 #endif
 
 #include <cinttypes>
@@ -178,7 +191,7 @@
 #include "../libgraphio/libgraphio.h"
 #include "./concurrent_queue.h"
 
-#if TEST_SIMPLE_AND_UNDIRECTED
+#ifndef TEST_SIMPLE_AND_UNDIRECTED
   #define TEST_SIMPLE_AND_UNDIRECTED 0
 #endif
 
@@ -187,21 +200,27 @@ WHEN_TEST(
 )
 
 #if D0_BSP
+  #define NEEDS_SCHEDULER_DATA 0
   #include "./bsp_scheduling.h"
   #define SCHEDULER_NAME "BSP"
 #elif D1_CHUNK
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./chunk_scheduling.h"
   #define SCHEDULER_NAME "CHUNK"
 #elif D1_PHASE
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./phase_scheduling.h"
   #define SCHEDULER_NAME "PHASE"
 #elif D1_CHROM
+  #define NEEDS_SCHEDULER_DATA 0
   #include "./chromatic_scheduling.h"
-  #define SCHEDULER_NAME "CHROM"
+  #define SCHEDULER_NAME "CHROMATIC"
 #elif D1_NUMA
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./numa_scheduling.h"
   #define SCHEDULER_NAME "NUMA"
 #elif BASELINE || D1_PRIO
+  #define NEEDS_SCHEDULER_DATA 1
   #include "./priority_scheduling.h"
   #define SCHEDULER_NAME "PRIORITY"
 #else

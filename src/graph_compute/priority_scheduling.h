@@ -47,7 +47,7 @@ static inline void processNodeSerial(vertex_t * const nodes,
   vertex_t * current = &nodes[index];
 
   // increment the dependencies for all nodes of greater priority
-  for (size_t i = 0; i < current->cntEdges; ++i) {
+  for (vid_t i = 0; i < current->cntEdges; ++i) {
     vid_t neighborId = current->edges[i];
     sched_t * neighbor = &nodes[neighborId].sched;
     if (neighbor->priority > current->sched.priority) {
@@ -115,7 +115,10 @@ static inline int calculateIdBitSize(const uint64_t cntNodes) {
   return __builtin_popcountl(numBits);
 }
 
-static inline id_t createPriority(const vid_t id, const int bitsInId) {
+static inline vid_t createPriority(const vid_t id, const int bitsInId) {
+#if USE_RANDOM_PRIORITY_HASH
+  return id*static_cast<vid_t>(2654435761);
+#else
   vid_t priority;
 
   if (bitsInId <= PRIORITY_GROUP_BITS) {
@@ -130,6 +133,7 @@ static inline id_t createPriority(const vid_t id, const int bitsInId) {
   // add the priority group bits at the bottom of the priority
   priority |= id >> (bitsInId - PRIORITY_GROUP_BITS);
   return priority;
+#endif
 }
 
 static inline void assignNodePriorities(vertex_t * const nodes,

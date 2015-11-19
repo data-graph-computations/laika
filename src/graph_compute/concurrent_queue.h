@@ -9,7 +9,7 @@ using namespace std;
 struct mrmw_queue_t {
   volatile vid_t * const data;
   const vid_t sentinel;
-  size_t mask;
+  const size_t mask;
   volatile size_t head;
   volatile size_t tail;
   volatile int lock;
@@ -19,7 +19,8 @@ struct mrmw_queue_t {
                head(0), tail(0), lock(0) { }
   // assumes that it is not possible to overflow
   void push(const vid_t value);  //  So, push always succeeds
-  vid_t pop();  //  pop can return sentinel, if it is full
+  void push(const vid_t start, const vid_t end);  // push range [start,end)
+  vid_t pop();  //  pop can return sentinel, if it is full or contended
 };
 typedef struct mrmw_queue_t mrmw_queue_t;
 
@@ -32,12 +33,20 @@ inline void mrmw_queue_t::push(const vid_t value) {
   __sync_lock_release(&lock);
 }
 
-inline vid_t mrmw_queue_t::pop() {
-  if ((lock == 1) || (tail == head)) {
-    return sentinel;
-  }
+inline void mrmw_queue_t::push(const vid_t start, const vid_t end) {
   while (__sync_lock_test_and_set(&lock, 1) == 1) {
     while (lock == 1) {}
+  }
+  for (vid_t i = start; i < end; i++) {
+    data[tail & mask] = i;
+    tail++;
+  }
+  __sync_lock_release(&lock);
+}
+
+inline vid_t mrmw_queue_t::pop() {
+  if ((lock == 1) || (tail == head) || (__sync_lock_test_and_set(&lock, 1) == 1)) {
+    return sentinel;
   }
   if (tail == head) {
     __sync_lock_release(&lock);
