@@ -101,6 +101,10 @@ ifneq ($(VERBOSE),)
 	DEFS += -DVERBOSE=$(VERBOSE)
 endif
 
+ifneq ($(HUGE_GRAPH_SUPPORT),)
+	DEFS += -DHUGE_GRAPH_SUPPORT=$(HUGE_GRAPH_SUPPORT)
+endif
+
 all: lint compute
 
 lint:
