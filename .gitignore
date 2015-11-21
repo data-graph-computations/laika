@@ -42,6 +42,9 @@ src/binconvert/binconvert
 *.node
 *.adjlist
 *.edge
+*.ele
+*.smesh
+*.face
 
 # Directories
 tmp/*

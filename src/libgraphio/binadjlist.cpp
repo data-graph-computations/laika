@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <stdexcept>
 #include "./libgraphio.h"
@@ -7,23 +8,70 @@
 
 #define BINADJLIST_MAGIC 68862015
 
+typedef uint64_t adjlist_data_t;
+
+static inline int safe_vid_t_read(std::ifstream * const input,
+                                  vid_t * const output) {
+  // the conversion from adjlist_data_t to vid_t
+  // should always be a narowing conversion
+  assert(sizeof(adjlist_data_t) >= sizeof(vid_t));
+  adjlist_data_t tmp;
+  input->read(reinterpret_cast<char*>(&tmp), sizeof(adjlist_data_t));
+
+  // static_cast is safe because we determined
+  // the vid_t -> adjlist_data_t is a widening conversion
+  if (tmp <= static_cast<adjlist_data_t>(std::numeric_limits<vid_t>::max())) {
+    *output = static_cast<vid_t>(tmp);
+    return 0;
+  } else {
+    std::cerr << "vid_t type not wide enough, please recompile with huge graph support";
+    std::cerr << std::endl;
+    return -1;
+  }
+}
+
+static inline void safe_vid_t_write(std::ofstream * const output,
+                                    const vid_t value) {
+  // the conversion from vid_t to adjlist_data_t
+  // should always be a widening conversion
+  assert(sizeof(adjlist_data_t) >= sizeof(vid_t));
+  adjlist_data_t tmp = static_cast<adjlist_data_t>(value);
+  output->write(reinterpret_cast<char*>(&tmp), sizeof(adjlist_data_t));
+}
+
 // v1 binadjlist structure:
 // total number of nodes (N): 8 bytes
 // total number of edges (M): 8 bytes
 // N edge indexes:            8 bytes each
 // M edge destinations:       8 bytes each
 static int binadjlistfile_read_v1(const std::string& filepath,
-                                  std::ifstream * binadjlist,
+                                  std::ifstream * const binadjlist,
                                   EdgeListBuilder * const builder) {
-  vid_t cntNodes, totalEdges;
-  binadjlist->read(reinterpret_cast<char*>(&cntNodes), sizeof(cntNodes));
-  binadjlist->read(reinterpret_cast<char*>(&totalEdges), sizeof(cntNodes));
+  int result;
+  vid_t cntNodes;
+  vid_t totalEdges;
+
+  result = safe_vid_t_read(binadjlist, &cntNodes);
+  if (result != 0) {
+    return result;
+  }
+
+  result = safe_vid_t_read(binadjlist, &totalEdges);
+  if (result != 0) {
+    return result;
+  }
+
   builder->set_node_count(cntNodes);
   builder->set_total_edge_count(totalEdges);
 
   for (vid_t i = 0; i < cntNodes; ++i) {
     vid_t firstEdgeIndex;
-    binadjlist->read(reinterpret_cast<char*>(&firstEdgeIndex), sizeof(firstEdgeIndex));
+
+    result = safe_vid_t_read(binadjlist, &firstEdgeIndex);
+    if (result != 0) {
+      return result;
+    }
+
     builder->set_first_edge_of_node(i, firstEdgeIndex);
   }
 
@@ -39,7 +87,12 @@ static int binadjlistfile_read_v1(const std::string& filepath,
 
   for (vid_t i = 0; i < totalEdges; ++i) {
     vid_t destination;
-    binadjlist->read(reinterpret_cast<char*>(&destination), sizeof(destination));
+
+    result = safe_vid_t_read(binadjlist, &destination);
+    if (result != 0) {
+      return result;
+    }
+
     builder->create_edge(i, destination);
   }
 
@@ -110,29 +163,28 @@ class BinadjlistWriterV1 : public EdgeListBuilder {
   void set_node_count(vid_t cntNodes) {
     assert(this->cntNodes == static_cast<vid_t>(-1));
     this->cntNodes = cntNodes;
-    this->output->write(reinterpret_cast<char*>(&cntNodes), sizeof(cntNodes));
+    safe_vid_t_write(this->output, cntNodes);
   }
 
   // this function should only be called once
   void set_total_edge_count(vid_t totalEdges) {
     assert(this->totalEdges == static_cast<vid_t>(-1));
     this->totalEdges = totalEdges;
-    this->output->write(reinterpret_cast<char*>(&totalEdges), sizeof(totalEdges));
+    safe_vid_t_write(this->output, totalEdges);
   }
 
   void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
     assert(nodeid == this->lastUsedNodeId + 1);
     assert(nodeid < this->cntNodes);
     this->lastUsedNodeId = nodeid;
-    this->output->write(reinterpret_cast<char*>(&firstEdgeIndex),
-                        sizeof(firstEdgeIndex));
+    safe_vid_t_write(this->output, firstEdgeIndex);
   }
 
   void create_edge(vid_t edgeIndex, vid_t destination) {
     assert(edgeIndex == this->lastUsedEdgeId + 1);
     assert(edgeIndex < this->totalEdges);
     this->lastUsedEdgeId = edgeIndex;
-    this->output->write(reinterpret_cast<char*>(&destination), sizeof(destination));
+    safe_vid_t_write(this->output, destination);
   }
 
   void build() {
