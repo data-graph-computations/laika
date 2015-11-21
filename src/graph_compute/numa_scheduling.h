@@ -183,14 +183,16 @@ static inline void createChunkData(vertex_t * const nodes,
   scheddata->numChunksPerWorker =
     (scheddata->cntChunks + NUMA_WORKERS - 1) / NUMA_WORKERS;
 
-  for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
+  cilk_for (vid_t i = 0; i < scheddata->cntChunks; ++i) {
     chunkdata_t * chunk = &scheddata->chunkdata[i];
     chunk->nextIndex = i << CHUNK_BITS;
     chunk->phaseEndIndex[0] = std::min(chunk->nextIndex + (1 << (CHUNK_BITS - 1)),
       cntNodes);
     chunk->phaseEndIndex[1] = std::min((i + 1) << CHUNK_BITS, cntNodes);
     chunk->workQueueNumber = i / scheddata->numChunksPerWorker;
-    assert(chunk->workQueueNumber < NUMA_WORKERS);
+    WHEN_TEST(
+      assert(chunk->workQueueNumber < NUMA_WORKERS);
+    )
     // put code to greedily move boundaryIndex to minimize cost of
     // interChunk dependencies here
   }
@@ -379,6 +381,8 @@ static inline void cleanup_scheduling(vertex_t * const nodes,
                                       scheddata_t * const scheddata) {
   delete[] scheddata->chunkdata;
   delete[] scheddata->dependentEdges;
+  delete[] scheddata->numaSchedInit;
+  delete[] scheddata->queueData;
 }
 
 static inline void print_execution_data() {
