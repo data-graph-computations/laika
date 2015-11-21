@@ -6128,7 +6128,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=[]):
     filename: The name of the file to parse.
 
     vlevel: The level of errors to report.  Every error of confidence
-    >= verbose_level will be reported.  0 is a good default.
+    >= _level will be reported.  0 is a good default.
 
     extra_check_functions: An array of additional check functions that will be
                            run on each source line. Each function takes 4
@@ -6205,7 +6205,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=[]):
         Error(filename, linenum, 'whitespace/newline', 1,
               'Unexpected \\r (^M) found; better to use only \\n')
 
-  # sys.stderr.write('Done processing %s\n' % filename)
+  sys.stderr.write('Done processing %s\n' % filename)
   _RestoreFilters()
 
 
@@ -6314,7 +6314,7 @@ def main():
   _cpplint_state.ResetErrorCounts()
   for filename in filenames:
     ProcessFile(filename, _cpplint_state.verbose_level)
-  #_cpplint_state.PrintErrorCounts()
+  _cpplint_state.PrintErrorCounts()
 
   sys.exit(_cpplint_state.error_count > 0)
 

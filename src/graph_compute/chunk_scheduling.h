@@ -69,7 +69,9 @@ static void calculateNodeDependenciesChunk(vertex_t * const nodes,
 static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes) {
   cilk_for (vid_t i = 0; i < cntNodes; ++i) {
     std::stable_partition(nodes[i].edges, nodes[i].edges + nodes[i].cntEdges,
-      [i](const vid_t& val) {return interChunkDependency(i, val);});
+      [i](const vid_t& val) {
+        return interChunkDependency(i, val);
+      });
   }
 }
 
