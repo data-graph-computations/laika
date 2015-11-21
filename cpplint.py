@@ -6128,7 +6128,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=[]):
     filename: The name of the file to parse.
 
     vlevel: The level of errors to report.  Every error of confidence
-    >= _level will be reported.  0 is a good default.
+    >= verbose_level will be reported.  0 is a good default.
 
     extra_check_functions: An array of additional check functions that will be
                            run on each source line. Each function takes 4
