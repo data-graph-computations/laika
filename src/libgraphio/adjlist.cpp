@@ -8,6 +8,12 @@
 
 #define ADJGRAPH "AdjacencyGraph"
 
+#if HUGE_GRAPH_SUPPORT
+  #define VID_T_LITERAL "%ld"
+#else
+  #define VID_T_LITERAL "%d"
+#endif
+
 static void cleanupOnFormatError(FILE * const input,
                                  const std::string& type, const int line) {
   int result;
@@ -29,7 +35,8 @@ int adjlistfile_read(const std::string& filepath,
   vid_t cntNodes, totalEdges, result;
 
   // read header line of adjlist file
-  result = fscanf(input, "%15s\n%ld\n%ld\n", adjGraph, &cntNodes, &totalEdges);
+  result = fscanf(input, "%15s\n" VID_T_LITERAL "\n" VID_T_LITERAL "\n",
+                  adjGraph, &cntNodes, &totalEdges);
   if (result != 3 || strcmp(ADJGRAPH, adjGraph) != 0) {
     cleanupOnFormatError(input, "edge", 1);
     return -1;
@@ -40,7 +47,7 @@ int adjlistfile_read(const std::string& filepath,
 
   for (vid_t i = 0; i < cntNodes; ++i) {
     vid_t firstEdgeIndex;
-    result = fscanf(input, "%lu\n", &firstEdgeIndex);
+    result = fscanf(input, VID_T_LITERAL "\n", &firstEdgeIndex);
     if (result != 1) {
       cleanupOnFormatError(input, "edge", i + 3);
       return -1;
@@ -50,7 +57,7 @@ int adjlistfile_read(const std::string& filepath,
 
   for (vid_t i = 0; i < totalEdges; ++i) {
     vid_t destination;
-    result = fscanf(input, "%lu\n", &destination);
+    result = fscanf(input, VID_T_LITERAL "\n", &destination);
     if (result != 1) {
       cleanupOnFormatError(input, "edge", i + cntNodes + 3);
       return -1;
@@ -84,26 +91,26 @@ class AdjlistWriter : public EdgeListBuilder {
 
   void set_node_count(vid_t cntNodes) {
     this->cntNodes = cntNodes;
-    std::fprintf(output, "%lu\n", cntNodes);
+    std::fprintf(output, VID_T_LITERAL "\n", cntNodes);
   }
 
   void set_total_edge_count(vid_t totalEdges) {
     this->totalEdges = totalEdges;
-    std::fprintf(output, "%lu\n", totalEdges);
+    std::fprintf(output, VID_T_LITERAL "\n", totalEdges);
   }
 
   void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
     assert(nodeid == this->lastUsedNodeId + 1);
     assert(nodeid < this->cntNodes);
     this->lastUsedNodeId = nodeid;
-    std::fprintf(output, "%lu\n", firstEdgeIndex);
+    std::fprintf(output, VID_T_LITERAL "\n", firstEdgeIndex);
   }
 
   void create_edge(vid_t edgeIndex, vid_t destination) {
     assert(edgeIndex == this->lastUsedEdgeId + 1);
     assert(edgeIndex < this->totalEdges);
     this->lastUsedEdgeId = edgeIndex;
-    std::fprintf(output, "%lu\n", destination);
+    std::fprintf(output, VID_T_LITERAL "\n", destination);
   }
 
   void build() {
