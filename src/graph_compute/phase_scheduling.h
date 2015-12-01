@@ -38,6 +38,7 @@ struct scheddata_t {
   //  Each vertex has a sched_t, which contains a pointer
   //  (also called dependentEdges) into this array.
   vid_t * dependentEdges;
+  vid_t cntDependencies;
   chunkdata_t * chunkdata;
   vid_t cntChunks;
 };
@@ -114,6 +115,7 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
   })
+  scheddata->cntDependencies = cntDependencies;
   numaInit_t numaInit(NUMA_WORKERS,
                       CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   scheddata->dependentEdges =

@@ -151,6 +151,17 @@
   #define NUM_BUCKETS 63
 #endif
 
+//  this switch allows you to print the histogram
+//  of the edge lengths in the graph, centered
+//  on the average edge length as measured at T=0
+#ifndef PRINT_NEIGHBOR_DISTANCE_HISTOGRAM
+  #define PRINT_NEIGHBOR_DISTANCE_HISTOGRAM 0
+#endif
+
+#ifndef NEIGHBOR_DISTANCE_LOG_BASE
+  #define NEIGHBOR_DISTANCE_LOG_BASE 2.0
+#endif
+
 #ifndef APPLICATION
   #define APPLICATION 0
 #endif
@@ -193,6 +204,10 @@
 
 #ifndef TEST_SIMPLE_AND_UNDIRECTED
   #define TEST_SIMPLE_AND_UNDIRECTED 0
+#endif
+
+#ifndef TEST_BITS_PER_EDGE
+  #define TEST_BITS_PER_EDGE 0
 #endif
 
 WHEN_TEST(

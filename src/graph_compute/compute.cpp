@@ -15,6 +15,43 @@ using namespace std;
 #include "./common.h"
 #include "./concurrent_queue.h"
 
+void sortEdgeLists(vertex_t * const nodes,
+                   const vid_t cntNodes) {
+  cilk_for (vid_t i = 0; i < cntNodes; i++) {
+    vid_t * start = &nodes[i].edges[0];
+    std::stable_sort(start, start + nodes[i].cntEdges);
+  }
+}
+
+double bitsPerEdge(vertex_t * const nodes,
+                   const vid_t cntNodes) {
+  uint16_t * bitCounts = new (std::nothrow) uint16_t[cntNodes]();
+  cilk_for (vid_t i = 0; i < cntNodes; i++) {
+    //  we need a sign bit for the first offset, plus a sentinel bit for each edge
+    vertex_t * node = &nodes[i];
+    double bits = static_cast<double>(1 + node->cntEdges);
+    double offset = static_cast<double>(std::abs(i - node->edges[0]));
+    bits += std::ceil(std::log2(offset));
+    for (vid_t edge = 1; edge < node->cntEdges; edge++) {
+      //  assert(node->edges[edge] > node->edges[edge-1]);
+      offset = static_cast<double>(std::abs(node->edges[edge] - node->edges[edge-1]));
+      // if (offset > static_cast<double>(cntNodes >> 1)) {
+      //   cout << offset << ", " << std::ceil(std::log2(offset)) << endl;
+      // }
+      bits += std::ceil(std::log2(offset));
+    }
+    bitCounts[i] = static_cast<uint16_t>(bits);
+  }
+  double bits = 0;
+  double edges = 0;
+  for (vid_t i = 0; i < cntNodes; i++) {
+    bits += static_cast<double>(bitCounts[i]);
+    edges += static_cast<double>(nodes[i].cntEdges);
+  }
+  delete[] bitCounts;
+  return bits / edges;
+}
+
 uint64_t hashOfGraphData(vertex_t * const nodes,
                          const vid_t cntNodes) {
   uint64_t result = 0;
@@ -73,50 +110,97 @@ void test_queue() {
   cout << "Sum2 = " << sum2 << endl;
 }
 
+void printNeighborDistanceHistogram(vertex_t * const nodes,
+                                    const vid_t cntNodes) {
+  double scale = 1/log(NEIGHBOR_DISTANCE_LOG_BASE);
+  //  maximum integer representable as double (53 bits of mantissa) = 4503599627370496
+  vid_t numBuckets = static_cast<vid_t>(scale *
+    log(static_cast<double>(10000000000))) + 1;
+  vid_t * histogram = new (std::nothrow) vid_t[numBuckets]();
+  vid_t cntEdges = 0;
+  for (vid_t i = 0; i < cntNodes; i++) {
+    for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
+      vid_t distance = std::abs(i - nodes[i].edges[edge]);
+      assert(distance > 0);
+      histogram[static_cast<vid_t>(scale * log(static_cast<double>(distance)))]++;
+      cntEdges++;
+    }
+  }
+  double edgeScale = 1/static_cast<double>(cntEdges);
+  cout << "bucket,fraction" << endl;
+  double cumulative = 0;
+  for (vid_t i = 0; i < numBuckets; i++) {
+    cumulative += static_cast<double>(histogram[i]);
+    cout << std::pow(NEIGHBOR_DISTANCE_LOG_BASE, static_cast<double>(i))
+         << ", " << (cumulative*edgeScale) << endl;
+  }
+  delete[] histogram;
+}
+
 int main(int argc, char *argv[]) {
   vertex_t * nodes;
   vid_t cntNodes;
-  vid_t cntEdges;
   char * inputEdgeFile;
-  int numRounds = 0;
 
 WHEN_TEST({
   test_queue();
 })
 
-#if VERTEX_META_DATA
-  if (argc != 4) {
-    cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
-    cerr << "Usage: ./compute <num_rounds> <input_edges> <vertex_meta_data>" << endl;
-    return 1;
-  }
-#else
-  if (argc != 3) {
+#if PRINT_NEIGHBOR_DISTANCE_HISTOGRAM
+  if (argc != 2) {
     cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
-    cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
+    cerr << "Usage: ./compute <input_edges>" << endl;
     return 1;
   }
-#endif
 
-  try {
-    numRounds = stoi(argv[1]);
-  } catch (exception& e) {
-    cerr << "\nERROR: " << e.what() << endl;
-    return 1;
-  }
+  inputEdgeFile = argv[1];
+#else
+  #if VERTEX_META_DATA
+    if (argc != 4) {
+      cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
+      cerr << "Usage: ./compute <num_rounds> <input_edges> <vertex_meta_data>" << endl;
+      return 1;
+    }
+  #else
+    if (argc != 3) {
+      cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
+      cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
+      return 1;
+    }
+  #endif
+
+    int numRounds = 0;
+
+    try {
+      numRounds = stoi(argv[1]);
+    } catch (exception& e) {
+      cerr << "\nERROR: " << e.what() << endl;
+      return 1;
+    }
 
   inputEdgeFile = argv[2];
+
+#endif
 
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
   int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
-  cntEdges = getEdgeCount(nodes, cntNodes);
+#if PRINT_NEIGHBOR_DISTANCE_HISTOGRAM
+  printNeighborDistanceHistogram(nodes, cntNodes);
+  return 0;
+#else
+  vid_t cntEdges = getEdgeCount(nodes, cntNodes);
   //  This function asserts that there are
   //  no self-edges and that every edge is
   //  reciprocated (i.e., if (v,w) exists, then
   //  so does (w,v))
 #if TEST_SIMPLE_AND_UNDIRECTED
   testSimpleAndUndirected(nodes, cntNodes);
+#elif TEST_BITS_PER_EDGE
+  //  sortEdgeLists(nodes, cntNodes);
+  cout << bitsPerEdge(nodes, cntNodes) << ",";
+  cout << inputEdgeFile << endl;
+  return 0;
 #endif
 
 #if VERBOSE
@@ -150,9 +234,9 @@ WHEN_TEST({
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
-#endif
-
+#else
   const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
+#endif
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -181,9 +265,7 @@ WHEN_TEST({
   assert(MASS_SPRING_DASHPOT == 1);
   finalEdgeLengthHistogram(nodes, cntNodes, &globaldata);
   printEdgeLengthHistograms(nodes, cntNodes, &globaldata);
-#endif
-
-#if TEST_CONVERGENCE
+#elif TEST_CONVERGENCE
   printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
 #elif VERBOSE
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -201,38 +283,47 @@ WHEN_TEST({
   cout << "Test flag: " << TEST << '\n';
 #else
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  cout << APP_NAME << ", ";
-  cout << SCHEDULER_NAME << ", ";
-  cout << IN_PLACE << ", ";
+  cout << APP_NAME << ",";
+  cout << SCHEDULER_NAME << ",";
+  cout << IN_PLACE << ",";
   cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
-       << ", ";
-  cout << PARALLEL << ", ";
+       << ",";
+  cout << PARALLEL << ",";
 #if D1_NUMA
-  cout << NUMA_WORKERS << ", ";
+  cout << NUMA_WORKERS << ",";
 #elif PARALLEL
-  cout << (__cilkrts_get_nworkers()) << ", ";
+  cout << (__cilkrts_get_nworkers()) << ",";
 #else
-  cout << "1, ";
+  cout << "1,";
 #endif
-  cout << setprecision(8) << seconds << ", ";
-  cout << setprecision(8) << timePerMillionEdges << ", ";
-  cout << sizeof(vertex_t) << ", ";
-  cout << sizeof(sched_t) << ", ";
-  cout << sizeof(data_t) << ", ";
-  cout << hashOfGraphData(nodes, cntNodes) << ", ";
-  cout << numRounds << ", ";
-  cout << inputEdgeFile << ", ";
-  cout << cntNodes << ", ";
-  cout << cntEdges << ", ";
-  cout << CHUNK_BITS << ", ";
-  cout << NUMA_INIT << ", ";
-  cout << NUMA_STEAL << ", ";
-  cout << DISTANCE << ", ";
-  cout << __DATE__ << ", ";
+  cout << setprecision(8) << seconds << ",";
+  cout << setprecision(8) << timePerMillionEdges << ",";
+  cout << sizeof(vertex_t) << ",";
+  cout << sizeof(sched_t) << ",";
+  cout << sizeof(data_t) << ",";
+  cout << HUGE_GRAPH_SUPPORT << ",";
+  cout << hashOfGraphData(nodes, cntNodes) << ",";
+  cout << numRounds << ",";
+  cout << inputEdgeFile << ",";
+  cout << cntNodes << ",";
+  cout << cntEdges << ",";
+#if D1_NUMA || D1_PHASE
+  cout << scheddata.cntDependencies << ",";
+#elif D1_PRIO
+  cout << cntEdges << ",";
+#else
+  cout << 0 << ",";
+#endif
+  cout << CHUNK_BITS << ",";
+  cout << NUMA_INIT << ",";
+  cout << NUMA_STEAL << ",";
+  cout << DISTANCE << ",";
+  cout << __DATE__ << ",";
   cout << __TIME__ << endl;
 #endif
 
   cleanup_scheduling(nodes, cntNodes, &scheddata);
 
   return 0;
+#endif
 }

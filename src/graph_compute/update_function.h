@@ -406,6 +406,7 @@ typedef struct vertex_t vertex_t;
   #if PRINT_EDGE_LENGTH_HISTOGRAM
     phys_t bucketSize = 1 / globaldata->inverseBucketSize;
     phys_t currentBucket = bucketSize / 2.0;
+    cout << "Bucket center, initial fraction, final fraction" << endl;
     for (int i = 0; i < NUM_BUCKETS; i++) {
       cout << currentBucket << ", ";
       currentBucket += bucketSize;
