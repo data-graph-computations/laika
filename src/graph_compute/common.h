@@ -177,13 +177,13 @@
   #error "No application selected"
 #endif
 
-#if D1_NUMA || (PARALLEL == 0)
+#if PARALLEL
+  #include <cilk/cilk.h>
+  #include <cilk/cilk_api.h>
+#else
   #define cilk_for for
   #define cilk_spawn
   #define cilk_sync
-#elif PARALLEL
-  #include <cilk/cilk.h>
-  #include <cilk/cilk_api.h>
 #endif
 
 #include <cinttypes>

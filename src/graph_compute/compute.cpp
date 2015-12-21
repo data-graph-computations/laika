@@ -152,9 +152,7 @@ WHEN_TEST({
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
 #endif
 
-#if (MASS_SPRING_DASHPOT) && (TEST_CONVERGENCE == 0)
   const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
-#endif
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
@@ -206,12 +204,8 @@ WHEN_TEST({
   cout << APP_NAME << ", ";
   cout << SCHEDULER_NAME << ", ";
   cout << IN_PLACE << ", ";
-#if PAGERANK
-  cout << 0 << ", ";
-#else  //  MASS_SPRING_DASHPOT
   cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
        << ", ";
-#endif
   cout << PARALLEL << ", ";
 #if D1_NUMA
   cout << NUMA_WORKERS << ", ";
