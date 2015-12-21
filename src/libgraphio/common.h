@@ -16,6 +16,10 @@
   #define PARALLEL 1
 #endif
 
+#ifndef HUGE_GRAPH_SUPPORT
+  #define HUGE_GRAPH_SUPPORT 1
+#endif
+
 // Use WHEN_TEST to conditionally include expensive sanity-checks,
 // when doing more work than simply checking an assertion. For example:
 //

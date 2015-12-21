@@ -3,15 +3,12 @@
 
 #include <string>
 #include <cinttypes>
-
-#ifndef HUGE_GRAPH_SUPPORT
-  #define HUGE_GRAPH_SUPPORT 1
-#endif
+#include "./common.h"
 
 #if HUGE_GRAPH_SUPPORT
-typedef int64_t vid_t;
+  typedef int64_t vid_t;
 #else
-typedef int32_t vid_t;  // vertex id type
+  typedef int32_t vid_t;  // vertex id type
 #endif
 
 class EdgeListBuilder {

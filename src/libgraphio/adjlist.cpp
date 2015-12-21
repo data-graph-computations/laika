@@ -9,7 +9,7 @@
 #define ADJGRAPH "AdjacencyGraph"
 
 #if HUGE_GRAPH_SUPPORT
-  #define VID_T_LITERAL "%ld"
+  #define VID_T_LITERAL "%lld"
 #else
   #define VID_T_LITERAL "%d"
 #endif
