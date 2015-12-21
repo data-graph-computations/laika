@@ -1,6 +1,6 @@
 CC  ?= gcc
 CXX ?= g++
-CFLAGS = -O3 -Wall 
+CFLAGS = -O3 -Wall
 CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
@@ -75,6 +75,10 @@ endif
 
 ifneq ($(MASS_SPRING_DASHPOT),)
 	DEFS += -DMASS_SPRING_DASHPOT=$(MASS_SPRING_DASHPOT)
+endif
+
+ifneq ($(EXECUTION_ORDER_SORT),)
+	DEFS += -DEXECUTION_ORDER_SORT=$(EXECUTION_ORDER_SORT)
 endif
 
 ifneq ($(IN_PLACE),)

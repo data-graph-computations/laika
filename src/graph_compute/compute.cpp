@@ -204,9 +204,16 @@ WHEN_TEST({
   cout << APP_NAME << ", ";
   cout << SCHEDULER_NAME << ", ";
   cout << IN_PLACE << ", ";
+
+#if MASS_SPRING_DASHPOT || PAGERANK
   cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
        << ", ";
+#else
+  cout << 0 << ", ";
+#endif
+
   cout << PARALLEL << ", ";
+
 #if D1_NUMA
   cout << NUMA_WORKERS << ", ";
 #elif PARALLEL
@@ -214,6 +221,7 @@ WHEN_TEST({
 #else
   cout << "1, ";
 #endif
+
   cout << setprecision(8) << seconds << ", ";
   cout << setprecision(8) << timePerMillionEdges << ", ";
   cout << sizeof(vertex_t) << ", ";
