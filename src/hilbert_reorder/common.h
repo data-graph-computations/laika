@@ -5,6 +5,8 @@
 #include <cassert>
 #include <utility>
 
+#include "../libgraphio/libgraphio.h"
+
 #ifndef TEST
 #define TEST 0
 #endif
@@ -59,8 +61,6 @@
   #define BFS 0
 #endif
 
-typedef uint64_t vid_t;  // vertex id type
-
 struct edges_t {
   vid_t cntEdges;
   vid_t * edges;
@@ -69,7 +69,7 @@ typedef struct edges_t edges_t;
 
 struct vertex_t {
   vid_t id;
-  vid_t hilbertId;
+  vid_t reorderId;
   double x;
   double y;
   double z;

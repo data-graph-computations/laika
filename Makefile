@@ -29,7 +29,7 @@ DIST_UNIFORM ?= 1
 
 all: build-full
 
-build-full: build-hilbert-reorder build-graph-compute build-graphgen2 build-libgraphio build-binconvert
+build-full: build-libgraphio build-hilbert-reorder build-graph-compute build-graphgen2 build-binconvert
 
 clean: clean-hilbert-reorder clean-graph-compute clean-graphgen2 clean-libgraphio clean-binconvert
 

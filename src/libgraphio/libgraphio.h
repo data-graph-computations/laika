@@ -1,8 +1,9 @@
 #ifndef LIBGRAPHIO_LIBGRAPHIO_H_
 #define LIBGRAPHIO_LIBGRAPHIO_H_
 
-#include <string>
 #include <cinttypes>
+#include <iostream>
+#include <string>
 #include "./common.h"
 
 #if HUGE_GRAPH_SUPPORT

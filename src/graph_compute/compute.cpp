@@ -183,6 +183,13 @@ WHEN_TEST({
   printEdgeLengthHistograms(nodes, cntNodes, &globaldata);
 #endif
 
+#if EXECUTION_ORDER_SORT
+  for (int i = 0; i < cntNodes; ++i) {
+    cout << i << ' ' << nodes[i].data.execution_number << '\n';
+  }
+  cout << endl;
+#endif
+
 #if TEST_CONVERGENCE
   printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
 #elif VERBOSE
@@ -205,22 +212,22 @@ WHEN_TEST({
   cout << SCHEDULER_NAME << ", ";
   cout << IN_PLACE << ", ";
 
-#if MASS_SPRING_DASHPOT || PAGERANK
-  cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
-       << ", ";
-#else
-  cout << 0 << ", ";
-#endif
+  #if MASS_SPRING_DASHPOT || PAGERANK
+    cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
+         << ", ";
+  #else
+    cout << 0 << ", ";
+  #endif
 
   cout << PARALLEL << ", ";
 
-#if D1_NUMA
-  cout << NUMA_WORKERS << ", ";
-#elif PARALLEL
-  cout << (__cilkrts_get_nworkers()) << ", ";
-#else
-  cout << "1, ";
-#endif
+  #if D1_NUMA
+    cout << NUMA_WORKERS << ", ";
+  #elif PARALLEL
+    cout << (__cilkrts_get_nworkers()) << ", ";
+  #else
+    cout << "1, ";
+  #endif
 
   cout << setprecision(8) << seconds << ", ";
   cout << setprecision(8) << timePerMillionEdges << ", ";
