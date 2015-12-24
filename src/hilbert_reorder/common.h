@@ -61,6 +61,10 @@
   #define BFS 0
 #endif
 
+#ifndef STDIN
+  #define STDIN 0
+#endif
+
 struct edges_t {
   vid_t cntEdges;
   vid_t * edges;
