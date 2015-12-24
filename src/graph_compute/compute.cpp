@@ -201,6 +201,15 @@ WHEN_TEST({
   cout << "Scheduler name: " << SCHEDULER_NAME << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
   cout << "Distance: " << DISTANCE << '\n';
+  cout << "Convergence: ";
+
+  #if MASS_SPRING_DASHPOT || PAGERANK
+    const double convergence =
+      getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
+    cout << convergence << '\n';
+  #else
+    cout << 0 << '\n';
+  #endif
 
   print_execution_data();
 
@@ -213,8 +222,9 @@ WHEN_TEST({
   cout << IN_PLACE << ", ";
 
   #if MASS_SPRING_DASHPOT || PAGERANK
-    cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
-         << ", ";
+    const double convergence =
+        getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
+    cout << convergence << ", ";
   #else
     cout << 0 << ", ";
   #endif
