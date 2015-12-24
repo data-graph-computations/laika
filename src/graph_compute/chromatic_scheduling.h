@@ -18,6 +18,7 @@ struct sched_t {
 };
 typedef struct sched_t sched_t;
 
+// update_function.h depends on sched_t being defined
 #include "./update_function.h"
 
 static inline void testColoring(vertex_t * const nodes,

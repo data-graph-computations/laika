@@ -11,6 +11,7 @@ typedef struct scheddata_t scheddata_t;
 struct sched_t { };
 typedef struct sched_t sched_t;
 
+// update_function.h depends on sched_t being defined
 #include "./update_function.h"
 
 static inline void init_scheduling(vertex_t * const nodes,

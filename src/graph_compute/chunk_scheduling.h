@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include "./common.h"
-#include "./update_function.h"
 
 #ifndef CHUNK_BITS
   #define CHUNK_BITS 16
@@ -26,6 +25,9 @@ typedef struct scheddata_t scheddata_t;
 
 struct sched_t { };
 typedef struct sched_t sched_t;
+
+// update_function.h depends on sched_t being defined
+#include "./update_function.h"
 
 static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
