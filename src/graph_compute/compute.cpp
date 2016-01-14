@@ -137,16 +137,16 @@ WHEN_TEST({
 
   init_scheduling(nodes, cntNodes, &scheddata);
 
+  fillInGlobalData(nodes, &globaldata, cntNodes, numRounds);
+
 //  This switch indicates whether the app needs an auxiliary
 //  file to initialize node data
 #if VERTEX_META_DATA
   char * vertexMetaDataFile = argv[3];
-  fillInNodeData(nodes, cntNodes, vertexMetaDataFile);
+  fillInNodeData(nodes, &globaldata, cntNodes, vertexMetaDataFile);
 #else
-  fillInNodeData(nodes, cntNodes);
+  fillInNodeData(nodes, &globaldata, cntNodes);
 #endif
-
-  fillInGlobalData(nodes, cntNodes, &globaldata, numRounds);
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
@@ -203,7 +203,7 @@ WHEN_TEST({
   cout << "Distance: " << DISTANCE << '\n';
   cout << "Convergence: ";
 
-  #if MASS_SPRING_DASHPOT || PAGERANK
+  #if MASS_SPRING_DASHPOT || PAGERANK || SPMV
     const double convergence =
       getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
     cout << convergence << '\n';
@@ -221,7 +221,7 @@ WHEN_TEST({
   cout << SCHEDULER_NAME << ", ";
   cout << IN_PLACE << ", ";
 
-  #if MASS_SPRING_DASHPOT || PAGERANK
+  #if MASS_SPRING_DASHPOT || PAGERANK || SPMV
     const double convergence =
         getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
     cout << convergence << ", ";

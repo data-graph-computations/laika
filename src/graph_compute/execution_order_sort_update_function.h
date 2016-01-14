@@ -12,13 +12,14 @@ inline static uint64_t hashOfVertexData(data_t * vertex) {
 }
 
 inline static void fillInNodeData(vertex_t * const nodes,
+                                  global_t * const globaldata,
                                   const vid_t cntNodes) {
   // no-op
 }
 
 inline static void fillInGlobalData(vertex_t * const nodes,
-                                    const vid_t cntNodes,
                                     global_t * const globaldata,
+                                    const vid_t cntNodes,
                                     int numRounds) {
   globaldata->executed_nodes = 0;
 }

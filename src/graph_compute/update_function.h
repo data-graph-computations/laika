@@ -19,6 +19,8 @@ using namespace std;
   #include "./pagerank_struct_defs.h"
 #elif MASS_SPRING_DASHPOT
   #include "./msd_struct_defs.h"
+#elif SPMV
+  #include "./spmv_struct_defs.h"
 #endif
 
 typedef struct data_t data_t;
@@ -48,6 +50,8 @@ typedef struct vertex_t {
   #include "./pagerank_update_function.h"
 #elif MASS_SPRING_DASHPOT
   #include "./msd_update_function.h"
+#elif SPMV
+  #include "./spmv_update_function.h"
 #endif
 
 #endif  // UPDATE_FUNCTION_H_

@@ -163,6 +163,10 @@
   #define PAGERANK 0
 #endif
 
+#ifndef SPMV
+  #define SPMV 0
+#endif
+
 #ifndef MASS_SPRING_DASHPOT
   #define MASS_SPRING_DASHPOT 0
 #endif
@@ -180,6 +184,9 @@
 #elif EXECUTION_ORDER_SORT
   #define VERTEX_META_DATA 0
   #define APP_NAME "EXECUTION_ORDER_SORT"
+#elif SPMV
+  #define VERTEX_META_DATA 0
+  #define APP_NAME "SPMV"
 #else
   #error "No application selected"
 #endif

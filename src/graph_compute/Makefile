@@ -73,6 +73,10 @@ ifneq ($(PAGERANK),)
 	DEFS += -DPAGERANK=$(PAGERANK)
 endif
 
+ifneq ($(SPMV),)
+	DEFS += -DSPMV=$(SPMV)
+endif
+
 ifneq ($(MASS_SPRING_DASHPOT),)
 	DEFS += -DMASS_SPRING_DASHPOT=$(MASS_SPRING_DASHPOT)
 endif

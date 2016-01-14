@@ -19,6 +19,7 @@ inline static uint64_t hashOfVertexData(data_t * vertex) {
 }
 
 inline static void fillInNodeData(vertex_t * const nodes,
+                                  global_t * const globaldata,
                                   const vid_t cntNodes) {
   for (vid_t i = 0; i < cntNodes; i++) {
   #if IN_PLACE
@@ -34,12 +35,12 @@ inline static void fillInNodeData(vertex_t * const nodes,
 }
 
 inline static void fillInGlobalData(vertex_t * const nodes,
-                                  const vid_t cntNodes,
-                                  global_t * const globaldata,
-                                  int numRounds) {
+                                    global_t * const globaldata,
+                                    const vid_t cntNodes,
+                                    int numRounds) {
   globaldata->d = .85;
 #if TEST_CONVERGENCE
-  globaldata->averageDiff = new (std::nothrow) pagerank_t[numRounds]();
+  globaldata->sumSquareDelta = new (std::nothrow) pagerank_t[numRounds]();
 #endif
 }
 
@@ -121,7 +122,7 @@ inline void update(vertex_t * const nodes,
   data_t * current = &nodes[index].data[round & 1];
 #endif
   pagerank_t delta = pagerank - current->pagerank;
-  globaldata->sumSquareDelta[round] += delta;
+  globaldata->sumSquareDelta[round] += delta*delta;
   //  Serial access to globaldata->averageSpeed is essential to
   //  avoid data races.  Access to this variable is serialized
   //  in any case, so parallel computation wouldn't gain much,

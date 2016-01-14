@@ -118,6 +118,7 @@ inline static void fixExtremalPoints(vertex_t * const nodes,
 }
 
 inline static void fillInNodeData(vertex_t * const nodes,
+                                  global_t * const globaldata,
                                   const vid_t cntNodes,
                                   const string filepath) {
   FILE * nodeInputFile = fopen(filepath.c_str(), "r");
@@ -316,8 +317,8 @@ inline static double getConvergenceData(vertex_t * const nodes,
 }
 
 inline static void fillInGlobalData(vertex_t * const nodes,
-                                    const vid_t cntNodes,
                                     global_t * const globaldata,
+                                    const vid_t cntNodes,
                                     int numRounds) {
   globaldata->timeStep = 0.1;
   globaldata->springStiffness = 1.0;

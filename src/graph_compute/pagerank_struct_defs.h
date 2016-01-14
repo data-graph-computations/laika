@@ -18,7 +18,7 @@ struct global_t {
   pagerank_t d;
 
   #if TEST_CONVERGENCE
-    pagerank_t * averageDiff;
+    pagerank_t * sumSqDelta;
   #endif
 };
 
