@@ -31,6 +31,10 @@ ifneq ($(RANDOM),)
 	DEFS += -DRANDOM=$(RANDOM)
 endif
 
+ifneq ($(STDIN),)
+	DEFS += -DSTDIN=$(STDIN)
+endif
+
 all: lint reorder
 
 lint:

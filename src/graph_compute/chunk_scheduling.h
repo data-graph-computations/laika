@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include "./common.h"
-#include "./update_function.h"
 
 #ifndef CHUNK_BITS
   #define CHUNK_BITS 16
@@ -24,8 +23,14 @@ struct scheddata_t {
 };
 typedef struct scheddata_t scheddata_t;
 
-struct sched_t { };
+struct sched_t {
+  vid_t dependencies;
+  vid_t satisfied;
+};
 typedef struct sched_t sched_t;
+
+// update_function.h depends on sched_t being defined
+#include "./update_function.h"
 
 static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
@@ -52,14 +57,14 @@ static void calculateNodeDependenciesChunk(vertex_t * const nodes,
   vid_t cntDependencies = 0;
   for (vid_t i = 0; i < cntNodes; i++) {
     vertex_t * node = &nodes[i];
-    node->dependencies = 0;
+    node->sched.dependencies = 0;
     for (vid_t j = 0; j < node->cntEdges; j++) {
       if (interChunkDependency(node->edges[j], i)) {
-        ++node->dependencies;
+        ++node->sched.dependencies;
         cntDependencies++;
       }
     }
-    node->satisfied = node->dependencies;
+    node->sched.satisfied = node->sched.dependencies;
   }
   printf("InterChunkDependencies: %lu\n",
     static_cast<uint64_t>(cntDependencies));
@@ -101,15 +106,18 @@ static void createChunkData(vertex_t * const nodes, const vid_t cntNodes,
   }
 }
 
-static void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                            scheddata_t * const scheddata) {
+static inline
+void init_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                     scheddata_t * const scheddata) {
   orderEdgesByChunk(nodes, cntNodes);
   calculateNodeDependenciesChunk(nodes, cntNodes);
   createChunkData(nodes, cntNodes, scheddata);
 }
 
-static void execute_round(const int numRounds, vertex_t * const nodes,
-                          const vid_t cntNodes, scheddata_t * const scheddata) {
+static inline
+void execute_rounds(const int numRounds, vertex_t * const nodes,
+                    const vid_t cntNodes, scheddata_t * const scheddata,
+                    global_t * const globaldata) {
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   for (int round = 0; round < numRounds; ++round) {
     WHEN_DEBUG({
@@ -133,13 +141,13 @@ static void execute_round(const int numRounds, vertex_t * const nodes,
 
         bool localDoneFlag = false;
         while (!localDoneFlag && (j < scheddata->chunkdata[i].endIndex)) {
-          if (nodes[j].satisfied == 0) {
-            update(nodes, j);
-            nodes[j].satisfied = nodes[j].dependencies;
+          if (nodes[j].sched.satisfied == 0) {
+            update(nodes, j, globaldata, round);
+            nodes[j].sched.satisfied = nodes[j].sched.dependencies;
             vid_t k = 0;
             while (k < nodes[j].cntEdges) {
               if (interChunkDependency(j, nodes[j].edges[k])) {
-                __sync_sub_and_fetch(&nodes[nodes[j].edges[k]].satisfied, 1);
+                __sync_sub_and_fetch(&nodes[nodes[j].edges[k]].sched.satisfied, 1);
                 k++;
               } else {
                 break;
@@ -160,12 +168,13 @@ static void execute_round(const int numRounds, vertex_t * const nodes,
   }
 }
 
-static void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
-                               scheddata_t * const scheddata) {
+static inline
+void cleanup_scheduling(vertex_t * const nodes, const vid_t cntNodes,
+                        scheddata_t * const scheddata) {
   delete[] scheddata->chunkdata;
 }
 
-static void print_execution_data() {
+static inline void print_execution_data() {
   cout << "Chunk size bits: " << CHUNK_BITS << '\n';
 }
 

@@ -167,12 +167,19 @@
   #define MASS_SPRING_DASHPOT 0
 #endif
 
+#ifndef EXECUTION_ORDER_SORT
+  #define EXECUTION_ORDER_SORT 0
+#endif
+
 #if MASS_SPRING_DASHPOT
   #define VERTEX_META_DATA 1
   #define APP_NAME "MASS_SPRING_DASHPOT"
 #elif PAGERANK
   #define VERTEX_META_DATA 0
   #define APP_NAME "PAGERANK"
+#elif EXECUTION_ORDER_SORT
+  #define VERTEX_META_DATA 0
+  #define APP_NAME "EXECUTION_ORDER_SORT"
 #else
   #error "No application selected"
 #endif

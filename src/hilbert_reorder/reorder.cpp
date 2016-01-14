@@ -13,7 +13,7 @@
 
 using namespace std;
 
-// This function populates the hilbertId field of each vertex_t in nodes, by
+// This function populates the reorderId field of each vertex_t in nodes, by
 // remapping every vertex onto an n^3 lattice using appropriate scaling factors,
 // and then traversing the lattice using a 3-D Hilbert curve.
 //
@@ -64,7 +64,7 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
     latticeCoords[2] = (uint64_t) round((nodes[i].z - zMin) * (hilbertGridN - 1) / zMax);
 
     hilbertIndex = hilbert_c2i(3, hilbertBits, latticeCoords);
-    nodes[i].hilbertId = (vid_t) hilbertIndex;
+    nodes[i].reorderId = (vid_t) hilbertIndex;
 
     WHEN_DEBUG({
       double coords[3];
@@ -79,7 +79,7 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
       printf("  lattice X: %lld\n", latticeCoords[0]);
       printf("  lattice Y: %lld\n", latticeCoords[1]);
       printf("  lattice Z: %lld\n", latticeCoords[2]);
-      printf("  hilbertId: %lld\n", hilbertIndex);
+      printf("  reorderId: %lld\n", hilbertIndex);
       printf("\n");
     })
   }
@@ -87,13 +87,13 @@ void assignHilbertIds(vertex_t * const nodes, const int cntNodes,
 
 void bfs(vertex_t * const nodes, const int cntNodes, const vid_t source) {
   for (int i = 0; i < cntNodes; i++) {
-    nodes[i].hilbertId = 0;
+    nodes[i].reorderId = 0;
   }
 
   vid_t *bfs_q = new (std::nothrow) vid_t[cntNodes];
   bfs_q[0] = source;
   vid_t cur_q_ptr = 0;
-  nodes[source].hilbertId = 1;
+  nodes[source].reorderId = 1;
   vid_t cur_dist = 2;
   vid_t next_batch_start_index = 1;
   vid_t append_q_ptr = 1;
@@ -105,8 +105,8 @@ void bfs(vertex_t * const nodes, const int cntNodes, const vid_t source) {
       vid_t vid = bfs_q[cur_q_ptr];
       vid_t *edges = nodes[vid].edgeData.edges;
       for (vid_t e = 0; e < nodes[vid].edgeData.cntEdges; e++) {
-        if (nodes[edges[e]].hilbertId == 0) {
-          nodes[edges[e]].hilbertId = cur_dist;
+        if (nodes[edges[e]].reorderId == 0) {
+          nodes[edges[e]].reorderId = cur_dist;
           bfs_q[append_q_ptr++] = edges[e];
         }
       }
@@ -135,13 +135,23 @@ void assignRandomIds(vertex_t * const nodes, const int cntNodes) {
   }
   random_shuffle(ordering.begin(), ordering.end());
   for (int i = 0; i < cntNodes; i++) {
-    nodes[i].hilbertId = ordering[i];
+    nodes[i].reorderId = ordering[i];
+  }
+}
+
+void assignStdinIds(vertex_t * const nodes, const int cntNodes) {
+  int originNode, nodeId;
+  for (int i = 0; i < cntNodes; ++i) {
+    cin >> originNode >> nodeId;
+    assert(cin);  // ensure the input stream is still in a valid state
+    assert(originNode == i);
+    nodes[i].reorderId = nodeId;
   }
 }
 
 bool vertexComparator(const vertex_t& a, const vertex_t& b) {
-  if (a.hilbertId != b.hilbertId) {
-    return a.hilbertId < b.hilbertId;
+  if (a.reorderId != b.reorderId) {
+    return a.reorderId < b.reorderId;
   } else {
     return a.id < b.id;
   }
@@ -182,6 +192,7 @@ int main(int argc, char *argv[]) {
   cout << "Output edge file: " << outputEdgeFile << '\n';
   cout << "Hilbert bits per dimension: " << HILBERTBITS << '\n';
   cout << "BFS: " << BFS << '\n';
+  cout << "STDIN: " << STDIN << '\n';
 
   int result = readNodesFromFile(inputNodeFile, &nodes, &cntNodes);
   assert(result == 0);
@@ -192,6 +203,8 @@ int main(int argc, char *argv[]) {
   assignBfsIds(nodes, cntNodes);
 #elif RANDOM
   assignRandomIds(nodes, cntNodes);
+#elif STDIN
+  assignStdinIds(nodes, cntNodes);
 #else
   assignHilbertIds(nodes, cntNodes, HILBERTBITS);
 #endif

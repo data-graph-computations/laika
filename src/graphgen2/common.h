@@ -3,6 +3,7 @@
 
 #include <cinttypes>
 #include <cassert>
+#include "../libgraphio/libgraphio.h"
 
 #ifndef TEST
   #define TEST 1
@@ -68,8 +69,6 @@
   #define cilk_spawn
   #define cilk_sync
 #endif
-
-typedef uint64_t vid_t;  // vertex id type
 
 struct vertex_t {
   vid_t id;
