@@ -125,15 +125,19 @@ ifneq ($(USE_RANDOM_PRIORITY_HASH),)
 	DEFS += -DUSE_RANDOM_PRIORITY_HASH=$(USE_RANDOM_PRIORITY_HASH)
 endif
 
+ifneq ($(SW_PREFETCH_NEIGHBORS),)
+	DEFS += -DSW_PREFETCH_NEIGHBORS=$(SW_PREFETCH_NEIGHBORS)
+endif
+
 all: lint compute
 
 lint:
 	$(ROOT)/cpplint.py --root=src/graph_compute *.cpp *.h
 
 compute: $(CXXSOURCES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o compute $(CXXSOURCES) $(LIBS)
+	@$(CXX) $(CXXFLAGS) $(LDFLAGS) $(DEFS) -o compute $(CXXSOURCES) $(LIBS)
 
 clean:
-	rm -f *~ *.o *.out compute
+	@rm -f *~ *.o *.out compute
 
 .PHONY: all clean lint

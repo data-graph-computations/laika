@@ -43,7 +43,7 @@ using namespace std;
     phys_t timeStep;
     phys_t restLength;
   #if TEST_CONVERGENCE
-    phys_t * sumSquareNetForce;
+    phys_t * kineticEnergy;
   #endif
   #if PRINT_EDGE_LENGTH_HISTOGRAM
     phys_t * edgeLengthsBefore;
@@ -343,12 +343,10 @@ typedef struct vertex_t vertex_t;
                                           global_t * const globaldata,
                                           int numRounds) {
   #if TEST_CONVERGENCE
-    phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes)
-      / globaldata->sumSquareNetForce[0]);
-    cout << 1.0 << endl;
-    for (int i = 1; i < numRounds; i++) {
-      cout << (normalizer*sqrt(globaldata->sumSquareNetForce[i]
-        / static_cast<phys_t>(cntNodes))) << endl;
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    for (int i = 0; i < numRounds; i++) {
+      cout << (0.5 * globaldata->kineticEnergy[i]
+        / globaldata->inverseMass) << "," << i << "," << IN_PLACE << endl;
     }
   #endif
   }
@@ -472,14 +470,16 @@ typedef struct vertex_t vertex_t;
   inline static double getConvergenceData(vertex_t * const nodes,
                                           const vid_t cntNodes,
                                           global_t * const globaldata) {
-    phys_t meanSquare = 0.0;
+    phys_t kineticEnergy = 0.0;
     for (vid_t v = 0; v < cntNodes; v++) {
-      phys_t acceleration[DIMENSIONS];
-      getNetForce(nodes, v, acceleration, globaldata);
-      phys_t tmpMeanSquare = length(acceleration);
-      meanSquare += tmpMeanSquare*tmpMeanSquare;
+    #if IN_PLACE
+      phys_t tmpKineticEnergy = length(nodes[v].data.velocity);
+    #else
+      phys_t tmpKineticEnergy = length(nodes[v].data[0].velocity);
+    #endif
+      kineticEnergy += tmpKineticEnergy*tmpKineticEnergy;
     }
-    return static_cast<double>(sqrt(meanSquare / static_cast<phys_t>(cntNodes)));
+    return static_cast<double>(0.5 * kineticEnergy / globaldata->inverseMass);
   }
 
   inline static void fillInGlobalData(vertex_t * const nodes,
@@ -491,7 +491,7 @@ typedef struct vertex_t vertex_t;
     globaldata->dashpotResistance = 1.0;
     globaldata->inverseMass = 1.0;
   #if TEST_CONVERGENCE
-    globaldata->sumSquareNetForce = new (std::nothrow) phys_t[numRounds]();
+    globaldata->kineticEnergy = new (std::nothrow) phys_t[numRounds]();
   #endif
     phys_t globalRestLength = 0.0;
     vid_t globalCntEdges = 0;
@@ -544,7 +544,11 @@ typedef struct vertex_t vertex_t;
     WHEN_TEST({
       __sync_add_and_fetch(&roundUpdateCount, 1);
     })
-
+  #if SW_PREFETCH_NEIGHBORS
+    for (vid_t edge = 0; edge < nodes[index].cntEdges; edge++) {
+      __builtin_prefetch(&nodes[nodes[index].edges[edge]], 1, 3);
+    }
+  #endif
 
   #if IN_PLACE
     if (nodes[index].data.fixed) {
@@ -563,21 +567,21 @@ typedef struct vertex_t vertex_t;
     phys_t acceleration[DIMENSIONS];
     static const bool useLeapFrogMethod = true;
     getNetForce(nodes, index, acceleration, globaldata, round, useLeapFrogMethod);
-  #if TEST_CONVERGENCE
-    phys_t tmpNetForce = length(acceleration);
-    globaldata->sumSquareNetForce[round] += tmpNetForce*tmpNetForce;
-    //  Serial access to globaldata->averageSpeed is essential to
-    //  avoid data races.  Access to this variable is serialized
-    //  in any case, so parallel computation wouldn't gain much,
-    //  if anything.
-    assert(PARALLEL == 0);
-  #endif
     for (int d = 0; d < DIMENSIONS; d++) {
       acceleration[d] *= globaldata->springStiffness;
       acceleration[d] -= globaldata->dashpotResistance*current->velocity[d];
       next->velocity[d] = acceleration[d]*globaldata->timeStep + current->velocity[d];
       next->position[d] = current->position[d] + next->velocity[d]*globaldata->timeStep;
     }
+  #if TEST_CONVERGENCE
+    phys_t tmpKineticEnergy = length(next->velocity);
+    globaldata->kineticEnergy[round] += tmpKineticEnergy*tmpKineticEnergy;
+    //  Serial access to globaldata->averageSpeed is essential to
+    //  avoid data races.  Access to this variable is serialized
+    //  in any case, so parallel computation wouldn't gain much,
+    //  if anything.
+    assert(PARALLEL == 0);
+  #endif
   }
 #endif
 

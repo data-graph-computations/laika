@@ -40,6 +40,7 @@ double bitsPerEdge(vertex_t * const nodes,
       // }
       bits += std::ceil(std::log2(offset));
     }
+    bits = 8.0*std::ceil(bits / 8.0);
     bitCounts[i] = static_cast<uint16_t>(bits);
   }
   double bits = 0;
@@ -234,8 +235,6 @@ WHEN_TEST({
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
-#else
-  const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
 #endif
 
   struct timespec starttime, endtime;
@@ -258,7 +257,11 @@ WHEN_TEST({
   seconds += endtime.tv_sec - starttime.tv_sec;
 
   double timePerMillionEdges = seconds * static_cast<double>(1000000);
-  timePerMillionEdges /= static_cast<double>(cntEdges) * static_cast<double>(numRounds);
+  if (numRounds > 0) {
+    timePerMillionEdges /= static_cast<double>(cntEdges) * static_cast<double>(numRounds);
+  } else {
+    timePerMillionEdges = 0;
+  }
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
   //  pagerank does not consume the nodes file containing positions
@@ -271,7 +274,11 @@ WHEN_TEST({
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << "Done computing " << numRounds << " rounds!\n";
   cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
-  cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
+  if (numRounds > 0) {
+    cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
+  } else {
+    cout << "Time per round: 0s\n";
+  }
   cout << "Time per million edges: " << setprecision(8) << timePerMillionEdges << "s\n";
   cout << "Scheduler name: " << SCHEDULER_NAME << '\n';
   cout << "Parallel: " << PARALLEL << '\n';
@@ -286,8 +293,7 @@ WHEN_TEST({
   cout << APP_NAME << ",";
   cout << SCHEDULER_NAME << ",";
   cout << IN_PLACE << ",";
-  cout << getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData
-       << ",";
+  cout << getConvergenceData(nodes, cntNodes, &globaldata) << ",";
   cout << PARALLEL << ",";
 #if D1_NUMA
   cout << NUMA_WORKERS << ",";

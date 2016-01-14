@@ -188,6 +188,10 @@
   #error "No application selected"
 #endif
 
+#ifndef SW_PREFETCH_NEIGHBORS 
+  #define SW_PREFETCH_NEIGHBORS 0
+#endif
+
 #if PARALLEL
   #include <cilk/cilk.h>
   #include <cilk/cilk_api.h>
