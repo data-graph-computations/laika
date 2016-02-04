@@ -134,8 +134,9 @@ WHEN_TEST({
 
   scheddata_t scheddata;
   global_t globaldata;
+  mpi_data_t mpi;
 
-  init_scheduling(nodes, cntNodes, &scheddata);
+  init_scheduling(nodes, cntNodes, &scheddata, &mpi, argc, argv);
 
 //  This switch indicates whether the app needs an auxiliary
 //  file to initialize node data
@@ -152,14 +153,14 @@ WHEN_TEST({
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
 #endif
 
-  const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
+  const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata, &mpi);
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
   // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
-  execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
+  execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata, &mpi);
   WHEN_TEST({
     cout << "roundUpdateCount: " << roundUpdateCount << endl;
     cout << "cntNodes: " << cntNodes*numRounds << endl;
@@ -205,7 +206,7 @@ WHEN_TEST({
 
   #if MASS_SPRING_DASHPOT || PAGERANK
     const double convergence =
-      getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
+      getConvergenceData(nodes, cntNodes, &globaldata, &mpi)/initialConvergenceData;
     cout << convergence << '\n';
   #else
     cout << 0 << '\n';
@@ -223,7 +224,7 @@ WHEN_TEST({
 
   #if MASS_SPRING_DASHPOT || PAGERANK
     const double convergence =
-        getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
+        getConvergenceData(nodes, cntNodes, &globaldata, &mpi)/initialConvergenceData;
     cout << convergence << ", ";
   #else
     cout << 0 << ", ";

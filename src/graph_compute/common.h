@@ -195,6 +195,7 @@
 
 #include <cinttypes>
 #include <cassert>
+#include <unordered_map>
 #include "../libgraphio/libgraphio.h"
 #include "./concurrent_queue.h"
 
@@ -205,6 +206,12 @@
 WHEN_TEST(
   extern volatile uint64_t roundUpdateCount;
 )
+
+typedef struct {
+  vid_t local_start;
+  vid_t local_end;
+  unordered_map<vid_t, data_t> *data;
+} mpi_data_t;
 
 #if D0_BSP
   #define NEEDS_SCHEDULER_DATA 0

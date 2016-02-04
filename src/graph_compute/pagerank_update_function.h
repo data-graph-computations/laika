@@ -55,14 +55,27 @@ inline static void printConvergenceData(vertex_t * const nodes,
 #endif
 }
 
+inline bool isLocal(const vid_t index, mpi_data_t *mpi) {
+  return index >= mpi->local_start && index < mpi->local_end;
+}
+
+inline data_t getData(vertex_t * const nodes, const vid_t index, mpi_data_t *mpi) {
+  if (isLocal(index, mpi)) {
+    return nodes[index].data;
+  } else {
+    return (*mpi->data)[index];
+  }
+}
+
 inline pagerank_t getDelta(vertex_t * const nodes,
                            const vid_t index,
-                           global_t * const globaldata) {
+                           global_t * const globaldata,
+                           mpi_data_t *mpi) {
   // recalculate this node's pagerank
   pagerank_t pagerank = 0;
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
     #if IN_PLACE
-      pagerank += nodes[nodes[index].edges[i]].data.contrib;
+      pagerank += getData(nodes[index].edges[i], mpi).contrib;
     #else
       pagerank += nodes[nodes[index].edges[i]].data[0].contrib;
     #endif
@@ -80,10 +93,11 @@ inline pagerank_t getDelta(vertex_t * const nodes,
 
 inline static double getConvergenceData(vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata) {
+                                        global_t * const globaldata,
+                                        mpi_data_t *mpi) {
   pagerank_t sumSquareDelta = 0.0;
   for (vid_t v = 0; v < cntNodes; v++) {
-    pagerank_t delta = getDelta(nodes, v, globaldata);
+    pagerank_t delta = getDelta(nodes, v, globaldata, mpi);
     sumSquareDelta += delta * delta;
   }
   return static_cast<double>(sqrt(sumSquareDelta / static_cast<pagerank_t>(cntNodes)));
@@ -92,6 +106,9 @@ inline static double getConvergenceData(vertex_t * const nodes,
 inline void update(vertex_t * const nodes,
                    const vid_t index,
                    global_t * const globaldata,
+                   vid_t local_start,
+                   vid_t local_end,
+                   unordered_map<vid_t, data_t> remote,
                    const int round = 0) {
   // ensuring that the number of updates in total is correct per round
   WHEN_TEST({
@@ -107,7 +124,7 @@ inline void update(vertex_t * const nodes,
   pagerank_t pagerank = 0;
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
   #if IN_PLACE
-    pagerank += nodes[nodes[index].edges[i]].data.contrib;
+    pagerank += getData(nodes[index].edges[i], mpi).contrib;
   #else
     pagerank += nodes[nodes[index].edges[i]].data[round & 1].contrib;
   #endif
