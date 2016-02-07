@@ -107,8 +107,12 @@ WHEN_TEST({
 
   inputEdgeFile = argv[2];
 
+  scheddata_t scheddata;
+  global_t globaldata;
+  mpi_data_t mpi;
+
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
-  int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
+  int result = read_file(inputEdgeFile, &nodes, &cntNodes, &scheddata, numaInit);
   assert(result == 0);
   cntEdges = getEdgeCount(nodes, cntNodes);
   //  This function asserts that there are
@@ -132,11 +136,8 @@ WHEN_TEST({
   #endif
 #endif
 
-  scheddata_t scheddata;
-  global_t globaldata;
-  mpi_data_t mpi;
 
-  init_scheduling(nodes, cntNodes, &scheddata, &mpi, argc, argv);
+  init_scheduling(nodes, cntNodes, &scheddata, &mpi, numRounds, &argc, &argv);
 
 //  This switch indicates whether the app needs an auxiliary
 //  file to initialize node data

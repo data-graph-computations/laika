@@ -57,7 +57,8 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
 
   void set_first_edge_of_node(vid_t nodeid, vid_t firstEdgeIndex) {
     assert(nodeid < this->cntNodes);
-    this->nodes[nodeid].edges = this->edges + firstEdgeIndex;
+    // temporarily store this value in cntEdges, until build()
+    this->nodes[nodeid].cntEdges = firstEdgeIndex;
   }
 
   void create_edge(vid_t edgeIndex, vid_t destination) {
@@ -66,6 +67,9 @@ class ComputeEdgeListBuilder : public EdgeListBuilder {
   }
 
   void build() {
+    cilk_for (vid_t i = 0; i < this->cntNodes; ++i) {
+      this->nodes[i].edges = this->edges + this->nodes[i].cntEdges;
+    }
     cilk_for (vid_t i = 1; i < this->cntNodes; ++i) {
       this->nodes[i-1].cntEdges =
         this->nodes[i].edges - this->nodes[i-1].edges;

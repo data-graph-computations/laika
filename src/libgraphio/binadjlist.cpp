@@ -39,6 +39,68 @@ static inline void safe_vid_t_write(std::ofstream * const output,
   output->write(reinterpret_cast<char*>(&tmp), sizeof(adjlist_data_t));
 }
 
+static int binadjlistfile_read_v1(const std::string& filepath,
+                                  std::ifstream * const binadjlist,
+                                  EdgeListBuilder * const builder,
+                                  vid_t startIndex, vid_t endIndex) {
+
+  int result;
+  vid_t totalNodes;
+  vid_t totalEdges;
+
+  result = safe_vid_t_read(binadjlist, &totalNodes);
+  if (result != 0) {
+    return result;
+  }
+
+  result = safe_vid_t_read(binadjlist, &totalEdges);
+  if (result != 0) {
+    return result;
+  }
+
+  vid_t cntNodes = endIndex - startIndex;
+  builder->set_node_count(cntNodes);
+  binadjlist.seekg(startIndex * sizeof(vid_t), binadjlist.cur);
+  
+  vid_t edgeOffset;
+  safe_vid_t_read(binadjlist, &edgeOffset);
+  builder->set_first_edge_of_node(0, 0);
+  vid_t firstEdgeIndex;
+  for (vid_t i = 1; i < cntNodes; ++i) {
+    result = safe_vid_t_read(binadjlist, &firstEdgeIndex); 
+    if (result != 0) {
+      return result;
+    }
+    builder->set_first_edge_of_node(i, firstEdgeIndex - edgeOffset);
+  }
+
+  bool skippedNextEdgeIndex = endIndex != totalNodes;
+  vid_t cntEdges;
+  if (skippedNextEdgeIndex) {
+    safe_vid_t_read(binadjlist, &firstEdgeIndex);
+    cntEdges = firstEdgeIndex - edgeOffset;
+  } else {
+    cntEdges = totalEdges - edgeOffset;
+  }
+
+  builder->set_total_edge_count(cntEdges);
+  binadjlist.seekg(((totalNodes - endIndex) + edgeOffset - (skippedNextEdgeIndex ? 1 : 0)) * sizeof(vid_t), binadjlist.cur);
+  
+  vid_t destination;
+  for (vid_t i = 0; i < cntEdges; ++i) {
+    result = safe_vid_t_read(binadjlist, &destination);
+    if (result != 0) {
+      return result;
+    }
+    builder->create_edge(i, destination);
+  }
+
+  builder->build();
+  binadjlist->close();
+  return 0;
+}
+
+/*
 // v1 binadjlist structure:
 // total number of nodes (N): 8 bytes
 // total number of edges (M): 8 bytes
@@ -105,13 +167,15 @@ static int binadjlistfile_read_v1(const std::string& filepath,
   binadjlist->close();
   return 0;
 }
+*/
 
 // binadjlist file structure:
 // magic number:          4 bytes
 // version number:        4 bytes
 // version-specific data: see version-specific function
 int binadjlistfile_read(const std::string& filepath,
-                        EdgeListBuilder * const builder) {
+                        EdgeListBuilder * const builder,
+                        vid_t startIndex, vid_t endIndex) {
   std::ifstream binadjlist(filepath, std::ifstream::binary);
 
   if (!binadjlist.is_open()) {
@@ -135,7 +199,7 @@ int binadjlistfile_read(const std::string& filepath,
   }
 
   if (version == 1) {
-    return binadjlistfile_read_v1(filepath, &binadjlist, builder);
+    return binadjlistfile_read_v1(filepath, &binadjlist, builder, startIndex, endIndex);
   }
 
   std::cerr << "Unknown version number " << version
