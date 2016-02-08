@@ -114,17 +114,17 @@
 #ifndef DISTANCE
   #define DISTANCE 1
 #elif DISTANCE == 0
-  #ifndef IN_PLACE
-    #define IN_PLACE 0
+  #ifndef UPDATE_IN_PLACE
+    #define UPDATE_IN_PLACE 0
   #endif
 #elif DISTANCE == 1
-  #ifndef IN_PLACE
-    #define IN_PLACE 1
+  #ifndef UPDATE_IN_PLACE
+    #define UPDATE_IN_PLACE 1
   #endif
 #endif
 
-#ifndef IN_PLACE
-  #define IN_PLACE 1
+#ifndef UPDATE_IN_PLACE
+  #define UPDATE_IN_PLACE 1
 #endif
 
 #ifndef TEST_CONVERGENCE
@@ -206,12 +206,6 @@
 WHEN_TEST(
   extern volatile uint64_t roundUpdateCount;
 )
-
-typedef struct {
-  vid_t local_start;
-  vid_t local_end;
-  unordered_map<vid_t, data_t> *data;
-} mpi_data_t;
 
 #if D0_BSP
   #define NEEDS_SCHEDULER_DATA 0

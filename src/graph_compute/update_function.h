@@ -28,7 +28,7 @@ typedef struct vertex_t {
   vid_t * edges;
   vid_t cntEdges;
 
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     data_t data;
   #else
     data_t data[2];
@@ -48,7 +48,13 @@ typedef struct net_vertex_t {
   vid_t id;
   data_t data;
   int round;
-} vertex_t;
+} net_vertex_t;
+
+typedef struct {
+  vid_t local_start;
+  vid_t local_end;
+  unordered_map<vid_t, data_t> *data;
+} mpi_data_t;
 
 //  Every scheduling algorithm is required to define
 //  a sched_t datatype which includes whatever per-vertex data

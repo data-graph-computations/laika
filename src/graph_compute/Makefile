@@ -1,17 +1,24 @@
-CC  ?= gcc
-CXX ?= g++
+ifeq ($(MPI_OFF),1)
+  CXX ?= gcc
+else
+  CXX = mpicxx
+endif
 CFLAGS = -O3 -Wall
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las
+CXXFLAGS = -fcilkplus -std=c++11 -O0 -g -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
 LIBS = ../libgraphio/libgraphio.o
 HEADERS = common.h update_function.h io.h numa_init.h concurrent_queue.h
-CXXSOURCES =  compute.cpp io.cpp numa_init.cpp
+CXXSOURCES =  compute.cpp numa_init.cpp
 
 TEST ?= 0
 DEBUG ?= 0
 DEFS = -DTEST=$(TEST) -DDEBUG=$(DEBUG)
+
+ifneq ($(MPI_OFF),)
+	DEFS += -DMPI_OFF=$(MPI_OFF)
+endif
 
 ifneq ($(PRIORITY_GROUP_BITS),)
 	DEFS += -DPRIORITY_GROUP_BITS=$(PRIORITY_GROUP_BITS)
@@ -81,8 +88,8 @@ ifneq ($(EXECUTION_ORDER_SORT),)
 	DEFS += -DEXECUTION_ORDER_SORT=$(EXECUTION_ORDER_SORT)
 endif
 
-ifneq ($(IN_PLACE),)
-	DEFS += -DIN_PLACE=$(IN_PLACE)
+ifneq ($(UPDATE_IN_PLACE),)
+	DEFS += -DUPDATE_IN_PLACE=$(UPDATE_IN_PLACE)
 endif
 
 ifneq ($(TEST_CONVERGENCE),)
@@ -109,7 +116,7 @@ ifneq ($(HUGE_GRAPH_SUPPORT),)
 	DEFS += -DHUGE_GRAPH_SUPPORT=$(HUGE_GRAPH_SUPPORT)
 endif
 
-all: lint compute
+all: compute
 
 lint:
 	$(ROOT)/cpplint.py --root=src/graph_compute *.cpp *.h
@@ -120,4 +127,4 @@ compute: $(CXXSOURCES)
 clean:
 	rm -f *~ *.o *.out compute
 
-.PHONY: all clean lint
+.PHONY: all clean

@@ -56,7 +56,7 @@ inline static void fixExtremalPoints(vertex_t * const nodes,
   vid_t maxOwner[DIMENSIONS];
   phys_t minPoint[DIMENSIONS];
   vid_t minOwner[DIMENSIONS];
-#if IN_PLACE
+#if UPDATE_IN_PLACE
   data_t * node = &nodes[0].data;
 #else
   data_t * node = &nodes[0].data[0];
@@ -68,7 +68,7 @@ inline static void fixExtremalPoints(vertex_t * const nodes,
     minOwner[i] = 0;
   }
   for (vid_t v = 0; v < cntNodes; v++) {
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     node = &nodes[v].data;
   #else
     node = &nodes[v].data[0];
@@ -86,7 +86,7 @@ inline static void fixExtremalPoints(vertex_t * const nodes,
   }
   phys_t maxScale = 0.0;
   for (int i = 0; i < DIMENSIONS; i++) {
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     nodes[maxOwner[i]].data.fixed = true;
     nodes[minOwner[i]].data.fixed = true;
   #else
@@ -103,7 +103,7 @@ inline static void fixExtremalPoints(vertex_t * const nodes,
   phys_t inverseScale = 1 / maxScale;
   for (vid_t i = 0; i < cntNodes; i++) {
     for (int d = 0; d < DIMENSIONS; d++) {
-    #if IN_PLACE
+    #if UPDATE_IN_PLACE
       nodes[i].data.position[d]
         = (nodes[i].data.position[d] - minPoint[d])*inverseScale;
     #else
@@ -127,7 +127,7 @@ inline static void fillInNodeData(vertex_t * const nodes,
   assert(cntItems == 4);
   assert(static_cast<vid_t>(tmpCntNodes) == cntNodes);
   for (vid_t i = 0; i < cntNodes; i++) {
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     nodes[i].data.fixed = false;
   #else
     nodes[i].data[0].fixed = false;
@@ -141,7 +141,7 @@ inline static void fillInNodeData(vertex_t * const nodes,
       double position;
       cntItems = fscanf(nodeInputFile, "%lf ", &position);
       assert(cntItems == 1);
-    #if IN_PLACE
+    #if UPDATE_IN_PLACE
       nodes[i].data.velocity[d] = 0;
       nodes[i].data.position[d] = static_cast<phys_t>(position);
     #else
@@ -201,7 +201,7 @@ inline static void findEdgeLengthHistogram(vertex_t * const nodes,
     for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
       cntEdges++;
       vid_t neighbor = nodes[i].edges[edge];
-    #if IN_PLACE
+    #if UPDATE_IN_PLACE
       phys_t edgeLength = distance(nodes[i].data.position,
                                    nodes[neighbor].data.position);
     #else
@@ -268,7 +268,7 @@ inline static void getNetForce(vertex_t * const nodes,
                                global_t * const globaldata,
                                const int round = 0,
                                const bool leapfrog = false) {
-#if IN_PLACE
+#if UPDATE_IN_PLACE
   data_t * current = &nodes[index].data;
 #else
   data_t * current = &nodes[index].data[round & 1];
@@ -282,7 +282,7 @@ inline static void getNetForce(vertex_t * const nodes,
     acceleration[d] = 0;
   }
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
-#if IN_PLACE
+#if UPDATE_IN_PLACE
     data_t * neighbor = &nodes[nodes[index].edges[i]].data;
 #else
     data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
@@ -334,7 +334,7 @@ inline static void fillInGlobalData(vertex_t * const nodes,
     for (vid_t edge = 0; edge < nodes[i].cntEdges; edge++) {
       cntEdges++;
       vid_t neighbor = nodes[i].edges[edge];
-    #if IN_PLACE
+    #if UPDATE_IN_PLACE
       restLength += distance(nodes[i].data.position,
                              nodes[neighbor].data.position);
     #else
@@ -344,7 +344,7 @@ inline static void fillInGlobalData(vertex_t * const nodes,
     }
     globalRestLength += restLength;
     globalCntEdges += cntEdges;
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     nodes[i].data.restLength = restLength / static_cast<phys_t>(cntEdges);
   #else
     nodes[i].data[0].restLength = restLength / static_cast<phys_t>(cntEdges);
@@ -354,7 +354,7 @@ inline static void fillInGlobalData(vertex_t * const nodes,
   globaldata->restLength = globalRestLength / static_cast<phys_t>(globalCntEdges);
 #if USE_GLOBAL_REST_LENGTH
   for (vid_t i = 0; i < cntNodes; i++) {
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     nodes[i].data.restLength = globaldata->restLength;
   #else
     nodes[i].data[0].restLength = globaldata->restLength;
@@ -378,7 +378,7 @@ inline void update(vertex_t * const nodes,
     __sync_add_and_fetch(&roundUpdateCount, 1);
   })
 
-#if IN_PLACE
+#if UPDATE_IN_PLACE
   if (nodes[index].data.fixed) {
     return;
   }

@@ -19,7 +19,7 @@ uint64_t hashOfGraphData(vertex_t * const nodes,
                          const vid_t cntNodes) {
   uint64_t result = 0;
   for (vid_t i = 0; i < cntNodes; i++) {
-  #if IN_PLACE
+  #if UPDATE_IN_PLACE
     result ^= hashOfVertexData(&nodes[i].data);
   #else
     result ^= hashOfVertexData(&nodes[i].data[0]);
@@ -110,10 +110,10 @@ WHEN_TEST({
   scheddata_t scheddata;
   global_t globaldata;
   mpi_data_t mpi;
+  int result;
 
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
-  int result = read_file(inputEdgeFile, &nodes, &cntNodes, &scheddata, numaInit);
-  assert(result == 0);
+  read_file(inputEdgeFile, &nodes, &cntNodes, &scheddata, &argc, &argv, numaInit);
   cntEdges = getEdgeCount(nodes, cntNodes);
   //  This function asserts that there are
   //  no self-edges and that every edge is
@@ -137,7 +137,7 @@ WHEN_TEST({
 #endif
 
 
-  init_scheduling(nodes, cntNodes, &scheddata, &mpi, numRounds, &argc, &argv);
+  init_scheduling(nodes, cntNodes, &scheddata, &mpi, numRounds);
 
 //  This switch indicates whether the app needs an auxiliary
 //  file to initialize node data
@@ -221,7 +221,7 @@ WHEN_TEST({
   #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   cout << APP_NAME << ", ";
   cout << SCHEDULER_NAME << ", ";
-  cout << IN_PLACE << ", ";
+  cout << UPDATE_IN_PLACE << ", ";
 
   #if MASS_SPRING_DASHPOT || PAGERANK
     const double convergence =

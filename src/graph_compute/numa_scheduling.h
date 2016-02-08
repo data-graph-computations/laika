@@ -7,6 +7,7 @@
 #include <mpi.h>
 #endif
 
+#include <semaphore.h>
 #include <algorithm>
 #include <unordered_set>
 #include <set>
@@ -36,6 +37,7 @@ typedef struct sched_t sched_t;
 
 // update_function.h depends on sched_t being defined
 #include "./update_function.h"
+#include "./io.h"
 
 // there is one of these per chunk
 struct chunkdata_t {
@@ -83,10 +85,8 @@ struct scheddata_t {
   vid_t startChunk;
   vid_t myChunks;
   vid_t chunksPerRank;
-  vid_t numExpectedDeqs0;
-  vid_t numExpectedDeqs1;
-  vid_t numExpectedRcvs0;
-  vid_t numExpectedRcvs1;
+  vid_t numExpectedDeqs[2];
+  vid_t numExpectedRcvs[2];
 };
 typedef struct scheddata_t scheddata_t;
 
@@ -95,7 +95,7 @@ typedef struct {
   vertex_t *nodes;
 } net_worker_data_t;
 
-#define Q_SIZE (1 << 16)
+#define Q_SIZE ((vid_t) (1 << 16))
 #define Q_MASK(p) ((p) & (Q_SIZE - 1))
 volatile vid_t netQ[Q_SIZE];
 volatile uint64_t h = 0, t = 0;
@@ -245,24 +245,24 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
   scheddata_t * const scheddata) {
   std::set<vid_t> rcvNodes0;
   std::set<vid_t> rcvNodes1;
-  scheddata->numExpectedDeqs0 = 0;
-  scheddata->numExpectedDeqs1 = 0;
+  scheddata->numExpectedDeqs[0] = 0;
+  scheddata->numExpectedDeqs[1] = 0;
   for (vid_t i = 0; i < cntNodes; ++i) {
     vid_t *interEnd = std::stable_partition(nodes[i].edges,
       nodes[i].edges + nodes[i].cntEdges,
       [i](const vid_t& val) {return chunkCrossing(i, val);});
     vid_t *remoteEnd = std::stable_partition(nodes[i].edges, interEnd,
       [scheddata](const vid_t& val) {return !isLocalNode(val, scheddata);});
-    vid_t numRemotEdges = (vid_t) (remoteEnd - nodes[i].edges);
+    vid_t numRemoteEdges = (vid_t) (remoteEnd - nodes[i].edges);
     if (numRemoteEdges > maxRemoteEdges) {
       maxRemoteEdges = numRemoteEdges;
     }
     std::sort(nodes[i].edges, remoteEnd);
     if (remoteEnd != nodes[i].edges) {
       if (getPhase(i) == 0) {
-        scheddata->numExpectedDeqs0++;
+        scheddata->numExpectedDeqs[0]++;
       } else {
-        scheddata->numExpectedDeqs1++;
+        scheddata->numExpectedDeqs[1]++;
       }
     }
     vid_t *e = nodes[i].edges;
@@ -275,8 +275,8 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
       e++;
     }
   }
-  scheddata->numExpectedRcvs0 = rcvNodes0.size();
-  scheddata->numExpectedRcvs1 = rcvNodes1.size();
+  scheddata->numExpectedRcvs[0] = rcvNodes0.size();
+  scheddata->numExpectedRcvs[1] = rcvNodes1.size();
 }
 
 static inline void createChunkData(vertex_t * const nodes,
@@ -389,6 +389,7 @@ static void broadcast(vertex_t *nodes, scheddata_t *scheddata, const vid_t i,
 }
 
 static void receive(vertex_t *nodes, scheddata_t *scheddata, net_vertex_t *nvt) {
+  static const vid_t SENTINEL = static_cast<vid_t>(-1);
   remoteData[nvt->id] = nvt->data;
   // TODO eliminate edgeBuffer and use local map
   vid_t *edgeBuffer = (vid_t *)(nvt + 1);
@@ -396,12 +397,12 @@ static void receive(vertex_t *nodes, scheddata_t *scheddata, net_vertex_t *nvt) 
   while (k < nvt->cntEdges) {
     if (interChunkDependency(nvt->id, edgeBuffer[k])) {
       vid_t adjusted = global2Local(edgeBuffer[k], scheddata);
-      if (__sync_sub_and_fetch(&nodes[adjusted].sched->satisfied, 1) == SENTINEL) {
+      if (__sync_sub_and_fetch(&nodes[adjusted].sched.satisfied, 1) == SENTINEL) {
         //  Released this chunk, so push it on its home work queue
         vid_t enabledChunk = adjusted >> CHUNK_BITS;
         vid_t queueNumber =
           scheddata->chunkdata[enabledChunk].workQueueNumber;
-        numaSchedInit[queueNumber].workQueue->push(enabledChunk);
+        scheddata->numaSchedInit[queueNumber].workQueue->push(enabledChunk);
       }
     }
     k++;
@@ -419,15 +420,16 @@ void *net(void *nwd) {
   vid_t deqed;
 
   for (int r = 0; r < PHASES * scheddata->rounds; r++) {
+    int p = r % PHASES;
     bool initRcv = true;
     int testFlag;
-    while (rnd_deqs[r] < scheddata->numExpectedDeqs ||
-           rnd_rcvs[r] < scheddata->numExpectedRcvs) {
-      if (rnd_deqs[r] < scheddata->numExpectedDeqs && (deqed = deQ()) != UINT64_MAX) {
+    while (rnd_deqs[r] < scheddata->numExpectedDeqs[p] ||
+           rnd_rcvs[r] < scheddata->numExpectedRcvs[p]) {
+      if (rnd_deqs[r] < scheddata->numExpectedDeqs[p] && (deqed = deQ()) != UINT64_MAX) {
         broadcast(nodes, scheddata, deqed, r);
         rnd_deqs[r]++;
       }
-      if (rnd_rcvs[r] < scheddata->numExpectedRcvs) {
+      if (rnd_rcvs[r] < scheddata->numExpectedRcvs[p]) {
         if (initRcv) {
           MPI_Irecv(nvt, msg_len, MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG,
             MPI_COMM_WORLD, &req);
@@ -453,6 +455,7 @@ static inline void read_file(const string filepath,
                              vertex_t ** outNodes,
                              vid_t * outCntNodes,
                              scheddata_t *scheddata,
+                             int *argc, char ***argv,
                              numaInit_t numaInit =
                                numaInit_t(0, 0, false)) {
 
@@ -470,14 +473,14 @@ static inline void read_file(const string filepath,
   scheddata->totalChunks = (scheddata->totalNodes + (1 << CHUNK_BITS) - 1) >> CHUNK_BITS;
   scheddata->chunksPerRank = scheddata->totalChunks / scheddata->numRanks;
   scheddata->startChunk = scheddata->myMpiId * scheddata->chunksPerRank;
-  scheddata->myChunks = (scheddata->myMpiId == scheddata->numMpiRanks - 1) ?
-    totalChunks - scheddata->startChunk : scheddata->chunksPerRank;
+  scheddata->myChunks = (scheddata->myMpiId == scheddata->numRanks - 1) ?
+    scheddata->totalChunks - scheddata->startChunk : scheddata->chunksPerRank;
   vid_t * edges;
   vid_t totalEdges;
   ComputeEdgeListBuilder builder(outNodes, outCntNodes, &edges, &totalEdges, numaInit);
   vid_t lowerBound = scheddata->startChunk << CHUNK_BITS;
   vid_t upperBound = std::min((scheddata->startChunk + scheddata->myChunks) << CHUNK_BITS, scheddata->totalNodes);
-  return binadjlistfile_read(filepath, builder, lowerBound, upperBound);
+  binadjlistfile_read(filepath, &builder, lowerBound, upperBound);
 }
 
 static inline void init_scheduling(vertex_t * const nodes,
@@ -485,8 +488,7 @@ static inline void init_scheduling(vertex_t * const nodes,
                                    // TODO have custom per-scheduler file reader
                                    scheddata_t * const scheddata,
                                    mpi_data_t *mpi,
-                                   int rounds,
-                                   int *argc, char ***argv) {
+                                   int rounds) {
 
   scheddata->rounds = rounds;
 
@@ -585,7 +587,7 @@ inline void * processChunks(void * param) {
               } else {
                 //  otherwise we process the vertex and decrement those
                 //  vertices dependent on it
-                update(config->nodes, chunkdata->nextIndex, config->globaldata, round, sched_mpi);
+                update(config->nodes, chunkdata->nextIndex, config->globaldata, sched_mpi, round);
                 if (DISTANCE > 0) {
                   node->satisfied = node->dependencies;
                   vid_t j = chunkdata->nextIndex;
