@@ -3,8 +3,11 @@
 
 #include <cinttypes>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "./common.h"
+
+using namespace std;
 
 #if HUGE_GRAPH_SUPPORT
   typedef int64_t vid_t;
@@ -44,6 +47,17 @@ int binadjlistfile_read(const std::string& filepath,
 int adjlistfile_read(const std::string& filepath,
                      EdgeListBuilder * const builder);
 
+static inline vid_t readNumNodes(const string filepath) {
+  std::ifstream is(filepath, std::ifstream::binary);
+  uint32_t discard;
+  vid_t numNodes;
+  is.read(reinterpret_cast<char *>(&discard), sizeof(discard));
+  is.read(reinterpret_cast<char *>(&discard), sizeof(discard));
+  is.read(reinterpret_cast<char *>(&numNodes), sizeof(numNodes)); 
+  is.close();
+  return numNodes;
+}
+
 static inline int edgelistfile_read(const std::string& filepath,
                                     EdgeListBuilder * const builder) {
   const std::string adjlistExtension = ".adjlist";
@@ -54,11 +68,7 @@ static inline int edgelistfile_read(const std::string& filepath,
   if (extension == adjlistExtension) {
     return adjlistfile_read(filepath, builder);
   } else if (extension == binadjlistExtension) {
-    std::ifstream is(filepath, std::ifstream::binary);
-    vid_t totalNodes;
-    is.read(reinterpret_cast<char *>(&totalNodes), sizeof(vid_t)); 
-    is.close();
-    return binadjlistfile_read(filepath, builder, 0, totalNodes);
+    return binadjlistfile_read(filepath, builder, 0, readNumNodes(filepath));
   } else {
     std::cerr << "ERROR: Unrecognized file extension for file: "
               << filepath << std::endl;

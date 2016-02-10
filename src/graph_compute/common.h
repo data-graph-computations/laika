@@ -75,8 +75,7 @@
   #define D1_NUMA 0
 #elif D1_NUMA == 1
   #ifndef CHUNK_BITS
-    // TODO remove
-    #define CHUNK_BITS 8
+    #define CHUNK_BITS 16
   #endif
   #ifndef NUMA_WORKERS
     #ifndef PARALLEL

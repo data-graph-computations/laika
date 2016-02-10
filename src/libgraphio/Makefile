@@ -5,7 +5,7 @@ CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64
 LDFLAGS = -lcilkrts -lrt -ldl
 ROOT = ../../
 
-.PHONY: all clean lint
+.PHONY: all clean
 
 HEADERS = common.h libgraphio.h
 SOURCES = adjlist.cpp binadjlist.cpp
@@ -20,7 +20,7 @@ ifneq ($(PARALLEL),)
 	DEFS += -DPARALLEL=$(PARALLEL)
 endif
 
-all: lint libgraphio.o
+all: libgraphio.o
 
 lint:
 	$(ROOT)/cpplint.py --root=src $(SOURCES) $(HEADERS)

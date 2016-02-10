@@ -105,15 +105,9 @@ sem_t net_sem;
 
 vid_t *rnd_deqs;
 vid_t *rnd_rcvs;
-// TODO fix this, use MPI_IProbe
-vid_t maxRemoteEdges = 50;
 unordered_map<vid_t, data_t> remoteData;
 mpi_data_t *sched_mpi;
 unordered_map<vid_t, vector<vid_t> > localDependents;
-
-// TODO remove
-vid_t phase0Nodes = 0;
-vid_t phase1Nodes = 0;
 
 void *net(void *nwd);
 
@@ -255,21 +249,12 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
   scheddata->numExpectedDeqs[0] = 0;
   scheddata->numExpectedDeqs[1] = 0;
   for (vid_t i = 0; i < cntNodes; ++i) {
-    if (getPhase(local2Global(i, scheddata)) == 0) {
-      phase0Nodes++;
-    } else {
-      phase1Nodes++;
-    }
     vid_t *interEnd = std::stable_partition(nodes[i].edges,
       nodes[i].edges + nodes[i].cntEdges,
       [i, scheddata](const vid_t& val) {return chunkCrossing(local2Global(i, scheddata), val);});
     vid_t *remoteEnd = std::stable_partition(nodes[i].edges, interEnd,
       [scheddata](const vid_t& val) {return !isLocalNode(val, scheddata);});
     vid_t numRemoteEdges = (vid_t) (remoteEnd - nodes[i].edges);
-    // TODO this is completely wrong
-    if (numRemoteEdges > maxRemoteEdges) {
-      maxRemoteEdges = numRemoteEdges;
-    }
     std::sort(nodes[i].edges, remoteEnd);
     if (remoteEnd != nodes[i].edges) {
       if (getPhase(local2Global(i, scheddata)) == 0) {
@@ -291,9 +276,6 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
       e++;
     }
   }
-  // TODO remove
-  printf("Max remote edges: %ld\n", maxRemoteEdges);
-  maxRemoteEdges = 50;
   scheddata->numExpectedRcvs[0] = rcvNodes0.size();
   scheddata->numExpectedRcvs[1] = rcvNodes1.size();
 }
@@ -484,8 +466,8 @@ static inline void read_file(const string filepath,
   scheddata->numRanks = 1;
   scheddata->myMpiId = 0;
 #endif
-  // TODO remove
-  if (0) { // scheddata->myMpiId == 0
+  /*
+  if (0) {
     int debug = 0;
     printf("%d ready for attach\n", getpid()); 
     fflush(stdout);
@@ -493,10 +475,8 @@ static inline void read_file(const string filepath,
       sleep(5);
     }
   }
+  */
   scheddata->totalChunks = (scheddata->totalNodes + (1 << CHUNK_BITS) - 1) >> CHUNK_BITS;
-  // TODO remove
-  printf("chunk bits %d\n", CHUNK_BITS);
-  printf("total chunks: %ld\n", scheddata->totalChunks);
   scheddata->chunksPerRank = scheddata->totalChunks / scheddata->numRanks;
   scheddata->startChunk = scheddata->myMpiId * scheddata->chunksPerRank;
   scheddata->myChunks = (scheddata->myMpiId == scheddata->numRanks - 1) ?
@@ -564,14 +544,8 @@ inline void * processChunks(void * param) {
   static const uint32_t queueNumberMask
     = (1 << logBaseTwoRoundUp<uint32_t>(NUMA_WORKERS)) - 1;
   
-  // TODO remove
-  vid_t phaseNodes = 0;
-  vid_t phaseEnqueued = 0;
-
   for (int round = 0; round < config->numRounds; round++) {
     for (int phase = 0; phase < config->numPhases; phase++) {
-      phaseNodes = 0;
-      phaseEnqueued = 0;
       //  load up chunks that belong to me
       __sync_sub_and_fetch(config->remainingStragglers, 1);
       //  wait until all workers have reached the barrier
@@ -622,13 +596,11 @@ inline void * processChunks(void * param) {
               } else {
                 //  otherwise we process the vertex and decrement those
                 //  vertices dependent on it
-                phaseNodes++;
                 update(config->nodes, chunkdata->nextIndex, config->globaldata, sched_mpi, round);
                 if (DISTANCE > 0) {
                   node->satisfied = node->dependencies;
                   vid_t j = chunkdata->nextIndex;
                   if (config->nodes[j].cntEdges > 0 && !isLocalNode(config->nodes[j].edges[0], scheddata)) {
-                    phaseEnqueued++;
                     enQ(j);
                   }
                   for (vid_t edge = 0; edge < node->cntDependentEdges; edge++) {

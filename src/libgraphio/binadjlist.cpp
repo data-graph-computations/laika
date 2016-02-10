@@ -60,7 +60,7 @@ static int binadjlistfile_read_v1(const std::string& filepath,
 
   vid_t cntNodes = endIndex - startIndex;
   builder->set_node_count(cntNodes);
-  binadjlist.seekg(startIndex * sizeof(vid_t), binadjlist.cur);
+  binadjlist->seekg(startIndex * sizeof(vid_t), binadjlist->cur);
   
   vid_t edgeOffset;
   safe_vid_t_read(binadjlist, &edgeOffset);
@@ -84,7 +84,7 @@ static int binadjlistfile_read_v1(const std::string& filepath,
   }
 
   builder->set_total_edge_count(cntEdges);
-  binadjlist.seekg(((totalNodes - endIndex) + edgeOffset - (skippedNextEdgeIndex ? 1 : 0)) * sizeof(vid_t), binadjlist.cur);
+  binadjlist->seekg(((totalNodes - endIndex) + edgeOffset - (skippedNextEdgeIndex ? 1 : 0)) * sizeof(vid_t), binadjlist->cur);
   
   vid_t destination;
   for (vid_t i = 0; i < cntEdges; ++i) {
