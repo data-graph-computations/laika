@@ -104,9 +104,14 @@ sem_t net_sem;
 
 vid_t *rnd_deqs;
 vid_t *rnd_rcvs;
-vid_t maxRemoteEdges = 0;
+// TODO fix this, use MPI_IProbe
+vid_t maxRemoteEdges = 50;
 unordered_map<vid_t, data_t> remoteData;
 mpi_data_t *sched_mpi;
+
+// TODO remove
+vid_t phase0Nodes = 0;
+vid_t phase1Nodes = 0;
 
 void *net(void *nwd);
 
@@ -126,18 +131,13 @@ inline uint32_t randomValue(const uint32_t seed,
   return _mm_crc32_u32(randVal, seed);
 }
 
-static inline bool samePhase(vid_t v, vid_t w, chunkdata_t * const chunkdata) {
-  // this assumes that the boundary between phases is the
-  // midpoint of the chunk - we will generalize later
-  // to a custom boundary to optimize overall work
-  bool vPhase = v < chunkdata[v >> CHUNK_BITS].phaseEndIndex[0];
-  bool wPhase = w < chunkdata[w >> CHUNK_BITS].phaseEndIndex[0];
-  return (vPhase == wPhase);
-}
-
 static inline int getPhase(vid_t v) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
   return ((v & chunkMask) < (1 << (CHUNK_BITS - 1))) ? 0 : 1;
+}
+
+static inline bool samePhase(vid_t v, vid_t w) {
+  return getPhase(v) == getPhase(w);
 }
 
 static inline bool chunkCrossing(vid_t v, vid_t w) {
@@ -146,6 +146,9 @@ static inline bool chunkCrossing(vid_t v, vid_t w) {
 
 static inline bool interChunkDependency(vid_t v, vid_t w) {
   static const vid_t chunkMask = (1 << CHUNK_BITS) - 1;
+  if (!samePhase(v, w)) {
+    return false;
+  }
   if ((v >> CHUNK_BITS) == (w >> CHUNK_BITS)) {
     return false;
   } else if ((v & chunkMask) == (w & chunkMask)) {
@@ -168,6 +171,10 @@ static inline vid_t global2Local(vid_t i, scheddata_t * const scheddata) {
   return i - (scheddata->startChunk << CHUNK_BITS);
 }
 
+static inline vid_t local2Global(vid_t i, scheddata_t * const scheddata) {
+  return i + (scheddata->startChunk << CHUNK_BITS);
+}
+
 static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
                                          std::unordered_set<vid_t> * oldNeighbors,
                                          vid_t v,
@@ -183,9 +190,10 @@ static inline void calculateNeighborhood(std::unordered_set<vid_t> * neighbors,
       if (!isLocalNode(v, scheddata)) {
         continue;
       }
-      for (vid_t j = 0; j < nodes[v].cntEdges; j++) {
-        if (oldNeighbors->count(nodes[v].edges[j]) == 0) {
-          neighbors->insert(nodes[v].edges[j]);
+      vid_t localized = global2Local(v, scheddata);
+      for (vid_t j = 0; j < nodes[localized].cntEdges; j++) {
+        if (oldNeighbors->count(nodes[localized].edges[j]) == 0) {
+          neighbors->insert(nodes[localized].edges[j]);
         }
       }
     }
@@ -202,19 +210,17 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   std::unordered_set<vid_t> oldNeighbors;
   oldNeighbors.reserve(1024);
   for (vid_t i = 0; i < cntNodes; i++) {
-    calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE, scheddata);
+    calculateNeighborhood(&neighbors, &oldNeighbors, local2Global(i, scheddata), nodes, DISTANCE, scheddata);
     dependentEdgeIndex[i] = cntDependencies;
     sched_t * node = &nodes[i].sched;
     node->dependencies = 0;
     node->cntDependentEdges = 0;
     for (const auto& neighbor : neighbors) {
-      if (samePhase(neighbor, i, scheddata->chunkdata)) {
-        if (interChunkDependency(neighbor, i)) {
-          node->dependencies++;
-        } else if (isLocalNode(neighbor, scheddata) && interChunkDependency(i, neighbor)) {
-          cntDependencies++;
-          node->cntDependentEdges++;
-        }
+      if (interChunkDependency(neighbor, local2Global(i, scheddata))) {
+        node->dependencies++;
+      } else if (isLocalNode(neighbor, scheddata) && interChunkDependency(local2Global(i, scheddata), neighbor)) {
+        cntDependencies++;
+        node->cntDependentEdges++;
       }
     }
     node->satisfied = node->dependencies;
@@ -229,11 +235,10 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     static_cast<vid_t *>(numaCalloc(numaInit, sizeof(vid_t), cntDependencies+1));
   for (vid_t i = 0; i < cntNodes; i++) {
     nodes[i].sched.dependentEdges = &scheddata->dependentEdges[dependentEdgeIndex[i]];
-    calculateNeighborhood(&neighbors, &oldNeighbors, i, nodes, DISTANCE, scheddata);
+    calculateNeighborhood(&neighbors, &oldNeighbors, local2Global(i, scheddata), nodes, DISTANCE, scheddata);
     vid_t curIndex = dependentEdgeIndex[i];
     for (const auto& neighbor : neighbors) {
-      if ((samePhase(neighbor, i, scheddata->chunkdata))
-        && isLocalNode(neighbor, scheddata) && (interChunkDependency(i, neighbor))) {
+      if (isLocalNode(neighbor, scheddata) && (interChunkDependency(local2Global(i, scheddata), neighbor))) {
           scheddata->dependentEdges[curIndex++] = global2Local(neighbor, scheddata);
       }
     }
@@ -248,18 +253,24 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
   scheddata->numExpectedDeqs[0] = 0;
   scheddata->numExpectedDeqs[1] = 0;
   for (vid_t i = 0; i < cntNodes; ++i) {
+    if (getPhase(local2Global(i, scheddata)) == 0) {
+      phase0Nodes++;
+    } else {
+      phase1Nodes++;
+    }
     vid_t *interEnd = std::stable_partition(nodes[i].edges,
       nodes[i].edges + nodes[i].cntEdges,
-      [i](const vid_t& val) {return chunkCrossing(i, val);});
+      [i, scheddata](const vid_t& val) {return chunkCrossing(local2Global(i, scheddata), val);});
     vid_t *remoteEnd = std::stable_partition(nodes[i].edges, interEnd,
       [scheddata](const vid_t& val) {return !isLocalNode(val, scheddata);});
     vid_t numRemoteEdges = (vid_t) (remoteEnd - nodes[i].edges);
+    // TODO this is completely wrong
     if (numRemoteEdges > maxRemoteEdges) {
       maxRemoteEdges = numRemoteEdges;
     }
     std::sort(nodes[i].edges, remoteEnd);
     if (remoteEnd != nodes[i].edges) {
-      if (getPhase(i) == 0) {
+      if (getPhase(local2Global(i, scheddata)) == 0) {
         scheddata->numExpectedDeqs[0]++;
       } else {
         scheddata->numExpectedDeqs[1]++;
@@ -275,6 +286,9 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
       e++;
     }
   }
+  // TODO remove
+  printf("Max remote edges: %ld\n", maxRemoteEdges);
+  maxRemoteEdges = 50;
   scheddata->numExpectedRcvs[0] = rcvNodes0.size();
   scheddata->numExpectedRcvs[1] = rcvNodes1.size();
 }
@@ -359,7 +373,7 @@ static void broadcast(vertex_t *nodes, scheddata_t *scheddata, const vid_t i,
   static net_vertex_t *nvt = (net_vertex_t *) malloc(msg_len);
   static vid_t *edgeBuffer = (vid_t *)(nvt + 1);
   vid_t k = 0;
-  nvt->id = i;
+  nvt->id = local2Global(i, scheddata);
   nvt->data = nodes[i].data;
   nvt->round = round;
   int lastProc = -1;
@@ -459,9 +473,7 @@ static inline void read_file(const string filepath,
                              numaInit_t numaInit =
                                numaInit_t(0, 0, false)) {
 
-  std::ifstream is(filepath, std::ifstream::binary);
-  is.read(reinterpret_cast<char *>(&scheddata->totalNodes), sizeof(vid_t)); 
-  is.close();
+  scheddata->totalNodes = readNumNodes(filepath);
 #if !MPI_OFF
   MPI_Init(argc, argv);
   MPI_Comm_size(MPI_COMM_WORLD, &scheddata->numRanks);
@@ -470,7 +482,19 @@ static inline void read_file(const string filepath,
   scheddata->numRanks = 1;
   scheddata->myMpiId = 0;
 #endif
+  // TODO remove
+  if (0) { // scheddata->myMpiId == 0
+    int debug = 0;
+    printf("%d ready for attach\n", getpid()); 
+    fflush(stdout);
+    while (0 == debug) {
+      sleep(5);
+    }
+  }
   scheddata->totalChunks = (scheddata->totalNodes + (1 << CHUNK_BITS) - 1) >> CHUNK_BITS;
+  // TODO remove
+  printf("chunk bits %d\n", CHUNK_BITS);
+  printf("total chunks: %ld\n", scheddata->totalChunks);
   scheddata->chunksPerRank = scheddata->totalChunks / scheddata->numRanks;
   scheddata->startChunk = scheddata->myMpiId * scheddata->chunksPerRank;
   scheddata->myChunks = (scheddata->myMpiId == scheddata->numRanks - 1) ?
@@ -516,8 +540,11 @@ static inline void init_scheduling(vertex_t * const nodes,
   }
 
   MPI_Barrier(MPI_COMM_WORLD);  // sync everyone up
-  net_worker_data_t nwd = { .scheddata = scheddata, .nodes = nodes };
-  pthread_create(&netWorker, NULL, net, &nwd);
+  // net_worker_data_t nwd = { .scheddata = scheddata, .nodes = nodes };
+  net_worker_data_t *nwd = (net_worker_data_t *)malloc(sizeof(net_worker_data_t));
+  nwd->scheddata = scheddata;
+  nwd->nodes = nodes;
+  pthread_create(&netWorker, NULL, net, nwd);
 }
 
 inline void * processChunks(void * param) {
@@ -534,9 +561,15 @@ inline void * processChunks(void * param) {
   seed *= static_cast<uint32_t>(numaSchedInit->cntNodes);
   static const uint32_t queueNumberMask
     = (1 << logBaseTwoRoundUp<uint32_t>(NUMA_WORKERS)) - 1;
+  
+  // TODO remove
+  vid_t phaseNodes = 0;
+  vid_t phaseEnqueued = 0;
 
   for (int round = 0; round < config->numRounds; round++) {
     for (int phase = 0; phase < config->numPhases; phase++) {
+      phaseNodes = 0;
+      phaseEnqueued = 0;
       //  load up chunks that belong to me
       __sync_sub_and_fetch(config->remainingStragglers, 1);
       //  wait until all workers have reached the barrier
@@ -587,11 +620,13 @@ inline void * processChunks(void * param) {
               } else {
                 //  otherwise we process the vertex and decrement those
                 //  vertices dependent on it
+                phaseNodes++;
                 update(config->nodes, chunkdata->nextIndex, config->globaldata, sched_mpi, round);
                 if (DISTANCE > 0) {
                   node->satisfied = node->dependencies;
                   vid_t j = chunkdata->nextIndex;
                   if (config->nodes[j].cntEdges > 0 && !isLocalNode(config->nodes[j].edges[0], scheddata)) {
+                    phaseEnqueued++;
                     enQ(j);
                   }
                   for (vid_t edge = 0; edge < node->cntDependentEdges; edge++) {

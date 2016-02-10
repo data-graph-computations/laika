@@ -84,6 +84,7 @@ WHEN_TEST({
   test_queue();
 })
 
+
 #if VERTEX_META_DATA
   if (argc != 4) {
     cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';

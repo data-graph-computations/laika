@@ -61,7 +61,7 @@ inline bool isLocal(const vid_t index, mpi_data_t *mpi) {
 
 inline data_t getData(vertex_t * const nodes, const vid_t index, mpi_data_t *mpi) {
   if (isLocal(index, mpi)) {
-    return nodes[index].data;
+    return nodes[index - mpi->local_start].data;
   } else {
     return (*(mpi->data))[index];
   }
