@@ -40,11 +40,6 @@ typedef struct vertex_t {
 } vertex_t;
 
 typedef struct net_vertex_t {
-  // edges stored immediately after net_vertex_t
-  // TODO we don't need to send edges, they can be computed at the start of the computation
-  // by each node
-  vid_t * edges;
-  vid_t cntEdges;
   vid_t id;
   data_t data;
   int round;

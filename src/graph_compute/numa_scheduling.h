@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <set>
+#include <vector>
 #include <unordered_map>
 #include "./common.h"
 #include "./concurrent_queue.h"
@@ -108,6 +109,7 @@ vid_t *rnd_rcvs;
 vid_t maxRemoteEdges = 50;
 unordered_map<vid_t, data_t> remoteData;
 mpi_data_t *sched_mpi;
+unordered_map<vid_t, vector<vid_t> > localDependents;
 
 // TODO remove
 vid_t phase0Nodes = 0;
@@ -283,6 +285,9 @@ static void orderEdgesByChunk(vertex_t * const nodes, const vid_t cntNodes,
       } else {
         rcvNodes1.insert(*e);
       }
+      if (interChunkDependency(*e, local2Global(i, scheddata))) {
+        localDependents[*e].push_back(i);
+      }
       e++;
     }
   }
@@ -369,36 +374,23 @@ static vid_t deQ() {
 // call from single thread
 static void broadcast(vertex_t *nodes, scheddata_t *scheddata, const vid_t i,
                       const int round) {
-  static size_t msg_len = sizeof(net_vertex_t) + sizeof(vid_t) * maxRemoteEdges;
-  static net_vertex_t *nvt = (net_vertex_t *) malloc(msg_len);
-  static vid_t *edgeBuffer = (vid_t *)(nvt + 1);
+  static net_vertex_t nvt;
   vid_t k = 0;
-  nvt->id = local2Global(i, scheddata);
-  nvt->data = nodes[i].data;
-  nvt->round = round;
+  nvt.id = local2Global(i, scheddata);
+  nvt.data = nodes[i].data;
+  nvt.round = round;
   int lastProc = -1;
-  vid_t lastIndex = 0;
   while (k < nodes[i].cntEdges) {
     if (!isLocalNode(nodes[i].edges[k], scheddata)) {
       int proc = getProcForNode(nodes[i].edges[k], scheddata);
       if (proc != lastProc) {
-        if (lastProc != -1) {
-          nvt->cntEdges = k - lastIndex;
-          memcpy(edgeBuffer, nodes[i].edges + lastIndex, sizeof(vid_t) * nvt->cntEdges);
-          MPI_Send(nvt, msg_len, MPI_BYTE, lastProc, 0, MPI_COMM_WORLD);
-        }
+        MPI_Send(&nvt, sizeof(nvt), MPI_BYTE, proc, 0, MPI_COMM_WORLD);
         lastProc = proc;
-        lastIndex = k;
-       }
+      }
     } else {
       break;
-     }
+    }
     k++;
-  }
-  if (k > 0) {
-    nvt->cntEdges = k - lastIndex;
-    memcpy(edgeBuffer, nodes[i].edges + lastIndex, sizeof(vid_t) * nvt->cntEdges);
-    MPI_Send(nvt, msg_len, MPI_BYTE, lastProc, 0, MPI_COMM_WORLD);   
   }
 }
 
@@ -406,6 +398,7 @@ static void receive(vertex_t *nodes, scheddata_t *scheddata, net_vertex_t *nvt) 
   static const vid_t SENTINEL = static_cast<vid_t>(-1);
   remoteData[nvt->id] = nvt->data;
   // TODO eliminate edgeBuffer and use local map
+  /*
   vid_t *edgeBuffer = (vid_t *)(nvt + 1);
   vid_t k = 0;
   while (k < nvt->cntEdges) {
@@ -421,14 +414,23 @@ static void receive(vertex_t *nodes, scheddata_t *scheddata, net_vertex_t *nvt) 
     }
     k++;
   }
+  */
+  for (auto const& value: localDependents[nvt->id]) {
+    if (__sync_sub_and_fetch(&nodes[value].sched.satisfied, 1) == SENTINEL) {
+      //  Released this chunk, so push it on its home work queue
+      vid_t enabledChunk = value >> CHUNK_BITS;
+      vid_t queueNumber =
+        scheddata->chunkdata[enabledChunk].workQueueNumber;
+      scheddata->numaSchedInit[queueNumber].workQueue->push(enabledChunk);
+    }   
+  } 
 }
  
 void *net(void *nwd) {
   net_worker_data_t *data = reinterpret_cast<net_worker_data_t *>(nwd);
   scheddata_t *scheddata = data->scheddata;
   vertex_t *nodes = data->nodes;
-  size_t msg_len = sizeof(net_vertex_t) + sizeof(vid_t) * maxRemoteEdges;
-  net_vertex_t *nvt = (net_vertex_t *) malloc(msg_len);
+  net_vertex_t nvt;
   
   MPI_Request req;
   vid_t deqed;
@@ -445,14 +447,14 @@ void *net(void *nwd) {
       }
       if (rnd_rcvs[r] < scheddata->numExpectedRcvs[p]) {
         if (initRcv) {
-          MPI_Irecv(nvt, msg_len, MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG,
+          MPI_Irecv(&nvt, sizeof(nvt), MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG,
             MPI_COMM_WORLD, &req);
           initRcv = false;
         } else {
           MPI_Test(&req, &testFlag, MPI_STATUS_IGNORE);
           if (testFlag) {
-            receive(nodes, scheddata, nvt);
-            rnd_rcvs[nvt->round]++;
+            receive(nodes, scheddata, &nvt);
+            rnd_rcvs[nvt.round]++;
             initRcv = true;
           }
         }
