@@ -8,12 +8,6 @@
 
 #define ADJGRAPH "AdjacencyGraph"
 
-#if HUGE_GRAPH_SUPPORT
-  #define VID_T_LITERAL "%ld"
-#else
-  #define VID_T_LITERAL "%d"
-#endif
-
 static void cleanupOnFormatError(FILE * const input,
                                  const std::string& type, const int line) {
   int result;

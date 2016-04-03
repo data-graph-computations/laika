@@ -7,8 +7,10 @@
 #include "./common.h"
 
 #if HUGE_GRAPH_SUPPORT
+  #define VID_T_LITERAL "%" PRId64
   typedef int64_t vid_t;
 #else
+  #define VID_T_LITERAL "%" PRId32
   typedef int32_t vid_t;  // vertex id type
 #endif
 
