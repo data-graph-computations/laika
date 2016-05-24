@@ -45,6 +45,10 @@ ifneq ($(D1_NUMA),)
 	DEFS += -DD1_NUMA=$(D1_NUMA)
 endif
 
+ifneq ($(D1_LOCKS),)
+	DEFS += -DD1_LOCKS=$(D1_LOCKS)
+endif
+
 ifneq ($(NUMA_INIT),)
 	DEFS += -DNUMA_INIT=$(NUMA_INIT)
 endif

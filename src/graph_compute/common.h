@@ -63,6 +63,10 @@
   #define D1_CHROM 0
 #endif
 
+#ifndef D1_LOCKS
+  #define D1_LOCKS 0
+#endif
+
 #ifndef D1_PHASE
   #define D1_PHASE 0
 #elif D1_PHASE == 1
@@ -226,6 +230,10 @@ WHEN_TEST(
   #define NEEDS_SCHEDULER_DATA 1
   #include "./numa_scheduling.h"
   #define SCHEDULER_NAME "NUMA"
+#elif D1_LOCKS
+  #define NEEDS_SCHEDULER_DATA 1
+  #include "./locks_scheduling.h"
+  #define SCHEDULER_NAME "LOCKS"
 #elif BASELINE || D1_PRIO
   #define NEEDS_SCHEDULER_DATA 1
   #include "./priority_scheduling.h"
