@@ -9,7 +9,7 @@
 
 using namespace std;
 
-inline static uint64_t hashOfVertexData(data_t * vertex) {
+inline static uint64_t hashOfVertexData(const data_t * vertex) {
   uint64_t result = 0;
   assert(sizeof(pagerank_t) <= sizeof(uint64_t));
   memcpy(&result,
@@ -43,10 +43,10 @@ inline static void fillInGlobalData(vertex_t * const nodes,
 #endif
 }
 
-inline static void printConvergenceData(vertex_t * const nodes,
+inline static void printConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata,
-                                        int numRounds) {
+                                        const global_t * const globaldata,
+                                        const int numRounds) {
 #if TEST_CONVERGENCE
   pagerank_t normalizer = 1/globaldata->sumSquareDelta[0];
   for (int i = 0; i < numRounds; i++) {
@@ -55,9 +55,9 @@ inline static void printConvergenceData(vertex_t * const nodes,
 #endif
 }
 
-inline pagerank_t getDelta(vertex_t * const nodes,
-                           const vid_t index,
-                           global_t * const globaldata) {
+static inline pagerank_t getDelta(const vertex_t * const nodes,
+                                  const vid_t index,
+                                  const global_t * const globaldata) {
   // recalculate this node's pagerank
   pagerank_t pagerank = 0;
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
@@ -78,9 +78,9 @@ inline pagerank_t getDelta(vertex_t * const nodes,
   #endif
 }
 
-inline static double getConvergenceData(vertex_t * const nodes,
+static inline double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata) {
+                                        const global_t * const globaldata) {
   pagerank_t sumSquareDelta = 0.0;
   for (vid_t v = 0; v < cntNodes; v++) {
     pagerank_t delta = getDelta(nodes, v, globaldata);

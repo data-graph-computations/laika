@@ -15,7 +15,7 @@ using namespace std;
 #include "./common.h"
 #include "./concurrent_queue.h"
 
-uint64_t hashOfGraphData(vertex_t * const nodes,
+uint64_t hashOfGraphData(const vertex_t * const nodes,
                          const vid_t cntNodes) {
   uint64_t result = 0;
   for (vid_t i = 0; i < cntNodes; i++) {
@@ -71,6 +71,83 @@ void test_queue() {
   cout << "numBits = " << numBits << endl;
   cout << "Sum1 = " << sum << endl;
   cout << "Sum2 = " << sum2 << endl;
+}
+
+static inline void printVerboseOutput(const vertex_t * const nodes,
+                                      const vid_t cntNodes, const int numRounds,
+                                      const global_t * const globaldata,
+                                      const double seconds,
+                                      const double timePerMillionEdges,
+                                      const double initialConvergenceData) {
+  cout << "Done computing " << numRounds << " rounds!\n";
+  cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
+  cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
+  cout << "Time per million edges: " << setprecision(8) << timePerMillionEdges << "s\n";
+  cout << "Scheduler name: " << SCHEDULER_NAME << '\n';
+  cout << "Parallel: " << PARALLEL << '\n';
+  cout << "Distance: " << DISTANCE << '\n';
+  cout << "Convergence: ";
+
+  #if MASS_SPRING_DASHPOT || PAGERANK
+    const double convergence =
+      getConvergenceData(nodes, cntNodes, globaldata)/initialConvergenceData;
+    cout << convergence << '\n';
+  #else
+    cout << 0 << '\n';
+  #endif
+
+  print_execution_data();
+
+  cout << "Debug flag: " << DEBUG << '\n';
+  cout << "Test flag: " << TEST << '\n';
+}
+
+static inline void printCompactOutput(const string& inputEdgeFile,
+                                      const vertex_t * const nodes,
+                                      const vid_t cntNodes, const vid_t cntEdges,
+                                      const int numRounds,
+                                      const global_t * const globaldata,
+                                      const double seconds,
+                                      const double timePerMillionEdges,
+                                      const double initialConvergenceData) {
+  cout << APP_NAME << ", ";
+  cout << SCHEDULER_NAME << ", ";
+  cout << IN_PLACE << ", ";
+
+#if MASS_SPRING_DASHPOT || PAGERANK
+  const double convergence =
+      getConvergenceData(nodes, cntNodes, globaldata)/initialConvergenceData;
+  cout << convergence << ", ";
+#else
+  cout << 0 << ", ";
+#endif
+
+  cout << PARALLEL << ", ";
+
+#if D1_NUMA
+  cout << NUMA_WORKERS << ", ";
+#elif PARALLEL
+  cout << (__cilkrts_get_nworkers()) << ", ";
+#else
+  cout << "1, ";
+#endif
+
+  cout << setprecision(8) << seconds << ", ";
+  cout << setprecision(8) << timePerMillionEdges << ", ";
+  cout << sizeof(vertex_t) << ", ";
+  cout << sizeof(sched_t) << ", ";
+  cout << sizeof(data_t) << ", ";
+  cout << hashOfGraphData(nodes, cntNodes) << ", ";
+  cout << numRounds << ", ";
+  cout << inputEdgeFile << ", ";
+  cout << cntNodes << ", ";
+  cout << cntEdges << ", ";
+  cout << CHUNK_BITS << ", ";
+  cout << NUMA_INIT << ", ";
+  cout << NUMA_STEAL << ", ";
+  cout << DISTANCE << ", ";
+  cout << __DATE__ << ", ";
+  cout << __TIME__ << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -152,6 +229,9 @@ WHEN_TEST({
   initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
 #endif
 
+  /////////////////////////////////////////////////////////////////////
+  ///                     RUNNING THE EXPERIMENT                    ///
+  /////////////////////////////////////////////////////////////////////
   const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
 
   struct timespec starttime, endtime;
@@ -175,6 +255,9 @@ WHEN_TEST({
 
   double timePerMillionEdges = seconds * static_cast<double>(1000000);
   timePerMillionEdges /= static_cast<double>(cntEdges) * static_cast<double>(numRounds);
+  /////////////////////////////////////////////////////////////////////
+  ///                     END OF THE EXPERIMENT                     ///
+  /////////////////////////////////////////////////////////////////////
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
   //  pagerank does not consume the nodes file containing positions
@@ -183,6 +266,8 @@ WHEN_TEST({
   printEdgeLengthHistograms(nodes, cntNodes, &globaldata);
 #endif
 
+// for the execution_order_sort experiment,
+// we want to print the execution order of each vertex in the graph
 #if EXECUTION_ORDER_SORT
   for (int i = 0; i < cntNodes; ++i) {
     cout << i << ' ' << nodes[i].data.execution_number << '\n';
@@ -190,71 +275,15 @@ WHEN_TEST({
   cout << endl;
 #endif
 
+// print test run output
 #if TEST_CONVERGENCE
   printConvergenceData(nodes, cntNodes, &globaldata, numRounds);
 #elif VERBOSE
-  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  cout << "Done computing " << numRounds << " rounds!\n";
-  cout << "Time taken:     " << setprecision(8) << seconds << "s\n";
-  cout << "Time per round: " << setprecision(8) << seconds / numRounds << "s\n";
-  cout << "Time per million edges: " << setprecision(8) << timePerMillionEdges << "s\n";
-  cout << "Scheduler name: " << SCHEDULER_NAME << '\n';
-  cout << "Parallel: " << PARALLEL << '\n';
-  cout << "Distance: " << DISTANCE << '\n';
-  cout << "Convergence: ";
-
-  #if MASS_SPRING_DASHPOT || PAGERANK
-    const double convergence =
-      getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
-    cout << convergence << '\n';
-  #else
-    cout << 0 << '\n';
-  #endif
-
-  print_execution_data();
-
-  cout << "Debug flag: " << DEBUG << '\n';
-  cout << "Test flag: " << TEST << '\n';
+  printVerboseOutput(nodes, cntNodes, numRounds, &globaldata,
+                     seconds, timePerMillionEdges, initialConvergenceData);
 #else
-  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  cout << APP_NAME << ", ";
-  cout << SCHEDULER_NAME << ", ";
-  cout << IN_PLACE << ", ";
-
-  #if MASS_SPRING_DASHPOT || PAGERANK
-    const double convergence =
-        getConvergenceData(nodes, cntNodes, &globaldata)/initialConvergenceData;
-    cout << convergence << ", ";
-  #else
-    cout << 0 << ", ";
-  #endif
-
-  cout << PARALLEL << ", ";
-
-  #if D1_NUMA
-    cout << NUMA_WORKERS << ", ";
-  #elif PARALLEL
-    cout << (__cilkrts_get_nworkers()) << ", ";
-  #else
-    cout << "1, ";
-  #endif
-
-  cout << setprecision(8) << seconds << ", ";
-  cout << setprecision(8) << timePerMillionEdges << ", ";
-  cout << sizeof(vertex_t) << ", ";
-  cout << sizeof(sched_t) << ", ";
-  cout << sizeof(data_t) << ", ";
-  cout << hashOfGraphData(nodes, cntNodes) << ", ";
-  cout << numRounds << ", ";
-  cout << inputEdgeFile << ", ";
-  cout << cntNodes << ", ";
-  cout << cntEdges << ", ";
-  cout << CHUNK_BITS << ", ";
-  cout << NUMA_INIT << ", ";
-  cout << NUMA_STEAL << ", ";
-  cout << DISTANCE << ", ";
-  cout << __DATE__ << ", ";
-  cout << __TIME__ << endl;
+  printCompactOutput(inputEdgeFile, nodes, cntNodes, cntEdges, numRounds, &globaldata,
+                     seconds, timePerMillionEdges, initialConvergenceData);
 #endif
 
   cleanup_scheduling(nodes, cntNodes, &scheddata);

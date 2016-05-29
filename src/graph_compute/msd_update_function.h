@@ -29,7 +29,7 @@ using namespace std;
 // though, this is linear in the data, but it will be important to make
 // this calculation fast.  After all, we are not animals.
 
-inline static uint64_t hashOfVertexData(data_t * vertex) {
+inline static uint64_t hashOfVertexData(const data_t * vertex) {
   uint64_t result = 0;
   for (int i = 0; i < DIMENSIONS; i++) {
     uint64_t tmpResult = 0;
@@ -172,10 +172,10 @@ const inline phys_t distance(phys_t (&a)[DIMENSIONS], phys_t (&b)[DIMENSIONS]) {
   return length(delta);
 }
 
-inline static void printConvergenceData(vertex_t * const nodes,
+inline static void printConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata,
-                                        int numRounds) {
+                                        const global_t * const globaldata,
+                                        const int numRounds) {
 #if TEST_CONVERGENCE
   phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes)
     / globaldata->sumSquareNetForce[0]);
@@ -262,16 +262,16 @@ const inline void springForce(phys_t (&a)[DIMENSIONS],
   }
 }
 
-inline static void getNetForce(vertex_t * const nodes,
+inline static void getNetForce(const vertex_t * const nodes,
                                const vid_t index,
                                phys_t (&acceleration)[DIMENSIONS],
-                               global_t * const globaldata,
+                               const global_t * const globaldata,
                                const int round = 0,
                                const bool leapfrog = false) {
 #if IN_PLACE
-  data_t * current = &nodes[index].data;
+  const data_t * current = &nodes[index].data;
 #else
-  data_t * current = &nodes[index].data[round & 1];
+  const data_t * current = &nodes[index].data[round & 1];
 #endif
   phys_t myPosition[DIMENSIONS];
   for (int d = 0; d < DIMENSIONS; d++) {
@@ -283,9 +283,9 @@ inline static void getNetForce(vertex_t * const nodes,
   }
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
 #if IN_PLACE
-    data_t * neighbor = &nodes[nodes[index].edges[i]].data;
+    const data_t * neighbor = &nodes[nodes[index].edges[i]].data;
 #else
-    data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
+    const data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
 #endif
     phys_t position[DIMENSIONS];
     for (int d = 0; d < DIMENSIONS; d++) {
@@ -302,9 +302,9 @@ inline static void getNetForce(vertex_t * const nodes,
   }
 }
 
-inline static double getConvergenceData(vertex_t * const nodes,
+inline static double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata) {
+                                        const global_t * const globaldata) {
   phys_t meanSquare = 0.0;
   for (vid_t v = 0; v < cntNodes; v++) {
     phys_t acceleration[DIMENSIONS];
