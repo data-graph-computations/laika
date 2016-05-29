@@ -18,6 +18,7 @@ script:
 env:
   matrix:
     - CC=gcc-5 CXX=g++-5 CMD="BASELINE=1 PAGERANK=1 build-graph-compute"
+    - CC=gcc-5 CXX=g++-5 CMD="BASELINE=1 PAGERANK=1 VERBOSE=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D0_BSP=1 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_PRIO=1 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_CHROM=1 PAGERANK=1 build-graph-compute"
