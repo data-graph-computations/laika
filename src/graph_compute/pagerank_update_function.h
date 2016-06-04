@@ -89,6 +89,12 @@ static inline double getConvergenceData(const vertex_t * const nodes,
   return static_cast<double>(sqrt(sumSquareDelta / static_cast<pagerank_t>(cntNodes)));
 }
 
+static inline double getInitialConvergenceData(const vertex_t * const nodes,
+                                               const vid_t cntNodes,
+                                               const global_t * const globaldata) {
+  return getConvergenceData(nodes, cntNodes, globaldata);
+}
+
 inline void update(vertex_t * const nodes,
                    const vid_t index,
                    global_t * const globaldata,

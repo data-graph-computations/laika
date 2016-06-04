@@ -150,7 +150,8 @@ static inline void printCompactOutput(const string& inputEdgeFile,
   cout << __TIME__ << endl;
 }
 
-int main(int argc, char *argv[]) {
+static int main_fixed_number_of_rounds(int argc, char *argv[]) {
+  // main function for executing a fixed number of iterations on a dataset
   vertex_t * nodes;
   vid_t cntNodes;
   vid_t cntEdges;
@@ -238,7 +239,6 @@ WHEN_TEST({
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
-  // suppress fake GCC warning, seems to be a bug in GCC 4.8/4.9/5.1
   execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
   WHEN_TEST({
     cout << "roundUpdateCount: " << roundUpdateCount << endl;
@@ -289,4 +289,8 @@ WHEN_TEST({
   cleanup_scheduling(nodes, cntNodes, &scheddata);
 
   return 0;
+}
+
+int main(int argc, char *argv[]) {
+  return main_fixed_number_of_rounds(argc, argv);
 }
