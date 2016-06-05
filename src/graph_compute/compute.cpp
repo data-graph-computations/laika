@@ -90,7 +90,7 @@ static inline void printVerboseOutput(const vertex_t * const nodes,
 
   #if MASS_SPRING_DASHPOT || PAGERANK
     const double convergence =
-      getConvergenceData(nodes, cntNodes, globaldata)/initialConvergenceData;
+      getConvergenceData(nodes, cntNodes, globaldata, numRounds)/initialConvergenceData;
     cout << convergence << '\n';
   #else
     cout << 0 << '\n';
@@ -116,7 +116,7 @@ static inline void printCompactOutput(const string& inputEdgeFile,
 
 #if MASS_SPRING_DASHPOT || PAGERANK
   const double convergence =
-      getConvergenceData(nodes, cntNodes, globaldata)/initialConvergenceData;
+      getConvergenceData(nodes, cntNodes, globaldata, numRounds)/initialConvergenceData;
   cout << convergence << ", ";
 #else
   cout << 0 << ", ";
@@ -233,7 +233,8 @@ WHEN_TEST({
   /////////////////////////////////////////////////////////////////////
   ///                     RUNNING THE EXPERIMENT                    ///
   /////////////////////////////////////////////////////////////////////
-  const double initialConvergenceData = getConvergenceData(nodes, cntNodes, &globaldata);
+  const double initialConvergenceData = getInitialConvergenceData(nodes, cntNodes,
+                                                                  &globaldata);
 
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);

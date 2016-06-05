@@ -57,14 +57,15 @@ inline static void printConvergenceData(const vertex_t * const nodes,
 
 static inline pagerank_t getDelta(const vertex_t * const nodes,
                                   const vid_t index,
-                                  const global_t * const globaldata) {
+                                  const global_t * const globaldata,
+                                  const int round) {
   // recalculate this node's pagerank
   pagerank_t pagerank = 0;
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
     #if IN_PLACE
       pagerank += nodes[nodes[index].edges[i]].data.contrib;
     #else
-      pagerank += nodes[nodes[index].edges[i]].data[0].contrib;
+      pagerank += nodes[nodes[index].edges[i]].data[round & 1].contrib;
     #endif
   }
 
@@ -74,16 +75,17 @@ static inline pagerank_t getDelta(const vertex_t * const nodes,
   #if IN_PLACE
     return pagerank - nodes[index].data.pagerank;
   #else
-    return pagerank - nodes[index].data[0].pagerank;
+    return pagerank - nodes[index].data[round & 1].pagerank;
   #endif
 }
 
 static inline double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        const global_t * const globaldata) {
+                                        const global_t * const globaldata,
+                                        const int round) {
   pagerank_t sumSquareDelta = 0.0;
   for (vid_t v = 0; v < cntNodes; v++) {
-    pagerank_t delta = getDelta(nodes, v, globaldata);
+    pagerank_t delta = getDelta(nodes, v, globaldata, round);
     sumSquareDelta += delta * delta;
   }
   return static_cast<double>(sqrt(sumSquareDelta / static_cast<pagerank_t>(cntNodes)));
@@ -92,7 +94,7 @@ static inline double getConvergenceData(const vertex_t * const nodes,
 static inline double getInitialConvergenceData(const vertex_t * const nodes,
                                                const vid_t cntNodes,
                                                const global_t * const globaldata) {
-  return getConvergenceData(nodes, cntNodes, globaldata);
+  return getConvergenceData(nodes, cntNodes, globaldata, 0);
 }
 
 inline void update(vertex_t * const nodes,
