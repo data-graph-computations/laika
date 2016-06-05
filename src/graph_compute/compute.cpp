@@ -150,50 +150,29 @@ static inline void printCompactOutput(const string& inputEdgeFile,
   cout << __TIME__ << endl;
 }
 
-static int main_fixed_number_of_rounds(int argc, char *argv[]) {
-  // main function for executing a fixed number of iterations on a dataset
+static void prepareTestRun(const char * const inputEdgeFile,
+                           const char * const vertexMetaDataFile,
+                           const int numRounds,
+                           vertex_t ** const outNodes,
+                           vid_t * const outCntNodes,
+                           vid_t * const outCntEdges,
+                           scheddata_t * const outSchedData,
+                           global_t * const outGlobalData) {
   vertex_t * nodes;
   vid_t cntNodes;
   vid_t cntEdges;
-  char * inputEdgeFile;
-  int numRounds = 0;
-
-WHEN_TEST({
-  test_queue();
-})
-
-#if VERTEX_META_DATA
-  if (argc != 4) {
-    cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
-    cerr << "Usage: ./compute <num_rounds> <input_edges> <vertex_meta_data>" << endl;
-    return 1;
-  }
-#else
-  if (argc != 3) {
-    cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
-    cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
-    return 1;
-  }
-#endif
-
-  try {
-    numRounds = stoi(argv[1]);
-  } catch (exception& e) {
-    cerr << "\nERROR: " << e.what() << endl;
-    return 1;
-  }
-
-  inputEdgeFile = argv[2];
 
   numaInit_t numaInit(NUMA_WORKERS, CHUNK_BITS, static_cast<bool>(NUMA_INIT));
+
   int result = readEdgesFromFile(inputEdgeFile, &nodes, &cntNodes, numaInit);
   assert(result == 0);
   cntEdges = getEdgeCount(nodes, cntNodes);
+
+#if TEST_SIMPLE_AND_UNDIRECTED
   //  This function asserts that there are
   //  no self-edges and that every edge is
   //  reciprocated (i.e., if (v,w) exists, then
   //  so does (w,v))
-#if TEST_SIMPLE_AND_UNDIRECTED
   testSimpleAndUndirected(nodes, cntNodes);
 #endif
 
@@ -210,25 +189,69 @@ WHEN_TEST({
   #endif
 #endif
 
-  scheddata_t scheddata;
-  global_t globaldata;
-
-  init_scheduling(nodes, cntNodes, &scheddata);
+  init_scheduling(nodes, cntNodes, outSchedData);
 
 //  This switch indicates whether the app needs an auxiliary
 //  file to initialize node data
 #if VERTEX_META_DATA
-  char * vertexMetaDataFile = argv[3];
   fillInNodeData(nodes, cntNodes, vertexMetaDataFile);
 #else
   fillInNodeData(nodes, cntNodes);
 #endif
 
-  fillInGlobalData(nodes, cntNodes, &globaldata, numRounds);
+  fillInGlobalData(nodes, cntNodes, outGlobalData, numRounds);
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
-  initialEdgeLengthHistogram(nodes, cntNodes, &globaldata);
+  initialEdgeLengthHistogram(nodes, cntNodes, outGlobalData);
 #endif
+
+  *outNodes = nodes;
+  *outCntNodes = cntNodes;
+  *outCntEdges = cntEdges;
+}
+
+int main_fixed_number_of_rounds(int argc, char *argv[]) {
+  // main function for executing a fixed number of iterations on a dataset
+  vertex_t * nodes;
+  vid_t cntNodes;
+  vid_t cntEdges;
+  char * inputEdgeFile;
+  char * vertexMetaDataFile = NULL;
+  int result = 0;
+  int numRounds = 0;
+
+WHEN_TEST({
+  test_queue();
+})
+
+#if VERTEX_META_DATA
+  if (argc != 4) {
+    cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
+    cerr << "Usage: ./compute <num_rounds> <input_edges> <vertex_meta_data>" << endl;
+    return 1;
+  }
+  vertexMetaDataFile = argv[3];
+#else
+  if (argc != 3) {
+    cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
+    cerr << "Usage: ./compute <num_rounds> <input_edges>" << endl;
+    return 1;
+  }
+#endif
+  inputEdgeFile = argv[2];
+
+  try {
+    numRounds = stoi(argv[1]);
+  } catch (exception& e) {
+    cerr << "\nERROR: " << e.what() << endl;
+    return 1;
+  }
+
+  scheddata_t scheddata;
+  global_t globaldata;
+
+  prepareTestRun(inputEdgeFile, vertexMetaDataFile, numRounds, &nodes, &cntNodes,
+                 &cntEdges, &scheddata, &globaldata);
 
   /////////////////////////////////////////////////////////////////////
   ///                     RUNNING THE EXPERIMENT                    ///
@@ -286,6 +309,61 @@ WHEN_TEST({
   printCompactOutput(inputEdgeFile, nodes, cntNodes, cntEdges, numRounds, &globaldata,
                      seconds, timePerMillionEdges, initialConvergenceData);
 #endif
+
+  cleanup_scheduling(nodes, cntNodes, &scheddata);
+
+  return 0;
+}
+
+int main_run_to_convergence(int argc, char *argv[]) {
+  // main function for executing a fixed number of iterations on a dataset
+  vertex_t * nodes;
+  vid_t cntNodes;
+  vid_t cntEdges;
+  char * inputEdgeFile;
+  char * vertexMetaDataFile = NULL;
+  double convergenceCoefficient;
+  const int numRounds = 100000;  // cutoff round number, should never be hit
+
+#if VERTEX_META_DATA
+  if (argc != 4) {
+    cerr << "\nERROR: Expected 3 arguments, received " << argc-1 << '\n';
+    cerr << ("Usage: ./compute <convergence_coefficient> "
+             "<input_edges> <vertex_meta_data>") << endl;
+    return 1;
+  }
+  vertexMetaDataFile = argv[3];
+#else
+  if (argc != 3) {
+    cerr << "\nERROR: Expected 2 arguments, received " << argc-1 << '\n';
+    cerr << "Usage: ./compute <convergence_coefficient> <input_edges>" << endl;
+    return 1;
+  }
+#endif
+  inputEdgeFile = argv[2];
+
+  convergenceCoefficient = strtod(argv[1], NULL);
+  if (convergenceCoefficient >= 1.0 || convergenceCoefficient <= 0.0) {
+    cerr << "\nERROR: Invalid convergence_coefficient, "
+            "please use a value in (0.0, 1.0)." << endl;
+    return 1;
+  }
+
+  scheddata_t scheddata;
+  global_t globaldata;
+
+  prepareTestRun(inputEdgeFile, vertexMetaDataFile, numRounds, &nodes, &cntNodes,
+                 &cntEdges, &scheddata, &globaldata);
+
+  /////////////////////////////////////////////////////////////////////
+  ///                     RUNNING THE EXPERIMENT                    ///
+  /////////////////////////////////////////////////////////////////////
+
+  // to be filled in later
+
+  /////////////////////////////////////////////////////////////////////
+  ///                     END OF THE EXPERIMENT                     ///
+  /////////////////////////////////////////////////////////////////////
 
   cleanup_scheduling(nodes, cntNodes, &scheddata);
 

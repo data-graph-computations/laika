@@ -34,9 +34,9 @@ inline static void fillInNodeData(vertex_t * const nodes,
 }
 
 inline static void fillInGlobalData(vertex_t * const nodes,
-                                  const vid_t cntNodes,
-                                  global_t * const globaldata,
-                                  int numRounds) {
+                                    const vid_t cntNodes,
+                                    global_t * const globaldata,
+                                    int numRounds) {
   globaldata->d = .85;
 #if TEST_CONVERGENCE
   globaldata->averageDiff = new (std::nothrow) pagerank_t[numRounds]();
