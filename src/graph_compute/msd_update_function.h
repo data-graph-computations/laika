@@ -322,7 +322,8 @@ static inline void getNetForce(const vertex_t * const nodes,
 static inline double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
                                         const global_t * const globaldata,
-                                        const int round) {
+                                        const int round,
+                                        const bool includeSpringEnergy = true) {
   double totalEnergy = 0.0;
   for (vid_t i = 0; i < cntNodes; ++i) {
     const vertex_t& current = nodes[i];
@@ -338,25 +339,27 @@ static inline double getConvergenceData(const vertex_t * const nodes,
     const phys_t v = static_cast<double>(length(currentData.velocity));
     totalEnergy += (v * v) / (2 * globaldata->inverseMass);
 
-    // add the spring energy of all springs between
-    // the current vertex and its neighbors of higher ID number
-    // (to only count once -- there are no self-edges)
-    for (vid_t j = 0; j < current.cntEdges; ++j) {
-      const vid_t neighborId = current.edges[j];
-      if (neighborId > i) {
-        const vertex_t& neighbor = nodes[neighborId];
+    if (includeSpringEnergy) {
+      // add the spring energy of all springs between
+      // the current vertex and its neighbors of higher ID number
+      // (to only count once -- there are no self-edges)
+      for (vid_t j = 0; j < current.cntEdges; ++j) {
+        const vid_t neighborId = current.edges[j];
+        if (neighborId > i) {
+          const vertex_t& neighbor = nodes[neighborId];
 
-        #if IN_PLACE
-          const data_t& neighborData = neighbor.data;
-        #else
-          const data_t& neighborData = neighbor.data[round & 1];
-        #endif
+          #if IN_PLACE
+            const data_t& neighborData = neighbor.data;
+          #else
+            const data_t& neighborData = neighbor.data[round & 1];
+          #endif
 
-        const phys_t springEnergy = springInternalEnergy(currentData.position,
-                                                         neighborData.position,
-                                                         globaldata->restLength,
-                                                         globaldata->springStiffness);
-        totalEnergy += static_cast<double>(springEnergy);
+          const phys_t springEnergy = springInternalEnergy(currentData.position,
+                                                           neighborData.position,
+                                                           globaldata->restLength,
+                                                           globaldata->springStiffness);
+          totalEnergy += static_cast<double>(springEnergy);
+        }
       }
     }
   }
@@ -366,7 +369,7 @@ static inline double getConvergenceData(const vertex_t * const nodes,
 static inline double getInitialConvergenceData(const vertex_t * const nodes,
                                                const vid_t cntNodes,
                                                const global_t * const globaldata) {
-  return getConvergenceData(nodes, cntNodes, globaldata, 0);
+  return getConvergenceData(nodes, cntNodes, globaldata, 0, true);
 }
 
 static inline double getForceBasedConvergenceData(const vertex_t * const nodes,
