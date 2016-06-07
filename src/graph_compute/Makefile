@@ -1,7 +1,7 @@
 CC  ?= gcc
 CXX ?= g++
 CFLAGS = -O3 -Wall
-CXXFLAGS = -fcilkplus -std=c++11 -O3 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las
+CXXFLAGS = -fcilkplus -std=c++11 -O0 -Wall -m64 -march=native -mtune=native -pthread -ffast-math -fgcse-las -g
 LDFLAGS = -L/usr/lib64 -lcilkrts -ldl -lrt
 ROOT = ../../
 
