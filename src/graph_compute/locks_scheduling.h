@@ -47,7 +47,6 @@ static inline void acquire_locks(vertex_t * const nodes,
     pthread_rwlock_t * const rwlock = &nodes[current->edges[nextNeighbor]].sched.rwlock;
     result = pthread_rwlock_rdlock(rwlock);
     assert(result == 0);
-    ++nextNeighbor;
   }
 
   // acquire write lock on the current vertex
@@ -67,24 +66,13 @@ static inline void release_locks(vertex_t * const nodes,
                                  const vid_t currentIndex) {
   vertex_t * const current = &nodes[currentIndex];
   int result;
-  vid_t nextNeighbor;
 
-  // release read lock on all neighbors with IDs lower than currentIndex
-  for (nextNeighbor = 0;
-       nextNeighbor < current->cntEdges && current->edges[nextNeighbor] <= currentIndex;
-       ++nextNeighbor) {
-    pthread_rwlock_t * const rwlock = &nodes[current->edges[nextNeighbor]].sched.rwlock;
-    result = pthread_rwlock_unlock(rwlock);
-    assert(result == 0);
-    ++nextNeighbor;
-  }
-
-  // release write lock on the current vertex
+  // release write lock first (it's always safe to release, in any order)
   result = pthread_rwlock_unlock(&current->sched.rwlock);
   assert(result == 0);
 
-  // release read lock on all remaining neighbors
-  for (; nextNeighbor < current->cntEdges; ++nextNeighbor) {
+  // release all read locks
+  for (vid_t nextNeighbor = 0; nextNeighbor < current->cntEdges; ++nextNeighbor) {
     pthread_rwlock_t * const rwlock = &nodes[current->edges[nextNeighbor]].sched.rwlock;
     result = pthread_rwlock_unlock(rwlock);
     assert(result == 0);
