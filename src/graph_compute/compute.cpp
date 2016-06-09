@@ -426,7 +426,8 @@ int main_run_to_convergence(int argc, char *argv[]) {
     result = clock_gettime(CLOCK_MONOTONIC, &starttime);
     assert(result == 0);
 
-    execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
+    execute_rounds(roundsBetweenConvergenceChecks,
+                   nodes, cntNodes, &scheddata, &globaldata);
 
     result = clock_gettime(CLOCK_MONOTONIC, &endtime);
     assert(result == 0);
