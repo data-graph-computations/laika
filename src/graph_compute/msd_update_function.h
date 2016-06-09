@@ -29,7 +29,7 @@ using namespace std;
 // though, this is linear in the data, but it will be important to make
 // this calculation fast.  After all, we are not animals.
 
-inline static uint64_t hashOfVertexData(data_t * vertex) {
+static inline uint64_t hashOfVertexData(const data_t * vertex) {
   uint64_t result = 0;
   for (int i = 0; i < DIMENSIONS; i++) {
     uint64_t tmpResult = 0;
@@ -42,7 +42,7 @@ inline static uint64_t hashOfVertexData(data_t * vertex) {
   return result;
 }
 
-inline static void printPosition(phys_t (&a)[DIMENSIONS]) {
+static inline void printPosition(phys_t (&a)[DIMENSIONS]) {
   cout << a[0];
   for (int i = 1; i < DIMENSIONS; i++) {
     cout << ", " << a[i];
@@ -50,7 +50,7 @@ inline static void printPosition(phys_t (&a)[DIMENSIONS]) {
   cout << endl;
 }
 
-inline static void fixExtremalPoints(vertex_t * const nodes,
+static inline void fixExtremalPoints(vertex_t * const nodes,
                                      const vid_t cntNodes) {
   phys_t maxPoint[DIMENSIONS];
   vid_t maxOwner[DIMENSIONS];
@@ -117,7 +117,7 @@ inline static void fixExtremalPoints(vertex_t * const nodes,
 #endif
 }
 
-inline static void fillInNodeData(vertex_t * const nodes,
+static inline void fillInNodeData(vertex_t * const nodes,
                                   const vid_t cntNodes,
                                   const string filepath) {
   FILE * nodeInputFile = fopen(filepath.c_str(), "r");
@@ -156,7 +156,7 @@ inline static void fillInNodeData(vertex_t * const nodes,
   fixExtremalPoints(nodes, cntNodes);
 }
 
-const inline phys_t length(phys_t (&a)[DIMENSIONS]) {
+const inline phys_t length(const phys_t (&a)[DIMENSIONS]) {
   phys_t total = 0;
   for (int i = 0; i < DIMENSIONS; i++) {
     total += a[i]*a[i];
@@ -164,7 +164,8 @@ const inline phys_t length(phys_t (&a)[DIMENSIONS]) {
   return sqrt(total);
 }
 
-const inline phys_t distance(phys_t (&a)[DIMENSIONS], phys_t (&b)[DIMENSIONS]) {
+const inline phys_t distance(const phys_t (&a)[DIMENSIONS],
+                             const phys_t (&b)[DIMENSIONS]) {
   phys_t delta[DIMENSIONS];
   for (int i = 0; i < DIMENSIONS; i++) {
     delta[i] = a[i] - b[i];
@@ -172,10 +173,10 @@ const inline phys_t distance(phys_t (&a)[DIMENSIONS], phys_t (&b)[DIMENSIONS]) {
   return length(delta);
 }
 
-inline static void printConvergenceData(vertex_t * const nodes,
+static inline void printConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata,
-                                        int numRounds) {
+                                        const global_t * const globaldata,
+                                        const int numRounds) {
 #if TEST_CONVERGENCE
   phys_t normalizer = sqrt(static_cast<phys_t>(cntNodes)
     / globaldata->sumSquareNetForce[0]);
@@ -187,7 +188,7 @@ inline static void printConvergenceData(vertex_t * const nodes,
 #endif
 }
 
-inline static void findEdgeLengthHistogram(vertex_t * const nodes,
+static inline void findEdgeLengthHistogram(vertex_t * const nodes,
                                            const vid_t cntNodes,
                                            phys_t * const histogram,
                                            global_t * const globaldata) {
@@ -221,20 +222,20 @@ inline static void findEdgeLengthHistogram(vertex_t * const nodes,
 }
 
 #if PRINT_EDGE_LENGTH_HISTOGRAM
-inline static void initialEdgeLengthHistogram(vertex_t * const nodes,
+static inline void initialEdgeLengthHistogram(vertex_t * const nodes,
                                               const vid_t cntNodes,
                                               global_t * const globaldata) {
   findEdgeLengthHistogram(nodes, cntNodes, globaldata->edgeLengthsBefore, globaldata);
 }
 
-inline static void finalEdgeLengthHistogram(vertex_t * const nodes,
+static inline void finalEdgeLengthHistogram(vertex_t * const nodes,
                                             const vid_t cntNodes,
                                             global_t * const globaldata) {
   findEdgeLengthHistogram(nodes, cntNodes, globaldata->edgeLengthsAfter, globaldata);
 }
 #endif
 
-inline static void printEdgeLengthHistograms(vertex_t * const nodes,
+static inline void printEdgeLengthHistograms(vertex_t * const nodes,
                                             const vid_t cntNodes,
                                             global_t * const globaldata) {
 #if PRINT_EDGE_LENGTH_HISTOGRAM
@@ -249,29 +250,45 @@ inline static void printEdgeLengthHistograms(vertex_t * const nodes,
 #endif
 }
 
-const inline void springForce(phys_t (&a)[DIMENSIONS],
-                              phys_t (&b)[DIMENSIONS],
+const inline void springForce(const phys_t (&a)[DIMENSIONS],
+                              const phys_t (&b)[DIMENSIONS],
                               phys_t (&delta)[DIMENSIONS],
                               const phys_t restLength) {
-  for (int d = 0; d < DIMENSIONS; d++) {
+  for (int d = 0; d < DIMENSIONS; ++d) {
     delta[d] = a[d] - b[d];
   }
   phys_t coefficient = (restLength - length(delta)) / restLength;
-  for (int i = 0; i < DIMENSIONS; i++) {
+  for (int i = 0; i < DIMENSIONS; ++i) {
     delta[i] *= coefficient;
   }
 }
 
-inline static void getNetForce(vertex_t * const nodes,
+static inline phys_t springInternalEnergy(const phys_t (&a)[DIMENSIONS],
+                                          const phys_t (&b)[DIMENSIONS],
+                                          const phys_t restLength,
+                                          const phys_t springStiffness) {
+  phys_t delta[DIMENSIONS];
+  for (int d = 0; d < DIMENSIONS; ++d) {
+    delta[d] = a[d] - b[d];
+  }
+  phys_t springCompression = restLength - length(delta);
+
+  // spring internal energy = 1/2 * k * X^2
+  // where k is the Hooke constant of the spring,
+  // and X is the displacement from the "relaxed" length of the spring
+  return 0.5 * springStiffness * springCompression * springCompression;
+}
+
+static inline void getNetForce(const vertex_t * const nodes,
                                const vid_t index,
                                phys_t (&acceleration)[DIMENSIONS],
-                               global_t * const globaldata,
+                               const global_t * const globaldata,
                                const int round = 0,
                                const bool leapfrog = false) {
 #if IN_PLACE
-  data_t * current = &nodes[index].data;
+  const data_t * current = &nodes[index].data;
 #else
-  data_t * current = &nodes[index].data[round & 1];
+  const data_t * current = &nodes[index].data[round & 1];
 #endif
   phys_t myPosition[DIMENSIONS];
   for (int d = 0; d < DIMENSIONS; d++) {
@@ -283,9 +300,9 @@ inline static void getNetForce(vertex_t * const nodes,
   }
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
 #if IN_PLACE
-    data_t * neighbor = &nodes[nodes[index].edges[i]].data;
+    const data_t * neighbor = &nodes[nodes[index].edges[i]].data;
 #else
-    data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
+    const data_t * neighbor = &nodes[nodes[index].edges[i]].data[round & 1];
 #endif
     phys_t position[DIMENSIONS];
     for (int d = 0; d < DIMENSIONS; d++) {
@@ -302,9 +319,62 @@ inline static void getNetForce(vertex_t * const nodes,
   }
 }
 
-inline static double getConvergenceData(vertex_t * const nodes,
+static inline double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata) {
+                                        const global_t * const globaldata,
+                                        const int round,
+                                        const bool includeSpringEnergy = false) {
+  double totalEnergy = 0.0;
+  for (vid_t i = 0; i < cntNodes; ++i) {
+    const vertex_t& current = nodes[i];
+
+    #if IN_PLACE
+      const data_t& currentData = current.data;
+    #else
+      const data_t& currentData = current.data[round & 1];
+    #endif
+
+    // add the vertex's energy due to velocity: 1/2 * mv^2
+    // since we store inverse mass, we divide by the inverse mass to multiply by mass
+    const phys_t v = static_cast<double>(length(currentData.velocity));
+    totalEnergy += (v * v) / (2 * globaldata->inverseMass);
+
+    if (includeSpringEnergy) {
+      // add the spring energy of all springs between
+      // the current vertex and its neighbors of higher ID number
+      // (to only count once -- there are no self-edges)
+      for (vid_t j = 0; j < current.cntEdges; ++j) {
+        const vid_t neighborId = current.edges[j];
+        if (neighborId > i) {
+          const vertex_t& neighbor = nodes[neighborId];
+
+          #if IN_PLACE
+            const data_t& neighborData = neighbor.data;
+          #else
+            const data_t& neighborData = neighbor.data[round & 1];
+          #endif
+
+          const phys_t springEnergy = springInternalEnergy(currentData.position,
+                                                           neighborData.position,
+                                                           globaldata->restLength,
+                                                           globaldata->springStiffness);
+          totalEnergy += static_cast<double>(springEnergy);
+        }
+      }
+    }
+  }
+  return totalEnergy;
+}
+
+static inline double getInitialConvergenceData(const vertex_t * const nodes,
+                                               const vid_t cntNodes,
+                                               const global_t * const globaldata) {
+  return getConvergenceData(nodes, cntNodes, globaldata, 0, true);
+}
+
+static inline double getForceBasedConvergenceData(const vertex_t * const nodes,
+                                                  const vid_t cntNodes,
+                                                  const global_t * const globaldata) {
   phys_t meanSquare = 0.0;
   for (vid_t v = 0; v < cntNodes; v++) {
     phys_t acceleration[DIMENSIONS];
@@ -315,7 +385,7 @@ inline static double getConvergenceData(vertex_t * const nodes,
   return static_cast<double>(sqrt(meanSquare / static_cast<phys_t>(cntNodes)));
 }
 
-inline static void fillInGlobalData(vertex_t * const nodes,
+static inline void fillInGlobalData(vertex_t * const nodes,
                                     const vid_t cntNodes,
                                     global_t * const globaldata,
                                     int numRounds) {

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-inline static uint64_t hashOfVertexData(data_t * vertex) {
+inline static uint64_t hashOfVertexData(const data_t * vertex) {
   uint64_t result = 0;
   assert(sizeof(pagerank_t) <= sizeof(uint64_t));
   memcpy(&result,
@@ -34,19 +34,19 @@ inline static void fillInNodeData(vertex_t * const nodes,
 }
 
 inline static void fillInGlobalData(vertex_t * const nodes,
-                                  const vid_t cntNodes,
-                                  global_t * const globaldata,
-                                  int numRounds) {
+                                    const vid_t cntNodes,
+                                    global_t * const globaldata,
+                                    int numRounds) {
   globaldata->d = .85;
 #if TEST_CONVERGENCE
   globaldata->averageDiff = new (std::nothrow) pagerank_t[numRounds]();
 #endif
 }
 
-inline static void printConvergenceData(vertex_t * const nodes,
+inline static void printConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata,
-                                        int numRounds) {
+                                        const global_t * const globaldata,
+                                        const int numRounds) {
 #if TEST_CONVERGENCE
   pagerank_t normalizer = 1/globaldata->sumSquareDelta[0];
   for (int i = 0; i < numRounds; i++) {
@@ -55,16 +55,17 @@ inline static void printConvergenceData(vertex_t * const nodes,
 #endif
 }
 
-inline pagerank_t getDelta(vertex_t * const nodes,
-                           const vid_t index,
-                           global_t * const globaldata) {
+static inline pagerank_t getDelta(const vertex_t * const nodes,
+                                  const vid_t index,
+                                  const global_t * const globaldata,
+                                  const int round) {
   // recalculate this node's pagerank
   pagerank_t pagerank = 0;
   for (vid_t i = 0; i < nodes[index].cntEdges; i++) {
     #if IN_PLACE
       pagerank += nodes[nodes[index].edges[i]].data.contrib;
     #else
-      pagerank += nodes[nodes[index].edges[i]].data[0].contrib;
+      pagerank += nodes[nodes[index].edges[i]].data[round & 1].contrib;
     #endif
   }
 
@@ -74,19 +75,26 @@ inline pagerank_t getDelta(vertex_t * const nodes,
   #if IN_PLACE
     return pagerank - nodes[index].data.pagerank;
   #else
-    return pagerank - nodes[index].data[0].pagerank;
+    return pagerank - nodes[index].data[round & 1].pagerank;
   #endif
 }
 
-inline static double getConvergenceData(vertex_t * const nodes,
+static inline double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
-                                        global_t * const globaldata) {
+                                        const global_t * const globaldata,
+                                        const int round) {
   pagerank_t sumSquareDelta = 0.0;
   for (vid_t v = 0; v < cntNodes; v++) {
-    pagerank_t delta = getDelta(nodes, v, globaldata);
+    pagerank_t delta = getDelta(nodes, v, globaldata, round);
     sumSquareDelta += delta * delta;
   }
   return static_cast<double>(sqrt(sumSquareDelta / static_cast<pagerank_t>(cntNodes)));
+}
+
+static inline double getInitialConvergenceData(const vertex_t * const nodes,
+                                               const vid_t cntNodes,
+                                               const global_t * const globaldata) {
+  return getConvergenceData(nodes, cntNodes, globaldata, 0);
 }
 
 inline void update(vertex_t * const nodes,

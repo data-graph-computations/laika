@@ -13,14 +13,18 @@ addons:
 
 script:
   - make build-libgraphio
-  - make $CMD
+  - make $CMD RUN_FIXED_ROUNDS_EXPERIMENT=1
+  - make clean-graph-compute
+  - make $CMD RUN_CONVERGENCE_EXPERIMENT=1
 
 env:
   matrix:
     - CC=gcc-5 CXX=g++-5 CMD="BASELINE=1 PAGERANK=1 build-graph-compute"
+    - CC=gcc-5 CXX=g++-5 CMD="BASELINE=1 PAGERANK=1 VERBOSE=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D0_BSP=1 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_PRIO=1 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_CHROM=1 PAGERANK=1 build-graph-compute"
+    - CC=gcc-5 CXX=g++-5 CMD="D1_LOCKS=1 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_CHUNK=1 CHUNK_BITS=8 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_PHASE=1 CHUNK_BITS=8 PAGERANK=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_NUMA=1 CHUNK_BITS=8 PAGERANK=1 build-graph-compute"
@@ -28,6 +32,7 @@ env:
     - CC=gcc-5 CXX=g++-5 CMD="D0_BSP=1 MASS_SPRING_DASHPOT=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_PRIO=1 MASS_SPRING_DASHPOT=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_CHROM=1 MASS_SPRING_DASHPOT=1 build-graph-compute"
+    - CC=gcc-5 CXX=g++-5 CMD="D1_LOCKS=1 MASS_SPRING_DASHPOT=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_CHUNK=1 CHUNK_BITS=8 MASS_SPRING_DASHPOT=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_PHASE=1 CHUNK_BITS=8 MASS_SPRING_DASHPOT=1 build-graph-compute"
     - CC=gcc-5 CXX=g++-5 CMD="D1_NUMA=1 CHUNK_BITS=8 MASS_SPRING_DASHPOT=1 build-graph-compute"
