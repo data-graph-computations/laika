@@ -323,7 +323,7 @@ static inline double getConvergenceData(const vertex_t * const nodes,
                                         const vid_t cntNodes,
                                         const global_t * const globaldata,
                                         const int round,
-                                        const bool includeSpringEnergy = true) {
+                                        const bool includeSpringEnergy = false) {
   double totalEnergy = 0.0;
   for (vid_t i = 0; i < cntNodes; ++i) {
     const vertex_t& current = nodes[i];

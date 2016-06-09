@@ -150,6 +150,55 @@ static inline void printCompactOutput(const string& inputEdgeFile,
   cout << __TIME__ << endl;
 }
 
+static inline void printConvergenceExperimentHeader(const string& inputEdgeFile,
+                                                    const vertex_t * const nodes,
+                                                    const vid_t cntNodes,
+                                                    const vid_t cntEdges,
+                                                    const double initialConvergence,
+                                                    const double convergenceCoefficient,
+                                                    const int roundsBetweenConvChecks) {
+  cout << APP_NAME << ", ";
+  cout << SCHEDULER_NAME << ", ";
+  cout << IN_PLACE << ", ";
+
+  cout << initialConvergence << ", ";
+  cout << convergenceCoefficient << ", ";
+  cout << roundsBetweenConvChecks << ", ";
+
+  cout << PARALLEL << ", ";
+
+#if D1_NUMA
+  cout << NUMA_WORKERS << ", ";
+#elif PARALLEL
+  cout << (__cilkrts_get_nworkers()) << ", ";
+#else
+  cout << "1, ";
+#endif
+
+  cout << sizeof(vertex_t) << ", ";
+  cout << sizeof(sched_t) << ", ";
+  cout << sizeof(data_t) << ", ";
+  cout << hashOfGraphData(nodes, cntNodes) << ", ";
+
+  cout << inputEdgeFile << ", ";
+  cout << cntNodes << ", ";
+  cout << cntEdges << ", ";
+  cout << CHUNK_BITS << ", ";
+  cout << NUMA_INIT << ", ";
+  cout << NUMA_STEAL << ", ";
+  cout << DISTANCE << ", ";
+  cout << __DATE__ << ", ";
+  cout << __TIME__ << endl;
+}
+
+static inline void printConvergenceExperimentData(const int roundsExecuted,
+                                                  const double seconds,
+                                                  const double currentConvergence) {
+  cout << roundsExecuted << ", ";
+  cout << setprecision(8) << seconds << ", ";
+  cout << setprecision(8) << currentConvergence << endl;
+}
+
 static void prepareTestRun(const char * const inputEdgeFile,
                            const char * const vertexMetaDataFile,
                            const int numRounds,
@@ -323,7 +372,9 @@ int main_run_to_convergence(int argc, char *argv[]) {
   char * inputEdgeFile;
   char * vertexMetaDataFile = NULL;
   double convergenceCoefficient;
+  int result = 0;
   const int numRounds = 100000;  // cutoff round number, should never be hit
+  const int roundsBetweenConvergenceChecks = 10;
 
 #if VERTEX_META_DATA
   if (argc != 4) {
@@ -359,7 +410,41 @@ int main_run_to_convergence(int argc, char *argv[]) {
   ///                     RUNNING THE EXPERIMENT                    ///
   /////////////////////////////////////////////////////////////////////
 
-  // to be filled in later
+  // calculate the initial convergence data, and the final convergence number
+  // that signals the end of the experiment
+  double currentConvergence = getInitialConvergenceData(nodes, cntNodes, &globaldata);
+  const double cutoffConvergence = currentConvergence * convergenceCoefficient;
+  int roundsExecuted = 0;
+  double totalSeconds = 0.0;
+
+  printConvergenceExperimentHeader(inputEdgeFile, nodes, cntNodes, cntEdges,
+                                   currentConvergence, convergenceCoefficient,
+                                   roundsBetweenConvergenceChecks);
+
+  while (currentConvergence > cutoffConvergence) {
+    struct timespec starttime, endtime;
+    result = clock_gettime(CLOCK_MONOTONIC, &starttime);
+    assert(result == 0);
+
+    execute_rounds(numRounds, nodes, cntNodes, &scheddata, &globaldata);
+
+    result = clock_gettime(CLOCK_MONOTONIC, &endtime);
+    assert(result == 0);
+    int64_t ns = endtime.tv_nsec;
+    ns -= starttime.tv_nsec;
+    double seconds = static_cast<double>(ns) * 1e-9;
+    seconds += endtime.tv_sec - starttime.tv_sec;
+    totalSeconds += seconds;
+
+    // ensure that we are making progress toward convergence, and not just spinning
+    roundsExecuted += roundsBetweenConvergenceChecks;
+    assert(roundsExecuted <= numRounds);
+
+    currentConvergence = getConvergenceData(nodes, cntNodes, &globaldata,
+                                            roundsExecuted);
+    printConvergenceExperimentData(roundsExecuted, totalSeconds,
+                                   currentConvergence);
+  }
 
   /////////////////////////////////////////////////////////////////////
   ///                     END OF THE EXPERIMENT                     ///
@@ -371,5 +456,6 @@ int main_run_to_convergence(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-  return main_fixed_number_of_rounds(argc, argv);
+  // return main_fixed_number_of_rounds(argc, argv);
+  return main_run_to_convergence(argc, argv);
 }
