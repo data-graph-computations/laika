@@ -14,6 +14,8 @@ addons:
 script:
   - make build-libgraphio
   - make $CMD
+  - make clean-graph-compute
+  - make $CMD RUN_CONVERGENCE_EXPERIMENT=1
 
 env:
   matrix:

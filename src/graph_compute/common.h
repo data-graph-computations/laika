@@ -243,6 +243,13 @@ WHEN_TEST(
   #error "Specify one of BASELINE, D0_BSP, D1_PRIO, D1_CHUNK, D1_PHASE, D1_NUMA."
 #endif
 
+#if RUN_CONVERGENCE_EXPERIMENT
+  #define EXPERIMENT_NAME "RUN_TO_CONVERGENCE"
+#else
+  #define RUN_FIXED_ROUNDS_EXPERIMENT 1
+  #define EXPERIMENT_NAME "RUN_FIXED_ROUNDS"
+#endif
+
 #include "./io.h"
 
 #endif  // COMMON_H_

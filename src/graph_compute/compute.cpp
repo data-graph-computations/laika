@@ -456,6 +456,12 @@ int main_run_to_convergence(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-  // return main_fixed_number_of_rounds(argc, argv);
-  return main_run_to_convergence(argc, argv);
+  #if RUN_CONVERGENCE_EXPERIMENT
+    return main_run_to_convergence(argc, argv);
+  #elif RUN_FIXED_ROUNDS_EXPERIMENT
+    return main_fixed_number_of_rounds(argc, argv);
+  #else
+    #error "No experiment specified!"
+    // shouldn't happen, RUN_FIXED_ROUNDS_EXPERIMENT is default
+  #endif
 }
