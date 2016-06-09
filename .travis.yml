@@ -13,7 +13,7 @@ addons:
 
 script:
   - make build-libgraphio
-  - make $CMD
+  - make $CMD RUN_FIXED_ROUNDS_EXPERIMENT=1
   - make clean-graph-compute
   - make $CMD RUN_CONVERGENCE_EXPERIMENT=1
 
