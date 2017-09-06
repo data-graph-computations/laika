@@ -1,2 +1,0 @@
-fractals_paper
-==============
