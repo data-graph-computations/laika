@@ -1,0 +1,1600 @@
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000326963,inf,80,32,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,1234091,16,1,1,1,Dec 13 2015,09:27:36
+106473517208,cycles
+165143078332,instructions
+33297433949,branches
+187210856,branch-misses
+27925,dTLB-store-misses
+17496838,dTLB-load-misses
+27328544,LLC-store-misses
+52599976,LLC-load-misses
+110183648,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,32.72876,0.022418124,80,32,32,1,246246795,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,1234091,16,1,1,1,Dec 13 2015,09:27:36
+194893820282,cycles
+265097572581,instructions
+35629880110,branches
+339315449,branch-misses
+61403,dTLB-store-misses
+15162307,dTLB-load-misses
+62916226,LLC-store-misses
+186348243,LLC-load-misses
+418032689,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000317817,inf,80,32,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,22575595,16,1,1,1,Dec 13 2015,09:27:36
+113722008721,cycles
+166053510640,instructions
+33476300942,branches
+339062132,branch-misses
+985525,dTLB-store-misses
+102325362,dTLB-load-misses
+31721470,LLC-store-misses
+236357038,LLC-load-misses
+100391555,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,138.5072,0.094872873,80,32,32,1,2338261185,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,22575595,16,1,1,1,Dec 13 2015,09:27:36
+482787638339,cycles
+270901524312,instructions
+36640590298,branches
+594925431,branch-misses
+19391452,dTLB-store-misses
+1448182723,dTLB-load-misses
+70327354,LLC-store-misses
+3318480292,LLC-load-misses
+251628999,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000306906,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,1374344,16,1,1,1,Dec 13 2015,09:27:36
+104818148670,cycles
+161741615992,instructions
+32660033840,branches
+194257075,branch-misses
+51488,dTLB-store-misses
+16917292,dTLB-load-misses
+47377688,LLC-store-misses
+70065625,LLC-load-misses
+90871434,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,32.798604,0.022890831,80,32,32,1,3194234135,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,1374344,16,1,1,1,Dec 13 2015,09:27:36
+191526661671,cycles
+259628604700,instructions
+34938540544,branches
+340234699,branch-misses
+62771,dTLB-store-misses
+17620075,dTLB-load-misses
+62714563,LLC-store-misses
+196032185,LLC-load-misses
+419616754,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000296034,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,22151931,16,1,1,1,Dec 13 2015,09:27:36
+115541640800,cycles
+162663266393,instructions
+32834060082,branches
+335529686,branch-misses
+956842,dTLB-store-misses
+102170457,dTLB-load-misses
+48575520,LLC-store-misses
+245688215,LLC-load-misses
+86130015,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,134.31614,0.093742043,80,32,32,1,3205921572,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,22151931,16,1,1,1,Dec 13 2015,09:27:36
+467570112469,cycles
+264984851891,instructions
+35879955123,branches
+560035167,branch-misses
+18644726,dTLB-store-misses
+1415711617,dTLB-load-misses
+32694223,LLC-store-misses
+3225363650,LLC-load-misses
+244667147,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000338892,inf,80,32,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,889160,16,1,1,1,Dec 13 2015,09:27:36
+105195554028,cycles
+163807728254,instructions
+33083066341,branches
+160533284,branch-misses
+35733,dTLB-store-misses
+16911245,dTLB-load-misses
+45417259,LLC-store-misses
+60405492,LLC-load-misses
+105206385,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,32.858609,0.022084067,80,32,32,1,1058360293,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,889160,16,1,1,1,Dec 13 2015,09:27:36
+193758006652,cycles
+265166348097,instructions
+35440124851,branches
+304955959,branch-misses
+59783,dTLB-store-misses
+17646314,dTLB-load-misses
+63700366,LLC-store-misses
+181659710,LLC-load-misses
+410435224,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000272965,inf,80,32,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,23008615,16,1,1,1,Dec 13 2015,09:27:36
+112370147894,cycles
+164731141404,instructions
+33247708709,branches
+292173135,branch-misses
+990154,dTLB-store-misses
+103060625,dTLB-load-misses
+31684166,LLC-store-misses
+239097290,LLC-load-misses
+100133064,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,140.61796,0.094508455,80,32,32,1,3157359132,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,23008615,16,1,1,1,Dec 13 2015,09:27:36
+490493132261,cycles
+271103634147,instructions
+36461322904,branches
+538238747,branch-misses
+19666524,dTLB-store-misses
+1470492070,dTLB-load-misses
+73399005,LLC-store-misses
+3387577848,LLC-load-misses
+246178020,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000287975,inf,80,32,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,884815,16,1,1,1,Dec 13 2015,09:27:36
+108329770175,cycles
+171921029439,instructions
+34804923930,branches
+164284637,branch-misses
+37047,dTLB-store-misses
+16958357,dTLB-load-misses
+29431903,LLC-store-misses
+52355779,LLC-load-misses
+111664656,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,33.382193,0.021303281,80,32,32,1,3174037995,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,884815,16,1,1,1,Dec 13 2015,09:27:36
+198551663260,cycles
+277932509322,instructions
+37237004144,branches
+318672069,branch-misses
+49970,dTLB-store-misses
+19154306,dTLB-load-misses
+30265295,LLC-store-misses
+150390503,LLC-load-misses
+430788626,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,0,1,0.000328175,inf,80,32,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,24234570,16,1,1,1,Dec 13 2015,09:27:36
+118237945595,cycles
+173043280840,instructions
+35019322831,branches
+304700393,branch-misses
+1118991,dTLB-store-misses
+110062555,dTLB-load-misses
+51215684,LLC-store-misses
+256032317,LLC-load-misses
+100383840,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,0,1,148.49462,0.094763775,80,32,32,1,3146901274,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,24234570,16,1,1,1,Dec 13 2015,09:27:36
+512767370235,cycles
+284196748958,instructions
+38309834552,branches
+573834905,branch-misses
+22615100,dTLB-store-misses
+1558883061,dTLB-load-misses
+72182940,LLC-store-misses
+3540400738,LLC-load-misses
+266623025,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.16e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,09:50:23
+29863784053,cycles
+57634164453,instructions
+12346917257,branches
+68843460,branch-misses
+30504,dTLB-store-misses
+177774,dTLB-load-misses
+19695336,LLC-store-misses
+21300006,LLC-load-misses
+66004272,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,29.125668,0.019950124,48,1,32,1,35814903,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,09:50:23
+107811405448,cycles
+153975413616,instructions
+14151639525,branches
+213277779,branch-misses
+28116,dTLB-store-misses
+265482,dTLB-load-misses
+20287278,LLC-store-misses
+74401623,LLC-load-misses
+300407517,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.83e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,09:50:23
+35465240812,cycles
+57809430097,instructions
+12376072174,branches
+97933030,branch-misses
+728776,dTLB-store-misses
+75882323,dTLB-load-misses
+20231346,LLC-store-misses
+201794584,LLC-load-misses
+60104675,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,130.92051,0.089676242,48,1,32,1,2259883940,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,09:50:23
+382437866438,cycles
+154040696532,instructions
+14181376452,branches
+249351160,branch-misses
+7780710,dTLB-store-misses
+1230260865,dTLB-load-misses
+20445933,LLC-store-misses
+3114631549,LLC-load-misses
+198201221,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.13e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,09:50:23
+31471368026,cycles
+57390934263,instructions
+12286449832,branches
+74306935,branch-misses
+19879,dTLB-store-misses
+334523,dTLB-load-misses
+19532154,LLC-store-misses
+23860818,LLC-load-misses
+60707295,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,28.568822,0.019938778,48,1,32,1,3006962145,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,09:50:23
+106752692890,cycles
+151643291757,instructions
+14034207278,branches
+210802073,branch-misses
+32306,dTLB-store-misses
+555034,dTLB-load-misses
+19771229,LLC-store-misses
+70552207,LLC-load-misses
+296869405,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.88e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,09:50:23
+33960970461,cycles
+57247508312,instructions
+12272998381,branches
+80895079,branch-misses
+694179,dTLB-store-misses
+72875614,dTLB-load-misses
+19454954,LLC-store-misses
+197379779,LLC-load-misses
+55798372,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,128.00052,0.08933424,48,1,32,1,896372893,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,09:50:23
+373764669862,cycles
+151684494230,instructions
+14053572097,branches
+223977181,branch-misses
+7615084,dTLB-store-misses
+1193012633,dTLB-load-misses
+20246884,LLC-store-misses
+3045552968,LLC-load-misses
+200782135,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.04e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,09:50:23
+28909178915,cycles
+56118297616,instructions
+12028725145,branches
+44382325,branch-misses
+40401,dTLB-store-misses
+300987,dTLB-load-misses
+19878707,LLC-store-misses
+25164857,LLC-load-misses
+60591866,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,29.2157,0.01963569,48,1,32,1,985357721,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,09:50:23
+106749460832,cycles
+153781912697,instructions
+13821873746,branches
+184500604,branch-misses
+31507,dTLB-store-misses
+409194,dTLB-load-misses
+19903272,LLC-store-misses
+65736443,LLC-load-misses
+301286674,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.81e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,09:50:23
+32629648014,cycles
+56108191268,instructions
+12021734405,branches
+47562427,branch-misses
+715789,dTLB-store-misses
+76502991,dTLB-load-misses
+20173764,LLC-store-misses
+206184181,LLC-load-misses
+58774029,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,133.17269,0.089504537,48,1,32,1,854564150,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,09:50:23
+387444108030,cycles
+153951468071,instructions
+13849328256,branches
+191801364,branch-misses
+8162115,dTLB-store-misses
+1251417881,dTLB-load-misses
+19854268,LLC-store-misses
+3168813098,LLC-load-misses
+198049022,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,2.91e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,09:50:23
+32898389163,cycles
+61002754116,instructions
+13041588847,branches
+51301782,branch-misses
+13185,dTLB-store-misses
+130926,dTLB-load-misses
+21780094,LLC-store-misses
+20627659,LLC-load-misses
+71212839,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,30.496264,0.019461588,48,1,32,1,1067214087,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,09:50:23
+113326704429,cycles
+163181739349,instructions
+14900014673,branches
+202887757,branch-misses
+28659,dTLB-store-misses
+344189,dTLB-load-misses
+21219123,LLC-store-misses
+74829157,LLC-load-misses
+305479219,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,0,1,1.74e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,09:50:23
+35116362214,cycles
+60894745757,instructions
+13019302393,branches
+52098990,branch-misses
+856143,dTLB-store-misses
+80912624,dTLB-load-misses
+21210406,LLC-store-misses
+225197055,LLC-load-misses
+51439069,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,0,1,140.10333,0.089408766,48,1,32,1,3141832818,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,09:50:23
+408287202072,cycles
+163387775280,instructions
+14929754388,branches
+212431973,branch-misses
+9690830,dTLB-store-misses
+1318835006,dTLB-load-misses
+21310318,LLC-store-misses
+3331507600,LLC-load-misses
+211430794,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,2.9e-07,inf,80,1,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,10:04:33
+31079782852,cycles
+58130272159,instructions
+12391180185,branches
+69898517,branch-misses
+19583,dTLB-store-misses
+151334,dTLB-load-misses
+26821449,LLC-store-misses
+41042524,LLC-load-misses
+78162564,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,31.398456,0.021506909,80,1,32,1,50795580,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,10:04:33
+114293270264,cycles
+154093537802,instructions
+14145345263,branches
+209243186,branch-misses
+21951,dTLB-store-misses
+332630,dTLB-load-misses
+25481394,LLC-store-misses
+127136590,LLC-load-misses
+350779180,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,4.27e-07,inf,80,1,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,10:04:33
+35587958750,cycles
+58013512866,instructions
+12372617714,branches
+95564360,branch-misses
+854694,dTLB-store-misses
+83637969,dTLB-load-misses
+26860683,LLC-store-misses
+228783999,LLC-load-misses
+66619028,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,134.18972,0.091915543,80,1,32,1,14089168,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,10:04:33
+392095678273,cycles
+154390977787,instructions
+14181567738,branches
+242811584,branch-misses
+6148826,dTLB-store-misses
+1373616590,dTLB-load-misses
+25582003,LLC-store-misses
+3230166632,LLC-load-misses
+212700257,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,2.19e-07,inf,80,1,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,10:04:33
+30732497845,cycles
+57633257457,instructions
+12291223526,branches
+72691226,branch-misses
+29823,dTLB-store-misses
+344737,dTLB-load-misses
+23706817,LLC-store-misses
+47114637,LLC-load-misses
+75911875,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,30.816361,0.021507382,80,1,32,1,2991296232,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,10:04:33
+113241632089,cycles
+151742421388,instructions
+14025475377,branches
+205040511,branch-misses
+35284,dTLB-store-misses
+526084,dTLB-load-misses
+23902190,LLC-store-misses
+125447125,LLC-load-misses
+344001201,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,1.98e-07,inf,80,1,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,10:04:33
+35403797828,cycles
+57572708916,instructions
+12275258929,branches
+80611837,branch-misses
+860848,dTLB-store-misses
+81935306,dTLB-load-misses
+23995118,LLC-store-misses
+229003701,LLC-load-misses
+61205845,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,131.53515,0.091801129,80,1,32,1,820332136,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,10:04:33
+385011341066,cycles
+152034416940,instructions
+14051040972,branches
+216180226,branch-misses
+5933239,dTLB-store-misses
+1338929487,dTLB-load-misses
+25690789,LLC-store-misses
+3161893759,LLC-load-misses
+206147369,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,2.81e-07,inf,80,1,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,10:04:33
+29381663353,cycles
+56398229627,instructions
+12042759510,branches
+45783743,branch-misses
+32102,dTLB-store-misses
+174561,dTLB-load-misses
+26133961,LLC-store-misses
+44601255,LLC-load-misses
+81031294,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,31.309973,0.021043238,80,1,32,1,843649382,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,10:04:33
+112661903951,cycles
+154279990929,instructions
+13854777420,branches
+178822344,branch-misses
+23040,dTLB-store-misses
+251114,dTLB-load-misses
+26514593,LLC-store-misses
+117440316,LLC-load-misses
+343032582,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,3.22e-07,inf,80,1,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,10:04:33
+33485532616,cycles
+56357901723,instructions
+12042434302,branches
+47634584,branch-misses
+872313,dTLB-store-misses
+85200076,dTLB-load-misses
+26881434,LLC-store-misses
+232550191,LLC-load-misses
+68667021,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,136.57076,0.091788355,80,1,32,1,3003119390,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,10:04:33
+396555348802,cycles
+154306126524,instructions
+13881900106,branches
+183035815,branch-misses
+6267588,dTLB-store-misses
+1397219903,dTLB-load-misses
+26995464,LLC-store-misses
+3281058401,LLC-load-misses
+219281017,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,2.88e-07,inf,80,1,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,10:04:33
+32542904925,cycles
+61044741784,instructions
+13005778811,branches
+51244326,branch-misses
+22021,dTLB-store-misses
+165523,dTLB-load-misses
+28061160,LLC-store-misses
+40455624,LLC-load-misses
+79541119,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,32.590056,0.020797769,80,1,32,1,2956571591,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,10:04:33
+119687607739,cycles
+163648745546,instructions
+14910599325,branches
+193546007,branch-misses
+19902,dTLB-store-misses
+287209,dTLB-load-misses
+26716658,LLC-store-misses
+119668890,LLC-load-misses
+357063951,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,0,1,2.42e-07,inf,80,1,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,10:04:33
+36813372440,cycles
+61128920803,instructions
+13032642412,branches
+52105826,branch-misses
+1026562,dTLB-store-misses
+90151575,dTLB-load-misses
+28109219,LLC-store-misses
+246331831,LLC-load-misses
+66418461,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,0,1,143.3768,0.091497772,80,1,32,1,998142597,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,10:04:33
+417737892082,cycles
+163775237097,instructions
+14934883551,branches
+203060561,branch-misses
+7576251,dTLB-store-misses
+1471280676,dTLB-load-misses
+28199201,LLC-store-misses
+3442125989,LLC-load-misses
+229616928,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,3.02e-07,inf,80,32,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,10:19:09
+35604141286,cycles
+62589501199,instructions
+13361928047,branches
+145026587,branch-misses
+22232,dTLB-store-misses
+2442010,dTLB-load-misses
+32487550,LLC-store-misses
+72562088,LLC-load-misses
+109739778,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,45.651189,0.031269562,80,32,32,1,175354100,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,10:19:09
+157627954166,cycles
+180070593104,instructions
+19057258906,branches
+717208498,branch-misses
+26280,dTLB-store-misses
+2785871,dTLB-load-misses
+32418114,LLC-store-misses
+363941351,LLC-load-misses
+400194965,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,2.43e-07,inf,80,32,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,10:19:09
+45732672388,cycles
+62496082573,instructions
+13354694348,branches
+164816493,branch-misses
+1113351,dTLB-store-misses
+256121360,dTLB-load-misses
+31918497,LLC-store-misses
+463446162,LLC-load-misses
+72195037,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,91.581785,0.062730508,80,32,32,1,240239201,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,10:19:09
+288236402581,cycles
+176033514934,instructions
+17957944681,branches
+590037056,branch-misses
+9970767,dTLB-store-misses
+1560936382,dTLB-load-misses
+33919636,LLC-store-misses
+1944090869,LLC-load-misses
+83218225,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,1.98e-07,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,10:19:09
+36082002746,cycles
+62048518085,instructions
+13254488018,branches
+152435542,branch-misses
+31874,dTLB-store-misses
+2356005,dTLB-load-misses
+30725754,LLC-store-misses
+67813970,LLC-load-misses
+111116406,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,46.241238,0.032272726,80,32,32,1,3058376961,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,10:19:09
+158025448641,cycles
+176903682239,instructions
+18807786906,branches
+697309551,branch-misses
+31811,dTLB-store-misses
+2983762,dTLB-load-misses
+33055593,LLC-store-misses
+400404104,LLC-load-misses
+396716918,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,2.8e-07,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,10:19:09
+44063248799,cycles
+61929974723,instructions
+13229366873,branches
+147312678,branch-misses
+1109618,dTLB-store-misses
+248612806,dTLB-load-misses
+28423091,LLC-store-misses
+447151737,LLC-load-misses
+76617985,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,89.652213,0.062570153,80,32,32,1,3217272907,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,10:19:09
+282327766777,cycles
+173228742877,instructions
+17733982827,branches
+553916996,branch-misses
+10086345,dTLB-store-misses
+1524244083,dTLB-load-misses
+31400776,LLC-store-misses
+1911217209,LLC-load-misses
+73130453,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,2.93e-07,inf,80,32,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,10:19:09
+34356093600,cycles
+61001302967,instructions
+13059677944,branches
+129559645,branch-misses
+40787,dTLB-store-misses
+2394938,dTLB-load-misses
+32037524,LLC-store-misses
+69155829,LLC-load-misses
+115177447,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,42.032531,0.028249802,80,32,32,1,1020365990,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,10:19:09
+146152873240,cycles
+180387887950,instructions
+18885395921,branches
+705374611,branch-misses
+18383,dTLB-store-misses
+2710425,dTLB-load-misses
+31063901,LLC-store-misses
+256404911,LLC-load-misses
+332357502,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,2.94e-07,inf,80,32,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,10:19:09
+43317024461,cycles
+60820290240,instructions
+13014684682,branches
+116866305,branch-misses
+1154266,dTLB-store-misses
+259462818,dTLB-load-misses
+34417479,LLC-store-misses
+461150603,LLC-load-misses
+77275709,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,93.076141,0.062555895,80,32,32,1,3187038292,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,10:19:09
+291039715387,cycles
+176360723790,instructions
+17704327716,branches
+534011954,branch-misses
+10440321,dTLB-store-misses
+1610766702,dTLB-load-misses
+34312124,LLC-store-misses
+1980876546,LLC-load-misses
+80663653,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,1.62e-07,inf,80,32,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,10:19:09
+36254855642,cycles
+66061036211,instructions
+14100702182,branches
+131579056,branch-misses
+30095,dTLB-store-misses
+2074728,dTLB-load-misses
+32325629,LLC-store-misses
+68544999,LLC-load-misses
+120076724,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,44.03152,0.028099287,80,32,32,1,3182296690,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,10:19:09
+153454721690,cycles
+190780489450,instructions
+20122425423,branches
+705601889,branch-misses
+29198,dTLB-store-misses
+2256938,dTLB-load-misses
+34613433,LLC-store-misses
+279709158,LLC-load-misses
+355029097,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,0,1,3.71e-07,inf,80,32,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,10:19:09
+47043681522,cycles
+65994800636,instructions
+14083221324,branches
+127261257,branch-misses
+1257298,dTLB-store-misses
+273622141,dTLB-load-misses
+35064758,LLC-store-misses
+488219296,LLC-load-misses
+77326480,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,0,1,91.763158,0.058559854,80,32,32,1,3140992047,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,10:19:09
+290419204485,cycles
+186852655871,instructions
+18966466130,branches
+557692002,branch-misses
+12113896,dTLB-store-misses
+1616509885,dTLB-load-misses
+35538460,LLC-store-misses
+1933384257,LLC-load-misses
+76589948,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,1.99e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,10:32:21
+32602404452,cycles
+59618632672,instructions
+12925816533,branches
+142230752,branch-misses
+24654,dTLB-store-misses
+922092,dTLB-load-misses
+22656402,LLC-store-misses
+28705137,LLC-load-misses
+80757707,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,50.145911,0.034348298,48,1,32,1,87559595,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,10:32:21
+166016854487,cycles
+156141771894,instructions
+14681315500,branches
+283832033,branch-misses
+47827,dTLB-store-misses
+1864461,dTLB-load-misses
+22728399,LLC-store-misses
+613432636,LLC-load-misses
+956779368,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,2.47e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,10:32:21
+37796485064,cycles
+59560786408,instructions
+12908267688,branches
+153880494,branch-misses
+832833,dTLB-store-misses
+89284251,dTLB-load-misses
+21923407,LLC-store-misses
+250545275,LLC-load-misses
+68774966,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,141.66023,0.097032592,48,1,32,1,2326930805,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,10:32:21
+414368927134,cycles
+156249731336,instructions
+14723157583,branches
+296559534,branch-misses
+8401332,dTLB-store-misses
+1256596266,dTLB-load-misses
+21446793,LLC-store-misses
+3489355107,LLC-load-misses
+295506785,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,1.71e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,10:32:21
+32823409620,cycles
+59157582926,instructions
+12816932000,branches
+149964290,branch-misses
+27254,dTLB-store-misses
+1080930,dTLB-load-misses
+21092423,LLC-store-misses
+23082549,LLC-load-misses
+83121866,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,49.204482,0.034340836,48,1,32,1,908129013,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,10:32:21
+163145759176,cycles
+153600778765,instructions
+14549648040,branches
+282000858,branch-misses
+56115,dTLB-store-misses
+2044908,dTLB-load-misses
+21196809,LLC-store-misses
+599839158,LLC-load-misses
+917930260,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,1.89e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,10:32:21
+37033094650,cycles
+59049823358,instructions
+12786490744,branches
+136878408,branch-misses
+838851,dTLB-store-misses
+86830662,dTLB-load-misses
+21731549,LLC-store-misses
+241986119,LLC-load-misses
+64787794,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,138.48311,0.096650254,48,1,32,1,3097367708,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,10:32:21
+405231394685,cycles
+153877389581,instructions
+14576708296,branches
+272227412,branch-misses
+8142213,dTLB-store-misses
+1220158812,dTLB-load-misses
+21481138,LLC-store-misses
+3412141602,LLC-load-misses
+285163950,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,2.91e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,10:32:21
+31489151306,cycles
+57910645562,instructions
+12560640903,branches
+128460417,branch-misses
+42035,dTLB-store-misses
+852360,dTLB-load-misses
+21397705,LLC-store-misses
+22790260,LLC-load-misses
+87348110,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,48.947552,0.032897345,48,1,32,1,837158667,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,10:32:21
+161892034166,cycles
+155951209794,instructions
+14371899378,branches
+261069362,branch-misses
+27791,dTLB-store-misses
+1235241,dTLB-load-misses
+22220553,LLC-store-misses
+562026175,LLC-load-misses
+1005732280,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,2.05e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,10:32:21
+36255229157,cycles
+58007194873,instructions
+12581276989,branches
+107359972,branch-misses
+857914,dTLB-store-misses
+90696191,dTLB-load-misses
+21533554,LLC-store-misses
+248574922,LLC-load-misses
+71296360,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,143.80894,0.096653095,48,1,32,1,816519843,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,10:32:21
+418685446229,cycles
+156202312585,instructions
+14401237759,branches
+242561745,branch-misses
+8405790,dTLB-store-misses
+1275828420,dTLB-load-misses
+21410348,LLC-store-misses
+3539220358,LLC-load-misses
+296879395,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,1.72e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,10:32:21
+33408913060,cycles
+62804742568,instructions
+13585286065,branches
+128375812,branch-misses
+20724,dTLB-store-misses
+697606,dTLB-load-misses
+23162611,LLC-store-misses
+29782359,LLC-load-misses
+85474794,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,53.55643,0.034177733,48,1,32,1,3023878122,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,10:32:21
+176634495065,cycles
+165705920741,instructions
+15488304361,branches
+279671456,branch-misses
+36235,dTLB-store-misses
+1243474,dTLB-load-misses
+22845866,LLC-store-misses
+666736547,LLC-load-misses
+1031940963,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,0,1,2.91e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,10:32:21
+39221777877,cycles
+62685114070,instructions
+13575656053,branches
+114933587,branch-misses
+1001051,dTLB-store-misses
+95934108,dTLB-load-misses
+22316787,LLC-store-misses
+257835199,LLC-load-misses
+68625518,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,0,1,150.64548,0.096136374,48,1,32,1,820697273,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,10:32:21
+440311037043,cycles
+165801285162,instructions
+15520054374,branches
+266034424,branch-misses
+10573864,dTLB-store-misses
+1349508581,dTLB-load-misses
+39565238,LLC-store-misses
+3753217611,LLC-load-misses
+278823997,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.001511869,inf,80,32,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,1234091,16,1,1,1,Dec 13 2015,10:48:54
+107621075879,cycles
+164681563355,instructions
+33280099985,branches
+196917692,branch-misses
+28131,dTLB-store-misses
+15999481,dTLB-load-misses
+43276311,LLC-store-misses
+62715823,LLC-load-misses
+96663912,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,3.0341528,0.0020782948,80,32,32,1,246246795,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,1234091,16,1,1,1,Dec 13 2015,10:48:54
+203492729332,cycles
+267469627713,instructions
+36319538086,branches
+338776298,branch-misses
+56219,dTLB-store-misses
+17755339,dTLB-load-misses
+51436554,LLC-store-misses
+180211474,LLC-load-misses
+413308040,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.001713571,inf,80,32,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,22575595,16,1,1,1,Dec 13 2015,10:48:54
+116403024998,cycles
+164126020060,instructions
+33211321277,branches
+344231326,branch-misses
+966692,dTLB-store-misses
+105024881,dTLB-load-misses
+54206228,LLC-store-misses
+248992496,LLC-load-misses
+85446591,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,15.564261,0.010661007,80,32,32,1,2338261185,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,22575595,16,1,1,1,Dec 13 2015,10:48:54
+610792104118,cycles
+270577101136,instructions
+36694720732,branches
+599608881,branch-misses
+20639973,dTLB-store-misses
+1491610508,dTLB-load-misses
+70488225,LLC-store-misses
+3319224377,LLC-load-misses
+226756885,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.001624165,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,1374344,16,1,1,1,Dec 13 2015,10:48:54
+106854633444,cycles
+160847312380,instructions
+32588708382,branches
+197613346,branch-misses
+38837,dTLB-store-misses
+16029279,dTLB-load-misses
+46160164,LLC-store-misses
+59825774,LLC-load-misses
+94121971,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,2.9876133,0.0020851178,80,32,32,1,3194234135,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,1374344,16,1,1,1,Dec 13 2015,10:48:54
+200774805179,cycles
+262946654019,instructions
+35770720052,branches
+340959892,branch-misses
+37510,dTLB-store-misses
+16821070,dTLB-load-misses
+40953339,LLC-store-misses
+173359866,LLC-load-misses
+420541331,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.001801614,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,22151931,16,1,1,1,Dec 13 2015,10:48:54
+113804496143,cycles
+161026703134,instructions
+32607980072,branches
+319849643,branch-misses
+987086,dTLB-store-misses
+103635550,dTLB-load-misses
+44250595,LLC-store-misses
+243214554,LLC-load-misses
+80371893,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,15.238665,0.010635383,80,32,32,1,3205921572,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,22151931,16,1,1,1,Dec 13 2015,10:48:54
+598259261505,cycles
+265179279935,instructions
+36080525385,branches
+565267877,branch-misses
+20776586,dTLB-store-misses
+1456388588,dTLB-load-misses
+59223909,LLC-store-misses
+3249281946,LLC-load-misses
+231493063,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.001612426,inf,80,32,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,889160,16,1,1,1,Dec 13 2015,10:48:54
+106772638716,cycles
+162865272077,instructions
+32934664242,branches
+161518685,branch-misses
+49950,dTLB-store-misses
+17895880,dTLB-load-misses
+53610792,LLC-store-misses
+63432220,LLC-load-misses
+89895961,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,3.004219,0.0020191169,80,32,32,1,1058360293,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,889160,16,1,1,1,Dec 13 2015,10:48:54
+202670627111,cycles
+268942487463,instructions
+36413120934,branches
+302439517,branch-misses
+50823,dTLB-store-misses
+15242870,dTLB-load-misses
+44613991,LLC-store-misses
+165073018,LLC-load-misses
+404795390,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.002356986,inf,80,32,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,23008615,16,1,1,1,Dec 13 2015,10:48:54
+115116221925,cycles
+164507891622,instructions
+33284968472,branches
+294746672,branch-misses
+1004738,dTLB-store-misses
+106429219,dTLB-load-misses
+47574023,LLC-store-misses
+251301268,LLC-load-misses
+89124456,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,15.860934,0.010660035,80,32,32,1,3157359132,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,23008615,16,1,1,1,Dec 13 2015,10:48:54
+619791843728,cycles
+270920236979,instructions
+36535918579,branches
+542521631,branch-misses
+21627442,dTLB-store-misses
+1516393569,dTLB-load-misses
+60279523,LLC-store-misses
+3363370607,LLC-load-misses
+236519417,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.001137129,inf,80,32,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,884815,16,1,1,1,Dec 13 2015,10:48:54
+110984028867,cycles
+170700671307,instructions
+34632342536,branches
+164562433,branch-misses
+47715,dTLB-store-misses
+15437403,dTLB-load-misses
+41735787,LLC-store-misses
+60266670,LLC-load-misses
+95156867,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,3.0710415,0.0019598251,80,32,32,1,3174037995,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,884815,16,1,1,1,Dec 13 2015,10:48:54
+209356779562,cycles
+281895142552,instructions
+38296744154,branches
+329402763,branch-misses
+94038,dTLB-store-misses
+19136534,dTLB-load-misses
+51676005,LLC-store-misses
+165298989,LLC-load-misses
+414670917,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,-nan,1,12,0.000927686,inf,80,32,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,24234570,16,1,1,1,Dec 13 2015,10:48:54
+119314666984,cycles
+171154346861,instructions
+34741635196,branches
+304115207,branch-misses
+1108945,dTLB-store-misses
+111444068,dTLB-load-misses
+46854893,LLC-store-misses
+260326747,LLC-load-misses
+89549816,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,NUMA,1,inf,1,12,16.212796,0.010346407,80,32,32,1,3146901274,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,24234570,16,1,1,1,Dec 13 2015,10:48:54
+637485947734,cycles
+284077818910,instructions
+38382978920,branches
+573694970,branch-misses
+24456198,dTLB-store-misses
+1597597035,dTLB-load-misses
+75490153,LLC-store-misses
+3544018711,LLC-load-misses
+244840174,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,1.46e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:01:25
+31121901268,cycles
+57346564783,instructions
+12355755655,branches
+63624037,branch-misses
+13821,dTLB-store-misses
+167930,dTLB-load-misses
+20518039,LLC-store-misses
+30499194,LLC-load-misses
+61891225,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,2.5056747,0.0017163047,48,1,32,1,18781488,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:01:25
+111208196342,cycles
+155007192716,instructions
+14337664107,branches
+208757222,branch-misses
+32703,dTLB-store-misses
+401494,dTLB-load-misses
+21402454,LLC-store-misses
+91719379,LLC-load-misses
+313994082,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,1.3e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:01:25
+37922244375,cycles
+58095803101,instructions
+12518453699,branches
+95479364,branch-misses
+670832,dTLB-store-misses
+75222030,dTLB-load-misses
+27301766,LLC-store-misses
+217377805,LLC-load-misses
+44946326,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,14.615011,0.010010801,48,1,32,1,2349035048,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:01:25
+500534620838,cycles
+155931663295,instructions
+14513045800,branches
+242256862,branch-misses
+9464634,dTLB-store-misses
+1266929103,dTLB-load-misses
+29296837,LLC-store-misses
+3138642267,LLC-load-misses
+190538385,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,1.15e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:01:25
+30186797281,cycles
+56471643405,instructions
+12170734313,branches
+72447746,branch-misses
+29068,dTLB-store-misses
+379419,dTLB-load-misses
+20323447,LLC-store-misses
+24204967,LLC-load-misses
+57010527,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,2.4510849,0.0017106634,48,1,32,1,2964998117,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:01:25
+108166709354,cycles
+151793177000,instructions
+14068856162,branches
+208489943,branch-misses
+36671,dTLB-store-misses
+552437,dTLB-load-misses
+22020012,LLC-store-misses
+86446394,LLC-load-misses
+308267919,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,1.92e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:01:25
+36004249063,cycles
+56779025084,instructions
+12227680581,branches
+79253482,branch-misses
+607749,dTLB-store-misses
+72870772,dTLB-load-misses
+28715829,LLC-store-misses
+207178525,LLC-load-misses
+53969318,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,14.19304,0.0099056194,48,1,32,1,3050741973,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:01:25
+486561333130,cycles
+153101134469,instructions
+14317703187,branches
+218800360,branch-misses
+9126696,dTLB-store-misses
+1230162893,dTLB-load-misses
+26501621,LLC-store-misses
+3070082321,LLC-load-misses
+183644991,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,1.71e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:01:25
+29356872793,cycles
+55942364004,instructions
+12042251402,branches
+46693835,branch-misses
+40050,dTLB-store-misses
+329998,dTLB-load-misses
+23070288,LLC-store-misses
+23903622,LLC-load-misses
+65692653,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,2.4847552,0.0016699885,48,1,32,1,1004931954,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:01:25
+108471990409,cycles
+153915275167,instructions
+13907072802,branches
+185081206,branch-misses
+50408,dTLB-store-misses
+525276,dTLB-load-misses
+21760101,LLC-store-misses
+85438640,LLC-load-misses
+308964200,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,1.71e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:01:25
+36078429149,cycles
+56343133000,instructions
+12102649291,branches
+46480624,branch-misses
+671417,dTLB-store-misses
+76524103,dTLB-load-misses
+29232727,LLC-store-misses
+226396049,LLC-load-misses
+44513878,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,14.86922,0.0099935104,48,1,32,1,3199731908,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:01:25
+506496152805,cycles
+155907495000,instructions
+14200289596,branches
+187358705,branch-misses
+9781107,dTLB-store-misses
+1286296910,dTLB-load-misses
+24710624,LLC-store-misses
+3183141566,LLC-load-misses
+198680350,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,2.78e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:01:25
+31598797392,cycles
+60807503256,instructions
+13042085582,branches
+50185409,branch-misses
+33257,dTLB-store-misses
+279341,dTLB-load-misses
+23992268,LLC-store-misses
+24361889,LLC-load-misses
+64144651,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,2.5894609,0.0016524982,48,1,32,1,3026230197,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:01:25
+114110040906,cycles
+164176624120,instructions
+15113538121,branches
+196156733,branch-misses
+46926,dTLB-store-misses
+460852,dTLB-load-misses
+33593098,LLC-store-misses
+84840468,LLC-load-misses
+319397150,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,-nan,1,12,2.04e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:01:25
+36628759271,cycles
+61080215374,instructions
+13127177919,branches
+52158436,branch-misses
+767513,dTLB-store-misses
+81551277,dTLB-load-misses
+19917320,LLC-store-misses
+220432882,LLC-load-misses
+58240072,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,1,inf,1,12,15.688095,0.010011562,48,1,32,1,951982253,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:01:25
+535728690209,cycles
+165360315306,instructions
+15299104280,branches
+204784762,branch-misses
+11410268,dTLB-store-misses
+1352964827,dTLB-load-misses
+25737740,LLC-store-misses
+3351146993,LLC-load-misses
+200955713,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.52e-07,inf,80,1,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:05:59
+32047047174,cycles
+57969985669,instructions
+12410787621,branches
+63028654,branch-misses
+35577,dTLB-store-misses
+247848,dTLB-load-misses
+25887154,LLC-store-misses
+54987596,LLC-load-misses
+72128366,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,2.8666271,0.0019635452,80,1,32,1,50795580,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:05:59
+122058813182,cycles
+154162505058,instructions
+14263041229,branches
+203786284,branch-misses
+27056,dTLB-store-misses
+337821,dTLB-load-misses
+27811073,LLC-store-misses
+140919703,LLC-load-misses
+375307224,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.63e-07,inf,80,1,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:05:59
+36987872820,cycles
+57938216780,instructions
+12399752043,branches
+94277116,branch-misses
+849339,dTLB-store-misses
+84073887,dTLB-load-misses
+29799828,LLC-store-misses
+233915723,LLC-load-misses
+64794139,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,14.885631,0.010196167,80,1,32,1,14089168,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,0,Dec 13 2015,11:05:59
+510331149589,cycles
+155689207414,instructions
+14512361966,branches
+243707389,branch-misses
+7759908,dTLB-store-misses
+1398134235,dTLB-load-misses
+36014490,LLC-store-misses
+3246057236,LLC-load-misses
+213846585,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.63e-07,inf,80,1,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:05:59
+32067700440,cycles
+57641517203,instructions
+12356996992,branches
+74133367,branch-misses
+55074,dTLB-store-misses
+722654,dTLB-load-misses
+28648516,LLC-store-misses
+52771234,LLC-load-misses
+67631275,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,2.8029827,0.0019562602,80,1,32,1,2991296232,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:05:59
+121032839362,cycles
+152279648655,instructions
+14156327802,branches
+206315034,branch-misses
+46837,dTLB-store-misses
+622357,dTLB-load-misses
+40284767,LLC-store-misses
+154815004,LLC-load-misses
+351970819,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.65e-07,inf,80,1,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:05:59
+36111244188,cycles
+57528424004,instructions
+12312268956,branches
+78832015,branch-misses
+845223,dTLB-store-misses
+81734558,dTLB-load-misses
+26147552,LLC-store-misses
+222598425,LLC-load-misses
+62005285,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,14.719385,0.010272967,80,1,32,1,820332136,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,0,Dec 13 2015,11:05:59
+504294607732,cycles
+153313601879,instructions
+14378056228,branches
+215622126,branch-misses
+7587346,dTLB-store-misses
+1362900012,dTLB-load-misses
+28701416,LLC-store-misses
+3180837101,LLC-load-misses
+202855574,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.65e-07,inf,80,1,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:05:59
+30775997302,cycles
+55796652747,instructions
+12005259012,branches
+45239617,branch-misses
+20988,dTLB-store-misses
+200496,dTLB-load-misses
+29897087,LLC-store-misses
+47948879,LLC-load-misses
+75303810,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,2.8164654,0.0018929289,80,1,32,1,843649382,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:05:59
+120992338403,cycles
+154542982378,instructions
+13999600111,branches
+181191713,branch-misses
+49746,dTLB-store-misses
+475575,dTLB-load-misses
+41835690,LLC-store-misses
+143946759,LLC-load-misses
+358408208,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.76e-07,inf,80,1,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:05:59
+35238205058,cycles
+56003033220,instructions
+12036131949,branches
+48571010,branch-misses
+857979,dTLB-store-misses
+85556074,dTLB-load-misses
+28290901,LLC-store-misses
+233694660,LLC-load-misses
+64433527,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,15.2975,0.010281354,80,1,32,1,3003119390,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,0,Dec 13 2015,11:05:59
+520405218481,cycles
+155303755177,instructions
+14160184450,branches
+185183619,branch-misses
+8021828,dTLB-store-misses
+1422216741,dTLB-load-misses
+31406992,LLC-store-misses
+3306453727,LLC-load-misses
+210041692,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.64e-07,inf,80,1,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:05:59
+33569672434,cycles
+60990693184,instructions
+13072600878,branches
+49420025,branch-misses
+22203,dTLB-store-misses
+200831,dTLB-load-misses
+30371555,LLC-store-misses
+46538162,LLC-load-misses
+79703565,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,2.9216436,0.0018644849,80,1,32,1,2956571591,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:05:59
+125360996103,cycles
+163725809871,instructions
+14997648837,branches
+196486278,branch-misses
+28218,dTLB-store-misses
+336595,dTLB-load-misses
+32146819,LLC-store-misses
+134687701,LLC-load-misses
+368928956,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,-nan,1,12,1.64e-07,inf,80,1,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:05:59
+37326557333,cycles
+60399526175,instructions
+12971448632,branches
+59200693,branch-misses
+977435,dTLB-store-misses
+90675180,dTLB-load-misses
+29568913,LLC-store-misses
+248017174,LLC-load-misses
+62458309,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,BSP,0,inf,1,12,15.931038,0.010166599,80,1,32,1,998142597,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,0,Dec 13 2015,11:05:59
+543990090464,cycles
+165098869407,instructions
+15274303982,branches
+205208527,branch-misses
+9460140,dTLB-store-misses
+1498270348,dTLB-load-misses
+37356994,LLC-store-misses
+3468426758,LLC-load-misses
+223217002,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,2.33e-07,inf,80,32,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,11:10:37
+42701875292,cycles
+62785107295,instructions
+13481053871,branches
+149470286,branch-misses
+51401,dTLB-store-misses
+2248301,dTLB-load-misses
+40319649,LLC-store-misses
+81634397,LLC-load-misses
+110261596,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,7.9860902,0.0054702089,80,32,32,1,175354100,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,11:10:37
+296322586259,cycles
+355361631223,instructions
+55785114606,branches
+829288837,branch-misses
+76116,dTLB-store-misses
+4144272,dTLB-load-misses
+42213241,LLC-store-misses
+422260839,LLC-load-misses
+450423673,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,1.77e-07,inf,80,32,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,11:10:37
+63914711831,cycles
+61954770709,instructions
+13341314574,branches
+174979847,branch-misses
+1046324,dTLB-store-misses
+257949568,dTLB-load-misses
+36031095,LLC-store-misses
+473304798,LLC-load-misses
+72999396,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,10.865226,0.0074423223,80,32,32,1,240239201,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,91245260,16,0,1,1,Dec 13 2015,11:10:37
+404643686641,cycles
+216500753845,instructions
+26185321477,branches
+627386386,branch-misses
+8969810,dTLB-store-misses
+1529013358,dTLB-load-misses
+60872476,LLC-store-misses
+1978577231,LLC-load-misses
+80335123,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,1.76e-07,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,11:10:37
+43184802701,cycles
+62189658420,instructions
+13370912039,branches
+155524950,branch-misses
+67859,dTLB-store-misses
+2327157,dTLB-load-misses
+43095938,LLC-store-misses
+81684764,LLC-load-misses
+104036764,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,9.3417023,0.0065197692,80,32,32,1,3058376961,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,11:10:37
+339337010077,cycles
+414273721400,instructions
+68427921063,branches
+846780691,branch-misses
+73628,dTLB-store-misses
+3910246,dTLB-load-misses
+41117610,LLC-store-misses
+462665535,LLC-load-misses
+438112192,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,2.24e-07,inf,80,32,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,11:10:37
+62884087888,cycles
+61726079687,instructions
+13280023356,branches
+151428151,branch-misses
+1042141,dTLB-store-misses
+249426928,dTLB-load-misses
+34394672,LLC-store-misses
+460758955,LLC-load-misses
+63876039,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,10.594656,0.0073942317,80,32,32,1,3217272907,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,89551696,16,0,1,1,Dec 13 2015,11:10:37
+395487599970,cycles
+211146473769,instructions
+25480749614,branches
+586181755,branch-misses
+8973823,dTLB-store-misses
+1503159026,dTLB-load-misses
+57020736,LLC-store-misses
+1950994558,LLC-load-misses
+68506319,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,1.86e-07,inf,80,32,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,11:10:37
+41190510825,cycles
+60817530607,instructions
+13065728128,branches
+132126601,branch-misses
+37196,dTLB-store-misses
+2134145,dTLB-load-misses
+36276497,LLC-store-misses
+83100770,LLC-load-misses
+105312306,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,10.618959,0.0071369359,80,32,32,1,1020365990,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,11:10:37
+380228185843,cycles
+519698384587,instructions
+89677103183,branches
+918586782,branch-misses
+65905,dTLB-store-misses
+3171616,dTLB-load-misses
+42231403,LLC-store-misses
+275665346,LLC-load-misses
+348220235,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,1.22e-07,inf,80,32,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,11:10:37
+61416423472,cycles
+60428162712,instructions
+13035544173,branches
+119789750,branch-misses
+1065599,dTLB-store-misses
+260162159,dTLB-load-misses
+40609630,LLC-store-misses
+472981358,LLC-load-misses
+68238923,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,11.276977,0.0075791857,80,32,32,1,3187038292,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,92992976,16,0,1,1,Dec 13 2015,11:10:37
+415507178266,cycles
+222531409028,instructions
+27244808068,branches
+577360589,branch-misses
+9540075,dTLB-store-misses
+1572937103,dTLB-load-misses
+62163248,LLC-store-misses
+2029683080,LLC-load-misses
+75083861,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,1.61e-07,inf,80,32,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,11:10:37
+45028813391,cycles
+65961804183,instructions
+14126470192,branches
+136437567,branch-misses
+36784,dTLB-store-misses
+2404538,dTLB-load-misses
+37276913,LLC-store-misses
+77626778,LLC-load-misses
+111904408,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,10.68339,0.0068177441,80,32,32,1,3182296690,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,11:10:37
+383161372308,cycles
+511717474120,instructions
+87019620339,branches
+905620330,branch-misses
+83966,dTLB-store-misses
+3810614,dTLB-load-misses
+46586241,LLC-store-misses
+303342653,LLC-load-misses
+385159162,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,-nan,1,12,1.61e-07,inf,80,32,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,11:10:37
+63695924444,cycles
+65706677059,instructions
+14123762560,branches
+134644504,branch-misses
+1224007,dTLB-store-misses
+275505501,dTLB-load-misses
+39051838,LLC-store-misses
+496398798,LLC-load-misses
+75475542,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,PRIORITY,1,inf,1,12,10.677993,0.0068143001,80,32,32,1,3140992047,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,97937358,16,0,1,1,Dec 13 2015,11:10:37
+405147643695,cycles
+226522245002,instructions
+27026293468,branches
+594000859,branch-misses
+10563773,dTLB-store-misses
+1592697330,dTLB-load-misses
+54605808,LLC-store-misses
+1962870634,LLC-load-misses
+76700448,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.83e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,11:15:37
+33557817077,cycles
+59511908033,instructions
+13020413258,branches
+144126877,branch-misses
+22896,dTLB-store-misses
+857610,dTLB-load-misses
+24268012,LLC-store-misses
+32922843,LLC-load-misses
+75990917,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,5.625815,0.0038534981,48,1,32,1,87559595,16,/scratch/jjthomas/hilbert-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,11:15:37
+212101456107,cycles
+160520083373,instructions
+15603849189,branches
+290505998,branch-misses
+37139,dTLB-store-misses
+1734722,dTLB-load-misses
+26838042,LLC-store-misses
+710001245,LLC-load-misses
+954043448,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.12e-07,inf,48,1,32,1,259191465,0,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,11:15:37
+38866375439,cycles
+59272222908,instructions
+12960602642,branches
+155151490,branch-misses
+718627,dTLB-store-misses
+90375675,dTLB-load-misses
+21609334,LLC-store-misses
+244057795,LLC-load-misses
+69529774,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,16.231663,0.011118155,48,1,32,1,2326930805,16,/scratch/jjthomas/random-graphs/dragon.3.binadjlist,6473215,91245260,0,16,0,1,1,Dec 13 2015,11:15:37
+555505140440,cycles
+167691242539,instructions
+17088909716,branches
+308194419,branch-misses
+10129115,dTLB-store-misses
+1296964006,dTLB-load-misses
+26323626,LLC-store-misses
+3514902345,LLC-load-misses
+286325812,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.68e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,11:15:37
+32721622094,cycles
+58723537144,instructions
+12790902713,branches
+148680881,branch-misses
+37062,dTLB-store-misses
+1338001,dTLB-load-misses
+23315130,LLC-store-misses
+27941349,LLC-load-misses
+80658818,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,5.3434774,0.0037293245,48,1,32,1,908129013,16,/scratch/jjthomas/hilbert-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,11:15:37
+202089392845,cycles
+158131194022,instructions
+15489088688,branches
+289050236,branch-misses
+47869,dTLB-store-misses
+2083156,dTLB-load-misses
+37252675,LLC-store-misses
+697531211,LLC-load-misses
+926224190,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,2.02e-07,inf,48,1,32,1,1010259551,0,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,11:15:37
+38921428354,cycles
+59144454550,instructions
+12867511871,branches
+137049197,branch-misses
+700669,dTLB-store-misses
+85935112,dTLB-load-misses
+33091722,LLC-store-misses
+249632881,LLC-load-misses
+63490723,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,15.838044,0.011053702,48,1,32,1,3097367708,16,/scratch/jjthomas/random-graphs/bunny.3.binadjlist,6202402,89551696,0,16,0,1,1,Dec 13 2015,11:15:37
+541698717195,cycles
+164667804176,instructions
+16847894458,branches
+281805102,branch-misses
+9999152,dTLB-store-misses
+1256762578,dTLB-load-misses
+25892917,LLC-store-misses
+3431441173,LLC-load-misses
+284257366,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.14e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,11:15:37
+32821274012,cycles
+57915773099,instructions
+12628014612,branches
+127055117,branch-misses
+35705,dTLB-store-misses
+720905,dTLB-load-misses
+21531922,LLC-store-misses
+29224103,LLC-load-misses
+81778367,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,5.2720173,0.00354329,48,1,32,1,837158667,16,/scratch/jjthomas/hilbert-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,11:15:37
+199809358972,cycles
+159862097670,instructions
+15255982285,branches
+267784640,branch-misses
+54811,dTLB-store-misses
+1405285,dTLB-load-misses
+35753216,LLC-store-misses
+662465318,LLC-load-misses
+995220195,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.52e-07,inf,48,1,32,1,17271303,0,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,11:15:37
+38355582457,cycles
+58024333873,instructions
+12658889452,branches
+107168721,branch-misses
+715338,dTLB-store-misses
+90352623,dTLB-load-misses
+26110887,LLC-store-misses
+255082752,LLC-load-misses
+67400644,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,16.427656,0.011040925,48,1,32,1,816519843,16,/scratch/jjthomas/random-graphs/cube.3.binadjlist,6363260,92992976,0,16,0,1,1,Dec 13 2015,11:15:37
+559895139572,cycles
+167917342939,instructions
+16882649028,branches
+253769738,branch-misses
+10454269,dTLB-store-misses
+1316471941,dTLB-load-misses
+25957496,LLC-store-misses
+3558802130,LLC-load-misses
+291550838,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.61e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,11:15:37
+34095179328,cycles
+62271435901,instructions
+13529349971,branches
+128355438,branch-misses
+33921,dTLB-store-misses
+650551,dTLB-load-misses
+26648869,LLC-store-misses
+27475685,LLC-load-misses
+84809478,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,5.9630215,0.0038053798,48,1,32,1,3023878122,16,/scratch/jjthomas/hilbert-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,11:15:37
+223474718378,cycles
+170678186023,instructions
+16578442276,branches
+282699202,branch-misses
+37788,dTLB-store-misses
+1215261,dTLB-load-misses
+26690529,LLC-store-misses
+755622206,LLC-load-misses
+1018412214,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,-nan,1,12,1.26e-07,inf,48,1,32,1,972433661,0,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,11:15:37
+40161052845,cycles
+62662946027,instructions
+13675998065,branches
+116288730,branch-misses
+854616,dTLB-store-misses
+96754993,dTLB-load-misses
+25760242,LLC-store-misses
+265055085,LLC-load-misses
+68197876,LLC-prefetch-misses
+MASS_SPRING_DASHPOT,CHROMATIC,1,inf,1,12,17.279406,0.011027078,48,1,32,1,820697273,16,/scratch/jjthomas/random-graphs/rand.3.binadjlist,6363260,97937358,0,16,0,1,1,Dec 13 2015,11:15:37
+589330506348,cycles
+179919593149,instructions
+18548359973,branches
+273623196,branch-misses
+12531942,dTLB-store-misses
+1391533752,dTLB-load-misses
+31897485,LLC-store-misses
+3772697582,LLC-load-misses
+263261530,LLC-prefetch-misses
