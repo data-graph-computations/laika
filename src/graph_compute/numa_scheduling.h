@@ -83,7 +83,7 @@ inline T logBaseTwoRoundUp(T x) {
 __attribute__((target("sse4.2")))
 inline uint32_t randomValue(const uint32_t seed,
                             const unsigned int randVal = 0xF1807D63) {
-  return _mm_crc32_u32(randVal, seed);
+  return __builtin_ia32_crc32si(randVal, seed);
 }
 
 static inline bool samePhase(vid_t v, vid_t w, chunkdata_t * const chunkdata) {

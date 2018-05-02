@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
-add-apt-repository -y ppa:ubuntu-toolchain-r/test
-apt-get update
-apt-get install -y build-essential openssl htop curl wget make vim git gitk gcc-5 g++-5 linux-tools-common linux-tools-generic keychain mpich libmpich-dev mosh
 
-pushd /usr/bin
-rm g++
-ln -s g++-5 g++
-popd
+# Fail on first error, on undefined variables, and on failures in a pipeline.
+set -euo pipefail
+
+# Print each executed line.
+set -x
+
+apt-get update
+
+apt-get install -y \
+    build-essential openssl htop curl wget make vim git \
+    linux-tools-common linux-tools-generic keychain mosh \
+    python python3.6
