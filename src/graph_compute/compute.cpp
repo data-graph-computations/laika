@@ -374,7 +374,7 @@ int main_run_to_convergence(int argc, char *argv[]) {
   double convergenceCoefficient;
   int result = 0;
   const int numRounds = 100000;  // cutoff round number, should never be hit
-  const int roundsBetweenConvergenceChecks = 10;
+  const int roundsBetweenConvergenceChecks = 250;  // on 48 cores, about every ~10s
 
 #if VERTEX_META_DATA
   if (argc != 4) {
