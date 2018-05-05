@@ -49,7 +49,10 @@ src/binconvert/binconvert
 # Directories
 tmp/*
 results/*
-inputs/*
+
+# The below directory is where the input data download script
+# places the input data files.
+input_data/*
 
 # Local Configuration
 *.json
