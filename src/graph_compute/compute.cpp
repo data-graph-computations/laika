@@ -373,8 +373,11 @@ int main_run_to_convergence(int argc, char *argv[]) {
   char * vertexMetaDataFile = NULL;
   double convergenceCoefficient;
   int result = 0;
+
   const int numRounds = 500000;  // cutoff round number, should never be hit
-  const int roundsBetweenConvergenceChecks = 250;  // on 48 cores, about every ~10s
+
+  // on 48 cores, this means a check about every ~10s on the maximum input size
+  const int roundsBetweenConvergenceChecks = 250;
 
 #if VERTEX_META_DATA
   if (argc != 4) {
