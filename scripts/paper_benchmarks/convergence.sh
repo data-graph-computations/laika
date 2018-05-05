@@ -27,7 +27,7 @@ make PARALLEL=1 build-libgraphio
 make D1_NUMA=1 NUMA_WORKERS=48 CHUNK_BITS=11 \
      $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
-    $hilbert_inputs
+    $hilbert_inputs \
     >./results/${input_name}-hilbert-parallel-convergence-laika.txt
 
 
@@ -35,7 +35,7 @@ make clean
 make PARALLEL=1 build-libgraphio
 make D0_BSP=1 $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
-    $hilbert_inputs
+    $hilbert_inputs \
     >./results/${input_name}-hilbert-parallel-convergence-bsp.txt
 
 
@@ -43,7 +43,7 @@ make clean
 make PARALLEL=1 build-libgraphio
 make D1_CHROM=1 $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
-    $hilbert_inputs
+    $hilbert_inputs \
     >./results/${input_name}-hilbert-parallel-convergence-chroma.txt
 
 
@@ -51,7 +51,7 @@ make clean
 make PARALLEL=1 build-libgraphio
 make D1_LOCKS=1 $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
-    $hilbert_inputs
+    $hilbert_inputs \
     >./results/${input_name}-hilbert-parallel-convergence-locks.txt
 
 
@@ -59,5 +59,5 @@ make clean
 make PARALLEL=1 build-libgraphio
 make D1_PRIO=1 $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
-    $hilbert_inputs
+    $hilbert_inputs \
     >./results/${input_name}-hilbert-parallel-convergence-jp.txt
