@@ -18,6 +18,12 @@ apt-get install -y \
 # or a different package may be necessary.
 apt-get install -y linux-tools-aws
 
+# Many of the newer AWS instances do not allow control over the Turbo Boost setting.
+# If your instance supports Turbo Boost management, you may want to disable it
+# to reduce the variability of the measurements.
+#
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/processor_state_control.html
+
 # One final, manual configuration step is required:
 # disabling transparent huge pages.
 echo ''
