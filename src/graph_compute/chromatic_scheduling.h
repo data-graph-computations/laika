@@ -41,7 +41,7 @@ static inline vid_t colorGraph(vertex_t * const nodes,
     for (vid_t edge = 0; edge <= nodes[v].cntEdges; edge++) {
       colors[edge] = false;
     }
-    //  for all lower-numbered vertices, remove alread-taken colors from consideration
+    //  for all lower-numbered vertices, remove already-taken colors from consideration
     for (vid_t edge = 0; edge < nodes[v].cntEdges; edge++) {
       if (nodes[v].edges[edge] < v) {
         colors[colorAssignments[nodes[v].edges[edge]]] = true;
