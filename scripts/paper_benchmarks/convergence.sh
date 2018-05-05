@@ -17,11 +17,11 @@ input_name='rand.2'
 
 make clean
 make PARALLEL=1 build-libgraphio
-make D1_NUMA=1 NUMA_WORKERS=48 CHUNK_BITS=13 \
+make D1_NUMA=1 NUMA_WORKERS=48 CHUNK_BITS=11 \
      $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
     ./input_data/hilbert-graphs/${input_name}.binadjlist \
-    ./input_data/hilbert-graphs/${input_name}.simple \
+    ./input_data/hilbert-graphs/${input_name}.node.simple \
     >${input_name}-hilbert-parallel-convergence-laika.txt
 
 
