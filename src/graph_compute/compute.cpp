@@ -374,7 +374,8 @@ int main_run_to_convergence(int argc, char *argv[]) {
   double convergenceCoefficient;
   int result = 0;
 
-  const int numRounds = 500000;  // cutoff round number, should never be hit
+  const int numRounds = 5000000;  // cutoff round number, should never be hit
+  const double cutoffTime = 21600.0; // stop at the first data point past the 6h mark
 
   // on 48 cores, this means a check about every ~10s on the maximum input size
   const int roundsBetweenConvergenceChecks = 250;
@@ -440,14 +441,18 @@ int main_run_to_convergence(int argc, char *argv[]) {
     seconds += endtime.tv_sec - starttime.tv_sec;
     totalSeconds += seconds;
 
-    // ensure that we are making progress toward convergence, and not just spinning
     roundsExecuted += roundsBetweenConvergenceChecks;
-    assert(roundsExecuted <= numRounds);
 
     currentConvergence = getConvergenceData(nodes, cntNodes, &globaldata,
                                             roundsExecuted);
     printConvergenceExperimentData(roundsExecuted, totalSeconds,
                                    currentConvergence);
+
+    // ensure that we are making progress toward convergence, and not just spinning
+    if((roundsExecuted >= numRounds) || (totalSeconds >= cutoffTime)) {
+      // we've run out of either time or iterations, stop the computation
+      break;
+    }
   }
 
   /////////////////////////////////////////////////////////////////////

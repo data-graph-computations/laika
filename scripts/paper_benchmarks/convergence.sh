@@ -8,7 +8,7 @@ set -x
 
 mkdir -p /laika/results
 
-convergence_factor='0.00000001'
+convergence_factor='5e-9'
 
 default_compute_params='PARALLEL=1 MASS_SPRING_DASHPOT=1'
 default_compute_params="$default_compute_params RUN_CONVERGENCE_EXPERIMENT=1"
