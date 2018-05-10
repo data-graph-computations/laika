@@ -13,7 +13,7 @@ convergence_factor='5e-9'
 default_compute_params='PARALLEL=1 MASS_SPRING_DASHPOT=1'
 default_compute_params="$default_compute_params RUN_CONVERGENCE_EXPERIMENT=1"
 
-input_name='rand.3'
+input_name='rand.4'
 
 hilbert_inputs="./input_data/hilbert-graphs/${input_name}.binadjlist"
 hilbert_inputs="$hilbert_inputs ./input_data/hilbert-graphs/${input_name}.node.simple"
@@ -24,7 +24,7 @@ unordered_inputs="$unordered_inputs ./input_data/random-graphs/${input_name}.nod
 
 make clean
 make PARALLEL=1 build-libgraphio
-make D1_NUMA=1 NUMA_WORKERS=48 CHUNK_BITS=13 \
+make D1_NUMA=1 NUMA_WORKERS=48 CHUNK_BITS=15 \
      $default_compute_params build-graph-compute
 taskset -c 0-47 ./src/graph_compute/compute "$convergence_factor" \
     $hilbert_inputs \
