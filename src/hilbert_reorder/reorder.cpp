@@ -173,8 +173,8 @@ int main(int argc, char *argv[]) {
   vid_t cntNodes;
   char * inputNodeFile, * inputEdgeFile;
   char * outputNodeFile, * outputEdgeFile;
-
   struct timespec starttime, endtime;
+  int result;
 
   if (argc != 5) {
     cerr << "\nERROR: Expected 4 arguments, received " << argc-1 << '\n';
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
 
-  int result = readNodesFromFile(inputNodeFile, &nodes, &cntNodes);
+  result = readNodesFromFile(inputNodeFile, &nodes, &cntNodes);
   assert(result == 0);
   result = readEdgesFromFile(inputEdgeFile, nodes, cntNodes);
   assert(result == 0);
