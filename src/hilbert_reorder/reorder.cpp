@@ -174,6 +174,8 @@ int main(int argc, char *argv[]) {
   char * inputNodeFile, * inputEdgeFile;
   char * outputNodeFile, * outputEdgeFile;
 
+  struct timespec starttime, endtime;
+
   if (argc != 5) {
     cerr << "\nERROR: Expected 4 arguments, received " << argc-1 << '\n';
     cerr << "Usage: ./reorder <input_nodes> <input_edges> "
@@ -190,26 +192,51 @@ int main(int argc, char *argv[]) {
   cout << "Input edge file: " << inputEdgeFile << '\n';
   cout << "Output node file: " << outputNodeFile << '\n';
   cout << "Output edge file: " << outputEdgeFile << '\n';
-  cout << "Hilbert bits per dimension: " << HILBERTBITS << '\n';
-  cout << "BFS: " << BFS << '\n';
-  cout << "STDIN: " << STDIN << '\n';
+
+  result = clock_gettime(CLOCK_MONOTONIC, &starttime);
+  assert(result == 0);
 
   int result = readNodesFromFile(inputNodeFile, &nodes, &cntNodes);
   assert(result == 0);
   result = readEdgesFromFile(inputEdgeFile, nodes, cntNodes);
   assert(result == 0);
 
+  result = clock_gettime(CLOCK_MONOTONIC, &endtime);
+  assert(result == 0);
+  cout << "Time to read input: "
+       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
+
+  result = clock_gettime(CLOCK_MONOTONIC, &starttime);
+  assert(result == 0);
+
 #if BFS
+  cout << "BFS: " << BFS << '\n';
   assignBfsIds(nodes, cntNodes);
 #elif RANDOM
+  cout << "RANDOM: " << RANDOM << '\n';
   assignRandomIds(nodes, cntNodes);
 #elif STDIN
+  cout << "STDIN: " << STDIN << '\n';
   assignStdinIds(nodes, cntNodes);
 #else
+  cout << "Hilbert bits per dimension: " << HILBERTBITS << '\n';
   assignHilbertIds(nodes, cntNodes, HILBERTBITS);
 #endif
 
+  result = clock_gettime(CLOCK_MONOTONIC, &endtime);
+  assert(result == 0);
+  cout << "Time to assign vertex IDs: "
+       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
+
+  result = clock_gettime(CLOCK_MONOTONIC, &starttime);
+  assert(result == 0);
+
   stable_sort(nodes, nodes + cntNodes, vertexComparator);
+
+  result = clock_gettime(CLOCK_MONOTONIC, &endtime);
+  assert(result == 0);
+  cout << "Time to sort vertices by ID: "
+       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
 
   WHEN_DEBUG({
     printf("\nOrder after sorting:\n");
@@ -218,11 +245,20 @@ int main(int argc, char *argv[]) {
     }
   })
 
+  result = clock_gettime(CLOCK_MONOTONIC, &starttime);
+  assert(result == 0);
+
   const vid_t * const translationMapping = createIdTranslationMapping(nodes, cntNodes);
 
   result = outputReorderedGraph(nodes, cntNodes, translationMapping,
                                 outputNodeFile, outputEdgeFile);
   assert(result == 0);
+
+  result = clock_gettime(CLOCK_MONOTONIC, &endtime);
+  assert(result == 0);
+  cout << "Time to write reordered graph: "
+       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
+
 
   return 0;
 }
