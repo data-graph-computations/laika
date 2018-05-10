@@ -175,6 +175,7 @@ int main(int argc, char *argv[]) {
   char * outputNodeFile, * outputEdgeFile;
   struct timespec starttime, endtime;
   int result;
+  double timeTaken;
 
   if (argc != 5) {
     cerr << "\nERROR: Expected 4 arguments, received " << argc-1 << '\n';
@@ -203,8 +204,9 @@ int main(int argc, char *argv[]) {
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
   assert(result == 0);
-  cout << "Time to read input: "
-       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
+  timeTaken = ((static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) +
+               (endtime.tv_sec - starttime.tv_sec));
+  cout << "Time to read input: " << timeTaken << endl;
 
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
@@ -225,8 +227,9 @@ int main(int argc, char *argv[]) {
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
   assert(result == 0);
-  cout << "Time to assign vertex IDs: "
-       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
+  timeTaken = ((static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) +
+               (endtime.tv_sec - starttime.tv_sec));
+  cout << "Time to assign vertex IDs: " << timeTaken << endl;
 
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
@@ -235,8 +238,9 @@ int main(int argc, char *argv[]) {
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
   assert(result == 0);
-  cout << "Time to sort vertices by ID: "
-       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
+  timeTaken = ((static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) +
+               (endtime.tv_sec - starttime.tv_sec));
+  cout << "Time to sort vertices by ID: " << timeTaken << endl;
 
   WHEN_DEBUG({
     printf("\nOrder after sorting:\n");
@@ -256,9 +260,9 @@ int main(int argc, char *argv[]) {
 
   result = clock_gettime(CLOCK_MONOTONIC, &endtime);
   assert(result == 0);
-  cout << "Time to write reordered graph: "
-       << (static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) << endl;
-
+  timeTaken = ((static_cast<double>(endtime.tv_nsec - starttime.tv_nsec) * 1e-9) +
+               (endtime.tv_sec - starttime.tv_sec));
+  cout << "Time to write reordered graph: " << timeTaken << endl;
 
   return 0;
 }
