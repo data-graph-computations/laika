@@ -35,10 +35,10 @@ measure() {
     input_file=$1
     scheduler=$2
 
-    hilbert_input="${hilbert_data_prefix}/${input_file}.binadjlist"
+    hilbert_input="${hilbert_data_prefix}/${input_file}.binadjlist "
     hilbert_input+="${hilbert_input} ${hilbert_data_prefix}/${input_file}.node.simple"
 
-    unordered_input="${unordered_data_prefix}/${input_file}.binadjlist"
+    unordered_input="${unordered_data_prefix}/${input_file}.binadjlist "
     unordered_input+="${unordered_input} ${unordered_data_prefix}/${input_file}.node.simple"
 
     sudo perf stat -e \
