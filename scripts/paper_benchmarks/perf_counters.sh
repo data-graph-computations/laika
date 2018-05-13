@@ -22,7 +22,7 @@ measurement_iterations=110
 
 
 performance_counters='longest_lat_cache.miss:u,cycle_activity.stalls_l3_miss:u,'
-performance_counters+='dTLB-load-misses:u,dTLB-store-misses:u'
+performance_counters+='dTLB-load-misses,dTLB-store-misses'
 
 
 hilbert_data_prefix='./input_data/hilbert-graphs'
