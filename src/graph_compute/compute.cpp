@@ -308,6 +308,11 @@ WHEN_TEST({
   const double initialConvergenceData = getInitialConvergenceData(nodes, cntNodes,
                                                                   &globaldata);
 
+  #if RUN_EXTRA_WARMUP
+    // Run a few iterations of extra warmup before starting to count time.
+    execute_rounds(2, nodes, cntNodes, &scheddata, &globaldata);
+  #endif
+
   struct timespec starttime, endtime;
   result = clock_gettime(CLOCK_MONOTONIC, &starttime);
   assert(result == 0);
