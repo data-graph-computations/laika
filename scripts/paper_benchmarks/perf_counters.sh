@@ -43,26 +43,26 @@ measure() {
 
     # We redirect output rather than using "perf -o" since we want to also capture
     # the output of "./compute" so we get the number of edges in each file.
-    sudo perf stat -e \
+    (sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$warmup_iterations" $hilbert_input \
+         ./src/graph_compute/compute "$warmup_iterations" $hilbert_input) \
          2>&1 >"/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-warmup.txt"
-    sudo perf stat -e \
+    (sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$measurement_iterations" $hilbert_input \
+         ./src/graph_compute/compute "$measurement_iterations" $hilbert_input) \
          2>&1 >"/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-measure.txt"
 
-    sudo perf stat -e \
+    (sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$warmup_iterations" $unordered_input \
+         ./src/graph_compute/compute "$warmup_iterations" $unordered_input) \
          2>&1 >"/laika/results/perf_counters/${input_file}-unordered-${scheduler}-warmup.txt"
-    sudo perf stat -e \
+    (sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$measurement_iterations" $unordered_input \
+         ./src/graph_compute/compute "$measurement_iterations" $unordered_input) \
          2>&1 >"/laika/results/perf_counters/${input_file}-unordered-${scheduler}-measure.txt"
 }
 
