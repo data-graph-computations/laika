@@ -6,18 +6,23 @@ set -euo pipefail
 # Print each executed line.
 set -x
 
-mkdir -p /laika/results/perf_counters
+results_path='/laika/results/user_perf_counters'
+mkdir -p "$results_path"
 
 default_compute_params='PARALLEL=1 MASS_SPRING_DASHPOT=1'
 default_compute_params="$default_compute_params RUN_FIXED_ROUNDS_EXPERIMENT=1"
 
 
 # We run each workload twice:
-# - Once for 100 iterations, to measure the "warmup" phase.
-# - Then, for 1100 iterations, so we can subtract the "warmup"
-#   and get 1000 iterations of pure data.
-warmup_iterations=100
-measurement_iterations=1100
+# - Once for 10 iterations, to measure the "warmup" phase.
+# - Then, for 110 iterations, so we can subtract the "warmup"
+#   and get 100 iterations of pure data.
+warmup_iterations=10
+measurement_iterations=110
+
+
+performance_counters='longest_lat_cache.miss:u,cycle_activity.stalls_l3_miss:u,'
+performance_counters+='dTLB-load-misses:u,dTLB-store-misses:u'
 
 
 hilbert_data_prefix='./input_data/hilbert-graphs'
@@ -43,27 +48,23 @@ measure() {
 
     # We redirect output rather than using "perf -o" since we want to also capture
     # the output of "./compute" so we get the number of edges in each file.
-    (sudo perf stat -e \
-         longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
+    (sudo perf stat -e "$performance_counters" \
          taskset -c 0-47 \
          ./src/graph_compute/compute "$warmup_iterations" $hilbert_input 2>&1) \
-         2>&1 >"/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-warmup.txt"
-    (sudo perf stat -e \
-         longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
+         2>&1 >"${results_path}/${input_file}-hilbert-${scheduler}-warmup.txt"
+    (sudo perf stat -e "$performance_counters" \
          taskset -c 0-47 \
          ./src/graph_compute/compute "$measurement_iterations" $hilbert_input 2>&1) \
-         2>&1 >"/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-measure.txt"
+         2>&1 >"${results_path}/${input_file}-hilbert-${scheduler}-measure.txt"
 
-    (sudo perf stat -e \
-         longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
+    (sudo perf stat -e "$performance_counters" \
          taskset -c 0-47 \
          ./src/graph_compute/compute "$warmup_iterations" $unordered_input 2>&1) \
-         2>&1 >"/laika/results/perf_counters/${input_file}-unordered-${scheduler}-warmup.txt"
-    (sudo perf stat -e \
-         longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
+         2>&1 >"${results_path}/${input_file}-unordered-${scheduler}-warmup.txt"
+    (sudo perf stat -e "$performance_counters" \
          taskset -c 0-47 \
          ./src/graph_compute/compute "$measurement_iterations" $unordered_input 2>&1) \
-         2>&1 >"/laika/results/perf_counters/${input_file}-unordered-${scheduler}-measure.txt"
+         2>&1 >"${results_path}/${input_file}-unordered-${scheduler}-measure.txt"
 }
 
 
