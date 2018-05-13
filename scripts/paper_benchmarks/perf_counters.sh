@@ -36,10 +36,10 @@ measure() {
     scheduler=$2
 
     hilbert_input="${hilbert_data_prefix}/${input_file}.binadjlist "
-    hilbert_input+="${hilbert_input} ${hilbert_data_prefix}/${input_file}.node.simple"
+    hilbert_input+="${hilbert_data_prefix}/${input_file}.node.simple"
 
     unordered_input="${unordered_data_prefix}/${input_file}.binadjlist "
-    unordered_input+="${unordered_input} ${unordered_data_prefix}/${input_file}.node.simple"
+    unordered_input+="${unordered_data_prefix}/${input_file}.node.simple"
 
     sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
