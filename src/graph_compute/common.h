@@ -253,7 +253,7 @@ WHEN_TEST(
 #ifndef RUN_EXTRA_WARMUP
   // intended for use with RUN_FIXED_ROUNDS_EXPERIMENT = 1
   #define RUN_EXTRA_WARMUP 0
-#elif
+#endif
 
 #include "./io.h"
 
