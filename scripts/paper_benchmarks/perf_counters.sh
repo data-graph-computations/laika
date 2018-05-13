@@ -24,7 +24,7 @@ hilbert_data_prefix='./input_data/hilbert-graphs'
 unordered_data_prefix='./input_data/random-graphs'
 
 
-size_4_inputs=('rand.4' 'bunny.4' 'dragon.4')
+size_4_inputs=('rand.4' 'bunny.4' 'cube.4' 'dragon.4')
 size_3_inputs=('rand.3' 'bunny.3' 'cube.3' 'dragon.3')
 size_2_inputs=('rand.2' 'bunny.2' 'cube.2' 'dragon.2')
 size_1_inputs=('rand.1' 'bunny.1' 'cube.1' 'dragon.1')
@@ -41,27 +41,29 @@ measure() {
     unordered_input="${unordered_data_prefix}/${input_file}.binadjlist "
     unordered_input+="${unordered_data_prefix}/${input_file}.node.simple"
 
+    # We redirect output rather than using "perf -o" since we want to also capture
+    # the output of "./compute" so we get the number of edges in each file.
     sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
-         -o "/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-warmup.txt" \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$warmup_iterations" $hilbert_input
+         ./src/graph_compute/compute "$warmup_iterations" $hilbert_input \
+         2>&1 >"/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-warmup.txt"
     sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
-         -o "/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-measure.txt" \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$measurement_iterations" $hilbert_input
+         ./src/graph_compute/compute "$measurement_iterations" $hilbert_input \
+         2>&1 >"/laika/results/perf_counters/${input_file}-hilbert-${scheduler}-measure.txt"
 
     sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
-         -o "/laika/results/perf_counters/${input_file}-unordered-${scheduler}-warmup.txt" \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$warmup_iterations" $unordered_input
+         ./src/graph_compute/compute "$warmup_iterations" $unordered_input \
+         2>&1 >"/laika/results/perf_counters/${input_file}-unordered-${scheduler}-warmup.txt"
     sudo perf stat -e \
          longest_lat_cache.miss,cycle_activity.stalls_l3_miss,dTLB-load-misses,dTLB-store-misses \
-         -o "/laika/results/perf_counters/${input_file}-unordered-${scheduler}-measure.txt" \
          taskset -c 0-47 \
-         ./src/graph_compute/compute "$measurement_iterations" $unordered_input
+         ./src/graph_compute/compute "$measurement_iterations" $unordered_input \
+         2>&1 >"/laika/results/perf_counters/${input_file}-unordered-${scheduler}-measure.txt"
 }
 
 
@@ -120,3 +122,82 @@ done
 
 # ### Done measuring Laika ###
 
+
+make clean
+make PARALLEL=1 build-libgraphio
+make D0_BSP=1 $default_compute_params build-graph-compute
+for current_input_file in "${size_4_inputs[@]}"; do
+    measure "$current_input_file" "bsp"
+done
+for current_input_file in "${size_3_inputs[@]}"; do
+    measure "$current_input_file" "bsp"
+done
+for current_input_file in "${size_2_inputs[@]}"; do
+    measure "$current_input_file" "bsp"
+done
+for current_input_file in "${size_1_inputs[@]}"; do
+    measure "$current_input_file" "bsp"
+done
+for current_input_file in "${size_0_inputs[@]}"; do
+    measure "$current_input_file" "bsp"
+done
+
+
+make clean
+make PARALLEL=1 build-libgraphio
+make D1_LOCKS=1 $default_compute_params build-graph-compute
+for current_input_file in "${size_4_inputs[@]}"; do
+    measure "$current_input_file" "locks"
+done
+for current_input_file in "${size_3_inputs[@]}"; do
+    measure "$current_input_file" "locks"
+done
+for current_input_file in "${size_2_inputs[@]}"; do
+    measure "$current_input_file" "locks"
+done
+for current_input_file in "${size_1_inputs[@]}"; do
+    measure "$current_input_file" "locks"
+done
+for current_input_file in "${size_0_inputs[@]}"; do
+    measure "$current_input_file" "locks"
+done
+
+
+make clean
+make PARALLEL=1 build-libgraphio
+make D1_PRIO=1 $default_compute_params build-graph-compute
+for current_input_file in "${size_4_inputs[@]}"; do
+    measure "$current_input_file" "jp"
+done
+for current_input_file in "${size_3_inputs[@]}"; do
+    measure "$current_input_file" "jp"
+done
+for current_input_file in "${size_2_inputs[@]}"; do
+    measure "$current_input_file" "jp"
+done
+for current_input_file in "${size_1_inputs[@]}"; do
+    measure "$current_input_file" "jp"
+done
+for current_input_file in "${size_0_inputs[@]}"; do
+    measure "$current_input_file" "jp"
+done
+
+
+make clean
+make PARALLEL=1 build-libgraphio
+make D1_CHROM=1 $default_compute_params build-graph-compute
+for current_input_file in "${size_4_inputs[@]}"; do
+    measure "$current_input_file" "chroma"
+done
+for current_input_file in "${size_3_inputs[@]}"; do
+    measure "$current_input_file" "chroma"
+done
+for current_input_file in "${size_2_inputs[@]}"; do
+    measure "$current_input_file" "chroma"
+done
+for current_input_file in "${size_1_inputs[@]}"; do
+    measure "$current_input_file" "chroma"
+done
+for current_input_file in "${size_0_inputs[@]}"; do
+    measure "$current_input_file" "chroma"
+done
