@@ -375,7 +375,7 @@ int main_run_to_convergence(int argc, char *argv[]) {
   int result = 0;
 
   const int numRounds = 5000000;  // cutoff round number, should never be hit
-  const double cutoffTime = 50400.0;  // stop at the first data point past this number of seconds
+  const double cutoffTime = 50400.0;  // stop after this many seconds
 
   // on 48 cores, this means a check about every ~10s on the maximum input size
   const int roundsBetweenConvergenceChecks = 250;
