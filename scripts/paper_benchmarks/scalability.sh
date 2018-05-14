@@ -299,3 +299,24 @@ done
 for current_input_file in "${size_0_inputs[@]}"; do
     measure "$current_input_file" "chroma" "1"
 done
+
+
+make clean
+make PARALLEL=0 build-libgraphio
+make PARALLEL=0 D0_BSP=1 IN_PLACE=1 $default_compute_params build-graph-compute
+
+for current_input_file in "${size_4_inputs[@]}"; do
+    measure "$current_input_file" "serialbaseline" "1"
+done
+for current_input_file in "${size_3_inputs[@]}"; do
+    measure "$current_input_file" "serialbaseline" "1"
+done
+for current_input_file in "${size_2_inputs[@]}"; do
+    measure "$current_input_file" "serialbaseline" "1"
+done
+for current_input_file in "${size_1_inputs[@]}"; do
+    measure "$current_input_file" "serialbaseline" "1"
+done
+for current_input_file in "${size_0_inputs[@]}"; do
+    measure "$current_input_file" "serialbaseline" "1"
+done
