@@ -154,8 +154,19 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
     node->satisfied = node->dependencies;
   }
   WHEN_TEST({
-  printf("InterChunkDependencies: %lu\n",
-    static_cast<uint64_t>(cntDependencies));
+    vid_t syncLessVertices = 0;
+    for (vid_t i = 0; i < cntNodes; i++) {
+      if (nodes[i].sched.cntDependentEdges == 0 &&
+          nodes[i].sched.dependencies) {
+        // cntDependentEdges is the number of neighbor decrements this vertex must do,
+        // dependencies is the number of times this vertex must be decremented.
+        // If both of these are zero, processing the vertex requires no synchronization.
+        syncLessVertices++;
+      }
+    }
+    printf("InterChunkDependencies, syncLessVertices: %lu %lu\n",
+      static_cast<uint64_t>(cntDependencies),
+      static_cast<uint64_t>(syncLessVertices));
   })
   numaInit_t numaInit(NUMA_WORKERS,
                       CHUNK_BITS, static_cast<bool>(NUMA_INIT));
