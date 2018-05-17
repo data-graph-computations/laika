@@ -155,17 +155,31 @@ static inline void calculateNodeDependenciesChunk(vertex_t * const nodes,
   }
   WHEN_TEST({
     vid_t syncLessVertices = 0;
+    vid_t verticesWithNoDecrements = 0;
+    vid_t verticesWithDepsSatisfiedByConstr = 0;
     for (vid_t i = 0; i < cntNodes; i++) {
-      if (nodes[i].sched.cntDependentEdges == 0 &&
-          nodes[i].sched.dependencies) {
-        // cntDependentEdges is the number of neighbor decrements this vertex must do,
-        // dependencies is the number of times this vertex must be decremented.
-        // If both of these are zero, processing the vertex requires no synchronization.
+      // cntDependentEdges is the number of neighbor decrements this vertex must do,
+      // dependencies is the number of times this vertex must be decremented.
+      // If both of these are zero, processing the vertex requires no synchronization.
+      bool noDecrements = (nodes[i].sched.cntDependentEdges == 0);
+      bool dependenciesSatisfiedByConstruction = (nodes[i].sched.dependencies == 0);
+
+      if (noDecrements && dependenciesSatisfiedByConstruction) {
+        verticesWithNoDecrements++;
+        verticesWithDepsSatisfiedByConstr++;
         syncLessVertices++;
+      } else if (noDecrements) {
+        verticesWithNoDecrements++;
+      } else if (dependenciesSatisfiedByConstruction) {
+        verticesWithDepsSatisfiedByConstr++;
       }
     }
-    printf("InterChunkDependencies, syncLessVertices: %lu %lu\n",
+    printf(
+      "InterChunkDependencies, verticesWithNoDecrements, "
+      "verticesWithDepsSatisfiedByConstr, syncLessVertices: %lu %lu %lu %lu\n",
       static_cast<uint64_t>(cntDependencies),
+      static_cast<uint64_t>(verticesWithNoDecrements),
+      static_cast<uint64_t>(verticesWithDepsSatisfiedByConstr),
       static_cast<uint64_t>(syncLessVertices));
   })
   numaInit_t numaInit(NUMA_WORKERS,
